@@ -7,5 +7,6 @@ edition = "2021"
 
 [dependencies]
 env_logger = { workspace = true }
+thiserror = { workspace = true }
 
 polkavm = { workspace = true }

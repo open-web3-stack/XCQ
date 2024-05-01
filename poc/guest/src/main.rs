@@ -10,10 +10,10 @@ fn panic(_info: &core::panic::PanicInfo) -> ! {
 
 #[polkavm_derive::polkavm_import]
 extern "C" {
-    fn get_third_number() -> u32;
+    fn foo() -> u32;
 }
 
 #[polkavm_derive::polkavm_export]
-extern "C" fn add_numbers(a: u32, b: u32) -> u32 {
-    a + b + unsafe { get_third_number() }
+extern "C" fn main() -> u32 {
+    42 + unsafe { foo() }
 }
