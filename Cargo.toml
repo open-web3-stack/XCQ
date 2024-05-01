@@ -1,3 +1,9 @@
 [workspace]
 resolver = "2"
-members = ["xcq-poc"]
+members = ["poc/host", "poc/guest"]
+
+[workspace.dependencies]
+env_logger = { version = "0.11.3" }
+
+polkavm-derive = { git = "https://github.com/koute/polkavm", commit = "e2801d9f34211fb5e16aee36a81700ad450c50e5" }
+polkavm = { git = "https://github.com/koute/polkavm", commit = "e2801d9f34211fb5e16aee36a81700ad450c50e5" }
