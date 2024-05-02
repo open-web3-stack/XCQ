@@ -2,24 +2,13 @@
 resolver = "2"
 members = ["poc/host", "poc/guest", "poc/runtime", "poc/executor"]
 
+[profile.release]
+# runtime requires unwinding.
+panic = "unwind"
+opt-level = 3
+
 [workspace.dependencies]
 env_logger = { version = "0.11.3" }
 
 polkavm-derive = { git = "https://github.com/koute/polkavm", commit = "e2801d9f34211fb5e16aee36a81700ad450c50e5" }
 polkavm = { git = "https://github.com/koute/polkavm", commit = "e2801d9f34211fb5e16aee36a81700ad450c50e5" }
-
-parity-scale-codec = { version = "3.0.0", default-features = false }
-scale-info = { version = "2.6.0", default-features = false }
-
-polkadot-sdk-frame = { version = "0.1.1", default-features = false }
-pallet-balances = { version = "34.0.0", default-features = false  }
-pallet-sudo = { version = "33.0.0", default-features = false }
-pallet-timestamp = { version = "32.0.0", default-features = false }
-pallet-transaction-payment = { version = "33.0.0", default-features = false }
-
-substrate-wasm-builder = { version = "22.0.0" }
-
-[profile.release]
-# runtime requires unwinding.
-panic = "unwind"
-opt-level = 3

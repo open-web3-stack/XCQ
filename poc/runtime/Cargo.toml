@@ -3,32 +3,40 @@ name = "poc-runtime"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
-parity-scale-codec = { workspace = true }
-scale-info = { workspace = true }
+parity-scale-codec = { version = "3.0.0", default-features = false }
+scale-info = { version = "2.6.0", default-features = false }
 
-polkadot-sdk-frame = { workspace = true, features = ["experimental", "runtime"] }
-pallet-balances = { workspace = true }
-pallet-sudo = { workspace = true }
-pallet-timestamp = { workspace = true }
-pallet-transaction-payment = { workspace = true }
+# this is a frame-based runtime, thus importing `frame` with runtime feature enabled.
+frame = { version = "0.1.1", package = "polkadot-sdk-frame", default-features = false, features = ["experimental", "runtime"] }
+
+# pallets that we want to use
+pallet-balances = { version = "31.0.0", default-features = false }
+pallet-sudo = { version = "31.0.0", default-features = false }
+pallet-timestamp = { version = "30.0.0", default-features = false }
+pallet-transaction-payment = { version = "31.0.0", default-features = false }
+pallet-transaction-payment-rpc-runtime-api = { version = "31.0.0", default-features = false }
+
+# genesis builder that allows us to interacto with runtime genesis config
+sp-genesis-builder = { version = "0.10.0", default-features = false }
 
 [build-dependencies]
-substrate-wasm-builder = { workspace = true, optional = true }
+substrate-wasm-builder = { version = "22.0.0", optional = true }
 
 [features]
 default = ["std"]
 std = [
-    "parity-scale-codec/std",
-    "scale-info/std",
+	"parity-scale-codec/std",
+	"scale-info/std",
 
-    "polkadot-sdk-frame/std",
-    "pallet-balances/std",
-    "pallet-sudo/std",
-    "pallet-timestamp/std",
-    "pallet-transaction-payment/std",
+	"frame/std",
 
-    "substrate-wasm-builder",
+	"pallet-balances/std",
+	"pallet-sudo/std",
+	"pallet-timestamp/std",
+	"pallet-transaction-payment-rpc-runtime-api/std",
+	"pallet-transaction-payment/std",
+
+	"sp-genesis-builder/std",
+	"substrate-wasm-builder",
 ]
