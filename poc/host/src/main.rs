@@ -1,14 +1,10 @@
 use polkavm::{Config, Linker};
 
-mod executor;
-
 struct HostFunctions;
 
-impl executor::XcqExecutorContext for HostFunctions {
+impl poc_executor::XcqExecutorContext for HostFunctions {
     fn register_host_functions<T>(&mut self, linker: &mut Linker<T>) {
-        linker
-            .func_wrap("foo", || -> u32 { 100 })
-            .unwrap();
+        linker.func_wrap("foo", || -> u32 { 100 }).unwrap();
     }
 }
 
@@ -19,7 +15,7 @@ fn main() {
 
     let config = Config::from_env().unwrap();
 
-    let mut executor = executor::XcqExecutor::new(config, HostFunctions);
+    let mut executor: poc_executor::XcqExecutor<HostFunctions> = poc_executor::XcqExecutor::new(config, HostFunctions);
     let res = executor.execute(raw_blob).unwrap();
     println!("Result: {}", res);
 }

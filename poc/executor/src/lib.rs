@@ -1,3 +1,5 @@
+#![cfg_attr(not(feature = "std"), no_std)]
+
 use polkavm::{Config, Engine, Linker, Module, ProgramBlob};
 
 pub trait XcqExecutorContext {

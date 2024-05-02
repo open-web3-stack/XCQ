@@ -8,3 +8,7 @@ poc-guest:
 
 polkatool:
 	cargo install --git https://github.com/koute/polkavm --force polkatool
+
+check:
+	cargo check --no-default-features --target=wasm32-unknown-unknown -p poc-executor
+	SKIP_WASM_BUILD= cargo check
