@@ -4,6 +4,8 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
+mod xcq;
+
 use frame::{
 	deps::frame_support::{
 		genesis_builder_helper::{build_config, create_default_config},
@@ -207,6 +209,12 @@ impl_runtime_apis! {
 			build_config::<RuntimeGenesisConfig>(config)
 		}
 	}
+
+    impl xcq::XcqApi<Block> for Runtime {
+        fn execute_query(query: Vec<u8>) -> xcq::XcqResult {
+            xcq::execute_query(query)
+        }
+    }
 }
 
 /// Some re-exports that the node side code needs to know. Some are useful in this context as well.

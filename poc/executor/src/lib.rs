@@ -1,6 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use polkavm::{Config, Engine, Linker, Module, ProgramBlob};
+pub use polkavm::{Config, Engine, Linker, Module, ProgramBlob};
 
 pub trait XcqExecutorContext {
     fn register_host_functions<T>(&mut self, linker: &mut Linker<T>);

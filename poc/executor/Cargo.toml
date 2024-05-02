@@ -10,4 +10,6 @@ polkavm = { workspace = true }
 
 [features]
 default = ["std"]
-std = []
+std = [
+    "polkavm/std",
+]

@@ -1,0 +1,3 @@
+[submodule "vendor/polkavm"]
+	path = vendor/polkavm
+	url = https://github.com/koute/polkavm
