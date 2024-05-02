@@ -10,10 +10,10 @@ fn panic(_info: &core::panic::PanicInfo) -> ! {
 
 #[polkavm_derive::polkavm_import]
 extern "C" {
-    fn foo() -> u32;
+    fn host_call() -> u32;
 }
 
 #[polkavm_derive::polkavm_export]
 extern "C" fn main() -> u32 {
-    42 + unsafe { foo() }
+    42 + unsafe { host_call() }
 }
