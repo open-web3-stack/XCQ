@@ -1,6 +1,12 @@
 #![no_std]
 #![no_main]
 
+extern crate alloc;
+use alloc::boxed::Box;
+
+#[global_allocator]
+static ALLOCATOR: polkavm_derive::LeakingAllocator = polkavm_derive::LeakingAllocator;
+
 #[panic_handler]
 fn panic(_info: &core::panic::PanicInfo) -> ! {
     unsafe {
@@ -10,10 +16,37 @@ fn panic(_info: &core::panic::PanicInfo) -> ! {
 
 #[polkavm_derive::polkavm_import]
 extern "C" {
-    fn host_call() -> u32;
+    fn host_call(ptr: u32) -> u32;
 }
 
 #[polkavm_derive::polkavm_export]
-extern "C" fn main() -> u32 {
-    42 + unsafe { host_call() }
+extern "C" fn main(ptr: u32) -> u32 {
+    // ready first byte from ptr
+    let byte = unsafe { core::ptr::read_volatile(ptr as *const u8) };
+    match byte {
+        0 => {
+            let val = Box::new("test".as_bytes());
+            // leak val
+            let val = Box::into_raw(val);
+            val as u32
+        },
+        1 => {
+            let val = Box::new(0u32);
+            let ptr = Box::into_raw(val);
+            let res = unsafe { host_call(ptr as u32) };
+            let ret = res + 1;
+            let ptr = Box::into_raw(Box::new(ret));
+            ptr as u32
+        },
+        _ => 0,
+    }
+}
+
+#[polkavm_derive::polkavm_export]
+extern "C" fn alloc(size: u32, align: u32) -> u32 {
+    unsafe {
+        let layout = alloc::alloc::Layout::from_size_align(size as usize, align as usize).unwrap();
+        let ptr = alloc::alloc::alloc(layout);
+        ptr as u32
+    }
 }
