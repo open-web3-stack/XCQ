@@ -69,6 +69,8 @@ impl<Ctx: XcqExecutorContext> XcqExecutor<Ctx> {
         } else {
             0
         };
+
+        // return value is u64 instead of (u32, u32) due to https://github.com/koute/polkavm/issues/116
         let res = instance.call_typed::<(u32,), u64>(&mut self.context, "main", (input_ptr,))?;
         let res_ptr = (res >> 32) as u32;
         let res_len = (res & 0xffffffff) as u32;

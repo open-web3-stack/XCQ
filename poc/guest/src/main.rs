@@ -19,6 +19,7 @@ extern "C" {
     fn host_call(ptr: u32) -> u32;
 }
 
+// return value is u64 instead of (u32, u32) due to https://github.com/koute/polkavm/issues/116
 #[polkavm_derive::polkavm_export]
 extern "C" fn main(ptr: u32) -> u64 {
     // ready first byte from ptr
