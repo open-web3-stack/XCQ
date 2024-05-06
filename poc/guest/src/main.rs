@@ -20,6 +20,7 @@ extern "C" {
 }
 
 // return value is u64 instead of (u32, u32) due to https://github.com/koute/polkavm/issues/116
+// higher 32bits are address, lower 32bits are size
 #[polkavm_derive::polkavm_export]
 extern "C" fn main(ptr: u32) -> u64 {
     // ready first byte from ptr
@@ -29,8 +30,8 @@ extern "C" fn main(ptr: u32) -> u64 {
             let val = b"test";
             let val = Box::new(*val);
             // leak val
-            let val = Box::into_raw(val);
-            (val as u32 as u64) << 32 | 4
+            let ptr = Box::into_raw(val);
+            (ptr as u32 as u64) << 32 | 4
         }
         1 => {
             let val = unsafe { core::ptr::read_volatile((ptr + 1) as *const u8) };

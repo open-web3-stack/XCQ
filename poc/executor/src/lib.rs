@@ -2,8 +2,8 @@
 
 extern crate alloc;
 
-pub use polkavm::{Config, Engine, Linker, Module, ProgramBlob};
 pub use alloc::vec::Vec;
+pub use polkavm::{Config, Engine, Linker, Module, ProgramBlob};
 
 pub trait XcqExecutorContext {
     fn register_host_functions<T>(&mut self, linker: &mut Linker<T>);
@@ -53,12 +53,12 @@ impl<Ctx: XcqExecutorContext> XcqExecutor<Ctx> {
     }
 
     pub fn execute(&mut self, raw_blob: &[u8], input: &[u8]) -> Result<Vec<u8>, XcqExecutorError> {
-        let blob = ProgramBlob::parse(&raw_blob[..])?;
+        let blob = ProgramBlob::parse(raw_blob)?;
         let module = Module::from_blob(&self.engine, &Default::default(), &blob)?;
         let instance_pre = self.linker.instantiate_pre(&module)?;
         let instance = instance_pre.instantiate()?;
 
-        let input_ptr = if input.len() > 0 {
+        let input_ptr = if !input.is_empty() {
             let ptr = instance
                 .sbrk(input.len() as u32)?
                 .expect("sbrk must be able to allocate memoery here");
