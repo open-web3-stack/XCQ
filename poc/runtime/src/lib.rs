@@ -211,8 +211,8 @@ impl_runtime_apis! {
 	}
 
     impl xcq::XcqApi<Block> for Runtime {
-        fn execute_query(query: Vec<u8>) -> xcq::XcqResult {
-            xcq::execute_query(query)
+        fn execute_query(query: Vec<u8>, input: Vec<u8>) -> xcq::XcqResult {
+            xcq::execute_query(query, input)
         }
     }
 }

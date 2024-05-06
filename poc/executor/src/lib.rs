@@ -1,6 +1,9 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+extern crate alloc;
+
 pub use polkavm::{Config, Engine, Linker, Module, ProgramBlob};
+pub use alloc::vec::Vec;
 
 pub trait XcqExecutorContext {
     fn register_host_functions<T>(&mut self, linker: &mut Linker<T>);
@@ -49,14 +52,31 @@ impl<Ctx: XcqExecutorContext> XcqExecutor<Ctx> {
         }
     }
 
-    pub fn execute(&mut self, raw_blob: &[u8]) -> Result<u32, XcqExecutorError> {
+    pub fn execute(&mut self, raw_blob: &[u8], input: &[u8]) -> Result<Vec<u8>, XcqExecutorError> {
         let blob = ProgramBlob::parse(&raw_blob[..])?;
         let module = Module::from_blob(&self.engine, &Default::default(), &blob)?;
         let instance_pre = self.linker.instantiate_pre(&module)?;
         let instance = instance_pre.instantiate()?;
 
-        let result = instance.call_typed::<(), u32>(&mut self.context, "main", ())?;
+        let input_ptr = if input.len() > 0 {
+            let ptr = instance
+                .sbrk(input.len() as u32)?
+                .expect("sbrk must be able to allocate memoery here");
+            instance
+                .write_memory(ptr, input)
+                .map_err(|e| XcqExecutorError::ExecutionError(polkavm::ExecutionError::Trap(e)))?;
+            ptr
+        } else {
+            0
+        };
 
+        // return value is u64 instead of (u32, u32) due to https://github.com/koute/polkavm/issues/116
+        let res = instance.call_typed::<(u32,), u64>(&mut self.context, "main", (input_ptr,))?;
+        let res_ptr = (res >> 32) as u32;
+        let res_len = (res & 0xffffffff) as u32;
+        let result = instance
+            .read_memory_into_vec(res_ptr, res_len)
+            .map_err(|e| XcqExecutorError::ExecutionError(polkavm::ExecutionError::Trap(e)))?;
         Ok(result)
     }
 }

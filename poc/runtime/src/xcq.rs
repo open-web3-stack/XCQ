@@ -2,13 +2,13 @@ use frame::deps::sp_api::decl_runtime_apis;
 use frame::prelude::*;
 use scale_info::prelude::{format, string::String};
 
-pub type XcqResponse = u32;
+pub type XcqResponse = Vec<u8>;
 pub type XcqError = String;
 pub type XcqResult = Result<XcqResponse, XcqError>;
 
 decl_runtime_apis! {
     pub trait XcqApi {
-        fn execute_query(query: Vec<u8>) -> XcqResult;
+        fn execute_query(query: Vec<u8>, input: Vec<u8>) -> XcqResult;
     }
 }
 
@@ -20,7 +20,7 @@ impl poc_executor::XcqExecutorContext for HostFunctions {
     }
 }
 
-pub fn execute_query(query: Vec<u8>) -> XcqResult {
+pub fn execute_query(query: Vec<u8>, input: Vec<u8>) -> XcqResult {
     let mut executor = poc_executor::XcqExecutor::new(Default::default(), HostFunctions);
-    executor.execute(&query).map_err(|e| format!("{:?}", e))
+    executor.execute(&query, &input).map_err(|e| format!("{:?}", e))
 }
