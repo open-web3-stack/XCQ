@@ -1,6 +1,9 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+extern crate alloc;
+
 pub use polkavm::{Config, Engine, Linker, Module, ProgramBlob};
+pub use alloc::vec::Vec;
 
 pub trait XcqExecutorContext {
     fn register_host_functions<T>(&mut self, linker: &mut Linker<T>);
