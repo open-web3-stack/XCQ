@@ -2,7 +2,7 @@ run: chainspec
 	bunx @acala-network/chopsticks@latest --config poc/runtime/chopsticks.yml --genesis output/chainspec.json
 
 poc-host: poc-guest
-	cargo run -p poc-host
+	RUST_LOG=trace cargo run -p poc-host
 
 poc-guest:
 	cd poc/guest; RUSTFLAGS="-C relocation-model=pie -C link-arg=--emit-relocs -C link-arg=--unique --remap-path-prefix=$(pwd)= --remap-path-prefix=$$HOME=~" cargo build -q --release --bin poc-guest -p poc-guest

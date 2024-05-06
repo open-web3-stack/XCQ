@@ -20,33 +20,26 @@ extern "C" {
 }
 
 #[polkavm_derive::polkavm_export]
-extern "C" fn main(ptr: u32) -> u32 {
+extern "C" fn main(ptr: u32) -> u64 {
     // ready first byte from ptr
     let byte = unsafe { core::ptr::read_volatile(ptr as *const u8) };
     match byte {
         0 => {
-            let val = Box::new("test".as_bytes());
+            let val = b"test";
+            let val = Box::new(*val);
             // leak val
             let val = Box::into_raw(val);
-            val as u32
-        },
+            (val as u32 as u64) << 32 | 4
+        }
         1 => {
-            let val = Box::new(0u32);
+            let val = unsafe { core::ptr::read_volatile((ptr + 1) as *const u8) };
+            let val = Box::new(val);
             let ptr = Box::into_raw(val);
             let res = unsafe { host_call(ptr as u32) };
             let ret = res + 1;
             let ptr = Box::into_raw(Box::new(ret));
-            ptr as u32
-        },
+            (ptr as u32 as u64) << 32 | 1
+        }
         _ => 0,
-    }
-}
-
-#[polkavm_derive::polkavm_export]
-extern "C" fn alloc(size: u32, align: u32) -> u32 {
-    unsafe {
-        let layout = alloc::alloc::Layout::from_size_align(size as usize, align as usize).unwrap();
-        let ptr = alloc::alloc::alloc(layout);
-        ptr as u32
     }
 }
