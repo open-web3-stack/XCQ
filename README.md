@@ -27,10 +27,10 @@ Cross-Consensus Query Language for Polkadot
 -   How to pass bytes from host to guest and vice versa?
 
     -   Pass bytes from host to guest:
-        Host calls `polkavm::Instance::sbrk` and `polkavm::Instance::write_memory` to allocate and write memory in guest, then returned ptr is passed as an argument to guest functions via `polkavm::Instance::call_typed`
+        Host calls [`polkavm::Instance::sbrk`](https://docs.rs/polkavm/latest/polkavm/struct.Instance.html#method.sbrk) and [`polkavm::Instance::write_memory`](https://docs.rs/polkavm/latest/polkavm/struct.Instance.html#method.write_memory) to allocate and write memory in guest, then returned ptr is passed as an argument to guest functions via [`polkavm::Instance::call_typed`](https://docs.rs/polkavm/latest/polkavm/struct.Instance.html#method.call_typed)
 
     -   Pass Bytes from guest to host:
-        First guest should set a global allocator like `polkavm_derive::LeakingAllocator`, then use `alloc::box::Box` to create heap vals like normal, finally leak heap ptr as return value. Since currently `ReturnTy` only support limited types like single integer value, we can construct a u64 with higher 32bits as ptr and lower 32bits as length. In host, we use `polkavm::Instance::read_memory_into_vec` to get result.
+        First guest should set a global allocator like [`polkavm_derive::LeakingAllocator`](https://docs.rs/polkavm-derive/latest/polkavm_derive/struct.LeakingAllocator.html), then use `alloc::box::Box` to create heap vals like normal, finally leak heap ptr as return value. Since currently `AbiTy` only support limited types like single integer value, we can construct a u64 with higher 32bits as ptr and lower 32bits as length. In host, we use [`polkavm::Instance::read_memory_into_vec`](https://docs.rs/polkavm/latest/polkavm/struct.Instance.html#method.read_memory_into_vec) to get result.
 
 -   (TODO) How to pass non-primitive data types between guest and host?
 
