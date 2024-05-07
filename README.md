@@ -24,7 +24,14 @@ Cross-Consensus Query Language for Polkadot
 
     Accessing host functions is similar to what you'do for WASM, annotate with polkavm's proc-marco `polkavm_import`[^3]. Similarly, the exports is annotated with `polkavm_export`. You can have a look at [guest program example-hello-world in polkavm official repo](https://github.com/koute/polkavm/tree/master/guest-programs/example-hello-world/src/main.rs).
 
--   (TODO) How to pass bytes from host to guest and vice versa?
+-   How to pass bytes from host to guest and vice versa?
+
+    -   Pass bytes from host to guest:
+        Host calls `polkavm::Instance::sbrk` and `polkavm::Instance::write_memory` to allocate and write memory in guest, then returned ptr is passed as an argument to guest functions via `polkavm::Instance::call_typed`
+
+    -   Pass Bytes from guest to host:
+        First guest should set a global allocator like `polkavm_derive::LeakingAllocator`, then use `alloc::box::Box` to create heap vals like normal, finally leak heap ptr as return value. Since currently `ReturnTy` only support limited types like single integer value, we can construct a u64 with higher 32bits as ptr and lower 32bits as length. In host, we use `polkavm::Instance::read_memory_into_vec` to get result.
+
 -   (TODO) How to pass non-primitive data types between guest and host?
 
 ## References

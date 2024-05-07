@@ -61,7 +61,7 @@ impl<Ctx: XcqExecutorContext> XcqExecutor<Ctx> {
         let input_ptr = if !input.is_empty() {
             let ptr = instance
                 .sbrk(input.len() as u32)?
-                .expect("sbrk must be able to allocate memoery here");
+                .expect("sbrk must be able to allocate memory here");
             instance
                 .write_memory(ptr, input)
                 .map_err(|e| XcqExecutorError::ExecutionError(polkavm::ExecutionError::Trap(e)))?;
