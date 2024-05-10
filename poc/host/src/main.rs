@@ -12,6 +12,20 @@ impl poc_executor::XcqExecutorContext for HostFunctions {
                 (data[0] + 1) as u32
             })
             .unwrap();
+        linker
+            .func_wrap("call_sbrk_indirectly", move |mut caller: Caller<_>, size: u32| -> u32 {
+                caller.sbrk(size).unwrap_or(0)
+            })
+            .unwrap();
+        linker
+            .func_wrap(
+                "host_write",
+                move |mut caller: Caller<_>, src: u32, size: u32, dst: u32| {
+                    let data = caller.read_memory_into_vec(src, size).unwrap();
+                    caller.write_memory(dst, &data).unwrap();
+                },
+            )
+            .unwrap();
     }
 }
 

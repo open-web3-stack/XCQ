@@ -1,12 +1,6 @@
 #![no_std]
 #![no_main]
 
-extern crate alloc;
-use alloc::boxed::Box;
-
-#[global_allocator]
-static ALLOCATOR: polkavm_derive::LeakingAllocator = polkavm_derive::LeakingAllocator;
-
 #[panic_handler]
 fn panic(_info: &core::panic::PanicInfo) -> ! {
     unsafe {
@@ -16,6 +10,8 @@ fn panic(_info: &core::panic::PanicInfo) -> ! {
 
 #[polkavm_derive::polkavm_import]
 extern "C" {
+    fn call_sbrk_indirectly(size: u32) -> u32;
+    fn host_write(src: u32, size: u32, dst: u32);
     fn host_call(ptr: u32) -> u32;
 }
 
@@ -28,19 +24,24 @@ extern "C" fn main(ptr: u32) -> u64 {
     match byte {
         0 => {
             let val = b"test";
-            let val = Box::new(*val);
-            // leak val
-            let ptr = Box::into_raw(val);
-            (ptr as u32 as u64) << 32 | 4
+            let out = unsafe { call_sbrk_indirectly(core::mem::size_of_val(val) as u32) };
+            if out == 0 {
+                return 0;
+            }
+            unsafe { host_write(val.as_ptr() as u32, val.len() as u32, out) };
+            (out as u64) << 32 | val.len() as u64
         }
         1 => {
-            let val = unsafe { core::ptr::read_volatile((ptr + 1) as *const u8) };
-            let val = Box::new(val);
-            let ptr = Box::into_raw(val);
-            let res = unsafe { host_call(ptr as u32) };
+            let res = unsafe { host_call(ptr + 1) };
             let ret = res + 1;
-            let ptr = Box::into_raw(Box::new(ret));
-            (ptr as u32 as u64) << 32 | 1
+            let size = core::mem::size_of_val(&ret) as u32;
+            let out = unsafe { call_sbrk_indirectly(size) };
+            if out == 0 {
+                return 0;
+            }
+            // not a real write to host, instead let the host read the memory from the guest's stack
+            unsafe { host_write(&ret as *const u32 as u32, size, out) };
+            (out as u64) << 32 | size as u64 / core::mem::size_of::<u32>() as u64
         }
         _ => 0,
     }
