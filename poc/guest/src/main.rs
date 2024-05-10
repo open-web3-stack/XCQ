@@ -10,9 +10,24 @@ fn panic(_info: &core::panic::PanicInfo) -> ! {
 
 #[polkavm_derive::polkavm_import]
 extern "C" {
-    fn call_sbrk_indirectly(size: u32) -> u32;
-    fn host_write(src: u32, size: u32, dst: u32);
+    fn sbrk_indirectly_impl(size: u32) -> u32;
+    fn host_write_impl(src: u32, size: u32, dst: u32);
     fn host_call(ptr: u32) -> u32;
+}
+
+#[polkavm_derive::polkavm_export]
+extern "C" fn sbrk_indirectly(size: usize) -> *mut u8 {
+    unsafe { sbrk_indirectly_impl(size as u32) as *mut u8 }
+}
+
+fn sbrk(size: usize) -> *mut u8 {
+    polkavm_derive::sbrk(size)
+}
+
+unsafe fn host_write(dst: *mut u8, val: &[u8]) {
+    let src = val.as_ptr();
+    let size = val.len();
+    unsafe { host_write_impl(src as u32, size as u32, dst as u32) }
 }
 
 // return value is u64 instead of (u32, u32) due to https://github.com/koute/polkavm/issues/116
@@ -24,23 +39,23 @@ extern "C" fn main(ptr: u32) -> u64 {
     match byte {
         0 => {
             let val = b"test";
-            let out = unsafe { call_sbrk_indirectly(core::mem::size_of_val(val) as u32) };
-            if out == 0 {
+            let size = core::mem::size_of_val(val);
+            let out = sbrk(size);
+            if out.is_null() {
                 return 0;
             }
-            unsafe { host_write(val.as_ptr() as u32, val.len() as u32, out) };
-            (out as u64) << 32 | val.len() as u64
+            unsafe { host_write(out, val) };
+            (out as u64) << 32 | size as u64 / core::mem::size_of::<u8>() as u64
         }
         1 => {
             let res = unsafe { host_call(ptr + 1) };
             let ret = res + 1;
-            let size = core::mem::size_of_val(&ret) as u32;
-            let out = unsafe { call_sbrk_indirectly(size) };
-            if out == 0 {
+            let size = core::mem::size_of_val(&ret);
+            let out = sbrk(size);
+            if out.is_null() {
                 return 0;
             }
-            // not a real write to host, instead let the host read the memory from the guest's stack
-            unsafe { host_write(&ret as *const u32 as u32, size, out) };
+            unsafe { host_write(out, &ret.to_le_bytes()) };
             (out as u64) << 32 | size as u64 / core::mem::size_of::<u32>() as u64
         }
         _ => 0,
