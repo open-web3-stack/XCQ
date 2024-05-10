@@ -10,26 +10,37 @@ fn panic(_info: &core::panic::PanicInfo) -> ! {
 
 #[polkavm_derive::polkavm_import]
 extern "C" {
-    fn sbrk_indirectly_impl(size: u32) -> u32;
-    fn host_write_impl(src: u32, size: u32, dst: u32);
-    fn host_call(ptr: u32) -> u32;
-}
-
-#[polkavm_derive::polkavm_export]
-extern "C" fn sbrk_indirectly(size: usize) -> *mut u8 {
-    unsafe { sbrk_indirectly_impl(size as u32) as *mut u8 }
+    fn host_call_impl(arg_ptr: u32, out_ptr: u32);
 }
 
 fn sbrk(size: usize) -> *mut u8 {
     polkavm_derive::sbrk(size)
 }
 
-unsafe fn host_write(dst: *mut u8, val: &[u8]) {
-    let src = val.as_ptr();
-    let size = val.len();
-    unsafe { host_write_impl(src as u32, size as u32, dst as u32) }
+#[repr(C)]
+struct GuestArgs {
+    arg0: u32,
+    arg1: u32,
 }
 
+#[repr(C)]
+struct GuestReturn {
+    data0: u64,
+    data1: u64,
+}
+
+fn host_call(input: GuestArgs, out: &mut GuestReturn) {
+    let arg_ptr = &input as *const GuestArgs;
+    let out_ptr = out as *mut GuestReturn;
+    // since args and return type should be ABI compatible with the host
+    // there is no need to specify the size for args and returned value
+    // note: assume the function is infallible for now
+    unsafe { host_call_impl(arg_ptr as u32, out_ptr as u32) };
+}
+// A poc guest function that shows the following usage:
+// 1. Host passes data that pre-allocated on the heap (via sbrk in host function) to the guest function
+// 2. Guest return value that allocated via sbrk, written via host reading from the guest stack and writes to the heap
+// 3. Guest calls host though ptr, and get the return value via u32 register
 // return value is u64 instead of (u32, u32) due to https://github.com/koute/polkavm/issues/116
 // higher 32bits are address, lower 32bits are size
 #[polkavm_derive::polkavm_export]
@@ -40,23 +51,21 @@ extern "C" fn main(ptr: u32) -> u64 {
         0 => {
             let val = b"test";
             let size = core::mem::size_of_val(val);
-            let out = sbrk(size);
-            if out.is_null() {
-                return 0;
-            }
-            unsafe { host_write(out, val) };
-            (out as u64) << 32 | size as u64 / core::mem::size_of::<u8>() as u64
+            let val_ptr = val.as_ptr();
+
+            (val_ptr as u64) << 32 | size as u64 / core::mem::size_of::<u8>() as u64
         }
         1 => {
-            let res = unsafe { host_call(ptr + 1) };
-            let ret = res + 1;
-            let size = core::mem::size_of_val(&ret);
-            let out = sbrk(size);
-            if out.is_null() {
-                return 0;
-            }
-            unsafe { host_write(out, &ret.to_le_bytes()) };
-            (out as u64) << 32 | size as u64 / core::mem::size_of::<u32>() as u64
+            let val = unsafe { core::ptr::read_volatile((ptr + 1) as *const u8) };
+            let guest_args = GuestArgs {
+                arg0: val as u32,
+                arg1: 1,
+            };
+            let mut ret: GuestReturn = unsafe { core::mem::zeroed() };
+            host_call(guest_args, &mut ret);
+            let res = ret.data0 as u32 + 1;
+            let size = core::mem::size_of_val(&res);
+            (&res as *const u32 as u64) << 32 | size as u64 / core::mem::size_of::<u32>() as u64
         }
         _ => 0,
     }
