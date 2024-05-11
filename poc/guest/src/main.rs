@@ -41,8 +41,8 @@ fn host_call<Args: Copy, Return: Copy>(input: Args, out: &mut Return) {
 }
 // A poc guest function that shows the following usage:
 // 1. Host passes data that pre-allocated on the heap (via sbrk in host function) to the guest function
-// 2. Guest return value that allocated via sbrk, written via host reading from the guest stack and writes to the heap
-// 3. Guest calls host though ptr, and get the return value via u32 register
+// 2. Guest calls host function, passing the address of args and return values on the stack
+// 3. Guest returns the value which located on the guest's stack, and then have the host to read it.
 // return value is u64 instead of (u32, u32) due to https://github.com/koute/polkavm/issues/116
 // higher 32bits are address, lower 32bits are size
 #[polkavm_derive::polkavm_export]

@@ -58,6 +58,7 @@ impl<Ctx: XcqExecutorContext> XcqExecutor<Ctx> {
         let instance_pre = self.linker.instantiate_pre(&module)?;
         let instance = instance_pre.instantiate()?;
 
+        // Args are passed via guest's heap
         let input_ptr = if !input.is_empty() {
             let ptr = instance
                 .sbrk(input.len() as u32)?
