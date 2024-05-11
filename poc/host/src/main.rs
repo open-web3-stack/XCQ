@@ -2,12 +2,14 @@ use polkavm::{Caller, Config, Linker};
 
 struct HostFunctions;
 
+#[derive(Clone, Copy)]
 #[repr(C)]
 struct GuestArgs {
     arg0: u32,
     arg1: u32,
 }
 
+#[derive(Clone, Copy)]
 #[repr(C)]
 struct GuestReturn {
     data0: u64,

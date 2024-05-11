@@ -17,21 +17,23 @@ fn sbrk(size: usize) -> *mut u8 {
     polkavm_derive::sbrk(size)
 }
 
+#[derive(Clone, Copy)]
 #[repr(C)]
 struct GuestArgs {
     arg0: u32,
     arg1: u32,
 }
 
+#[derive(Clone, Copy)]
 #[repr(C)]
 struct GuestReturn {
     data0: u64,
     data1: u64,
 }
 
-fn host_call(input: GuestArgs, out: &mut GuestReturn) {
-    let arg_ptr = &input as *const GuestArgs;
-    let out_ptr = out as *mut GuestReturn;
+fn host_call<Args: Copy, Return: Copy>(input: Args, out: &mut Return) {
+    let arg_ptr = &input as *const Args;
+    let out_ptr = out as *mut Return;
     // since args and return type should be ABI compatible with the host
     // there is no need to specify the size for args and returned value
     // note: assume the function is infallible for now
