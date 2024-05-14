@@ -13,10 +13,6 @@ extern "C" {
     fn host_call_impl(arg_ptr: u32, out_ptr: u32);
 }
 
-fn sbrk(size: usize) -> *mut u8 {
-    polkavm_derive::sbrk(size)
-}
-
 #[derive(Clone, Copy)]
 #[repr(C)]
 struct GuestArgs {
