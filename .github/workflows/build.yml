@@ -24,7 +24,7 @@ jobs:
       - name: Install toolchain
         uses: dtolnay/rust-toolchain@nightly
         with:
-          targets: wasm32-uknown-unknown
+          targets: wasm32-unknown-unknown
           components: rustfmt, clippy
 
       - name: Install toolchain targeting RV32E
