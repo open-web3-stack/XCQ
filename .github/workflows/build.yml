@@ -38,6 +38,9 @@ jobs:
       - name: Check format
         run: cargo fmt --all -- --check
 
+      - name: Generate poc-guest.polkavm
+        run: make poc-guest
+
       - name: Custom cargo check
         run: make check
 
