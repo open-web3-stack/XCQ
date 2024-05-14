@@ -24,15 +24,16 @@ jobs:
       - name: Install toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
+          targets: wasm32-uknown-unknown
           components: rustfmt, clippy
-
-      - uses: Swatinem/rust-cache@v2
 
       - name: Install toolchain targeting RV32E
         run: |
           curl -sL https://github.com/paritytech/rustc-rv32e-toolchain/releases/download/v1.1.0/rust-rve-nightly-2024-01-05-x86_64-unknown-linux-gnu.tar.zst -o rv32e.tar.zst
           tar --zstd -xf rv32e.tar.zst
           mv rve-nightly ~/.rustup/toolchains/
+
+      - uses: Swatinem/rust-cache@v2
 
       - name: Check format
         run: cargo fmt --all -- --check
