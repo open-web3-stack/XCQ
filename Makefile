@@ -19,8 +19,7 @@ check:
 	cd poc/guest; cargo check
 
 clippy:
-	cargo clippy --no-default-features
-	--target=wasm32-unknown-unknown -p poc-executor
+	cargo clippy --no-default-features --target=wasm32-unknown-unknown -p poc-executor
 	SKIP_WASM_BUILD= cargo clippy
 	cd poc/guest; cargo clippy
 
