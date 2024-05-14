@@ -2,15 +2,45 @@ use polkavm::{Caller, Config, Linker};
 
 struct HostFunctions;
 
+#[derive(Clone, Copy)]
+#[repr(C)]
+struct GuestArgs {
+    arg0: u32,
+    arg1: u32,
+}
+
+#[derive(Clone, Copy)]
+#[repr(C)]
+struct GuestReturn {
+    data0: u64,
+    data1: u64,
+}
+
 impl poc_executor::XcqExecutorContext for HostFunctions {
     fn register_host_functions<T>(&mut self, linker: &mut Linker<T>) {
         linker
-            .func_wrap("host_call", move |caller: Caller<_>, ptr: u32| -> u32 {
-                let mut data = [0u8];
-                let data = caller.read_memory_into_slice(ptr, &mut data).unwrap();
-                println!("host_call: {:?}", data);
-                (data[0] + 1) as u32
-            })
+            .func_wrap(
+                "host_call_impl",
+                move |mut caller: Caller<_>, args_ptr: u32, out_ptr: u32| {
+                    let args_ptr = args_ptr as *const GuestArgs;
+                    let args_size = core::mem::size_of::<GuestArgs>();
+                    // First we read the args from the guest memory
+                    let args_in_bytes = caller.read_memory_into_vec(args_ptr as u32, args_size as u32).unwrap();
+                    let args: GuestArgs = unsafe { std::ptr::read(args_in_bytes.as_ptr() as *const GuestArgs) };
+                    println!("host_call: arg0: {:?}", args.arg0);
+                    let res = GuestReturn {
+                        data0: (args.arg0 + 1) as u64,
+                        data1: args.arg1 as u64,
+                    };
+                    let res_bytes = unsafe {
+                        std::slice::from_raw_parts(
+                            &res as *const GuestReturn as *const u8,
+                            core::mem::size_of::<GuestReturn>(),
+                        )
+                    };
+                    caller.write_memory(out_ptr, res_bytes).unwrap();
+                },
+            )
             .unwrap();
     }
 }
