@@ -25,6 +25,7 @@ clippy:
 
 chainspec:
 	cargo build -p poc-runtime --release
+	mkdir -p output
 	cp target/release/wbuild/poc-runtime/poc_runtime.compact.compressed.wasm output
 	chain-spec-builder -c output/chainspec.json create -n poc-runtime -i poc-runtime -r ./output/poc_runtime.compact.compressed.wasm -s default
 	cat output/chainspec.json | jq '.properties = {}' > output/chainspec.json.tmp

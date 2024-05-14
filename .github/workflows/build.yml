@@ -38,6 +38,9 @@ jobs:
       - name: Check format
         run: cargo fmt --all -- --check
 
+      - name: Install polkatool
+        run: make tools
+
       - name: Generate poc-guest.polkavm
         run: make poc-guest
 
