@@ -13,6 +13,9 @@ tools:
 	cargo install --git https://github.com/koute/polkavm --force polkatool
 	cargo install --git https://github.com/paritytech/polkadot-sdk --tag polkadot-v1.9.0 --force staging-chain-spec-builder
 
+fmt:
+	cargo fmt --all -- --check
+
 check:
 	cargo check --no-default-features --target=wasm32-unknown-unknown -p poc-executor
 	SKIP_WASM_BUILD= cargo check
