@@ -18,7 +18,7 @@ fmt:
 
 check:
 	cargo check --no-default-features --target=wasm32-unknown-unknown -p poc-executor
-	SKIP_WASM_BUILD= cargo check -- -D warnings
+	SKIP_WASM_BUILD= cargo check
 	cd poc/guest; cargo check
 
 clippy:

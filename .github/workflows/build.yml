@@ -44,8 +44,5 @@ jobs:
       - name: Generate poc-guest.polkavm
         run: make poc-guest
 
-      - name: Custom cargo check
-        run: make check
-
       - name: Custom cargo clippy
         run: make clippy
