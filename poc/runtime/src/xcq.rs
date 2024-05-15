@@ -1,5 +1,6 @@
 use frame::deps::sp_api::decl_runtime_apis;
 use frame::prelude::*;
+#[allow(unused_imports)]
 use scale_info::prelude::{format, string::String};
 
 pub type XcqResponse = Vec<u8>;
