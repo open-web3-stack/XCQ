@@ -53,8 +53,8 @@ impl<Ctx: XcqExecutorContext> XcqExecutor<Ctx> {
     }
 
     pub fn execute(&mut self, raw_blob: &[u8], input: &[u8]) -> Result<Vec<u8>, XcqExecutorError> {
-        let blob = ProgramBlob::parse(raw_blob)?;
-        let module = Module::from_blob(&self.engine, &Default::default(), &blob)?;
+        let blob = ProgramBlob::parse(raw_blob.into())?;
+        let module = Module::from_blob(&self.engine, &Default::default(), blob)?;
         let instance_pre = self.linker.instantiate_pre(&module)?;
         let instance = instance_pre.instantiate()?;
 
