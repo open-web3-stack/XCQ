@@ -13,13 +13,22 @@ tools:
 	cargo install --git https://github.com/koute/polkavm --force polkatool
 	cargo install --git https://github.com/paritytech/polkadot-sdk --tag polkadot-v1.9.0 --force staging-chain-spec-builder
 
+fmt:
+	cargo fmt --all -- --check
+
 check:
 	cargo check --no-default-features --target=wasm32-unknown-unknown -p poc-executor
 	SKIP_WASM_BUILD= cargo check
 	cd poc/guest; cargo check
 
+clippy:
+	cargo clippy --no-default-features --target=wasm32-unknown-unknown -p poc-executor
+	SKIP_WASM_BUILD= cargo clippy -- -D warnings
+	cd poc/guest; cargo clippy
+
 chainspec:
 	cargo build -p poc-runtime --release
+	mkdir -p output
 	cp target/release/wbuild/poc-runtime/poc_runtime.compact.compressed.wasm output
 	chain-spec-builder -c output/chainspec.json create -n poc-runtime -i poc-runtime -r ./output/poc_runtime.compact.compressed.wasm -s default
 	cat output/chainspec.json | jq '.properties = {}' > output/chainspec.json.tmp

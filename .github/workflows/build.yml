@@ -1,0 +1,48 @@
+name: Check
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+
+env:
+  CARGO_TERM_COLOR: always
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install toolchain
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: wasm32-unknown-unknown
+          components: rustfmt, clippy
+
+      - name: Install toolchain targeting RV32E
+        run: |
+          curl -sL https://github.com/paritytech/rustc-rv32e-toolchain/releases/download/v1.1.0/rust-rve-nightly-2024-01-05-x86_64-unknown-linux-gnu.tar.zst -o rv32e.tar.zst
+          tar --zstd -xf rv32e.tar.zst
+          mv rve-nightly ~/.rustup/toolchains/
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Check format
+        run: cargo fmt --all -- --check
+
+      - name: Install polkatool
+        run: make tools
+
+      - name: Generate poc-guest.polkavm
+        run: make poc-guest
+
+      - name: Custom cargo clippy
+        run: make clippy
