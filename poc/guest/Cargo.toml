@@ -1,7 +1,0 @@
-[package]
-name = "poc-guest"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-polkavm-derive = { path = "../../vendor/polkavm/crates/polkavm-derive" }

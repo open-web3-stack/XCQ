@@ -1,0 +1,7 @@
+[workspace]
+resolver = "2"
+members = ["./*"]
+
+
+[workspace.dependencies]
+polkavm-derive = { path = "../../vendor/polkavm/crates/polkavm-derive" }

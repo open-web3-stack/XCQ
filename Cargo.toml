@@ -8,7 +8,7 @@ version = "0.1.0"
 [workspace]
 resolver = "2"
 members = [
-    "poc/host",
+    "poc/hosts/*",
     "poc/runtime",
     "poc/executor",
 
@@ -25,7 +25,7 @@ members = [
     "examples/example-fungibles",
     "examples/example-helloworld",
 ]
-exclude = ["poc/guest", "vendor"]
+exclude = ["poc/guests", "vendor"]
 
 [profile.release]
 # runtime requires unwinding.

@@ -1,13 +1,17 @@
+GUEST_RUST_FLAGS="-C relocation-model=pie -C link-arg=--emit-relocs -C link-arg=--unique --remap-path-prefix=$(pwd)= --remap-path-prefix=$HOME=~"
+
 run: chainspec
 	bunx @acala-network/chopsticks@latest --config poc/runtime/chopsticks.yml --genesis output/chainspec.json
 
-poc-host: poc-guest
-	RUST_LOG=trace cargo run -p poc-host
+poc-host-%: poc-guest-%
+	RUST_LOG=trace cargo run -p poc-host-$*
 
-poc-guest:
-	cd poc/guest; RUSTFLAGS="-C relocation-model=pie -C link-arg=--emit-relocs -C link-arg=--unique --remap-path-prefix=$(pwd)= --remap-path-prefix=$$HOME=~" cargo build -q --release --bin poc-guest -p poc-guest
+poc-guests: poc-guest-pass-custom-type poc-guest-query-balance
+
+poc-guest-%:
+	cd poc/guests; RUSTFLAGS=$(GUEST_RUST_FLAGS) cargo build -q --release --bin poc-guest-$* -p poc-guest-$*
 	mkdir -p output
-	polkatool link --run-only-if-newer -s poc/guest/target/riscv32ema-unknown-none-elf/release/poc-guest -o output/poc-guest.polkavm
+	polkatool link --run-only-if-newer -s poc/guests/target/riscv32ema-unknown-none-elf/release/poc-guest-$* -o output/poc-guest.polkavm
 
 tools: polkatool chain-spec-builder
 
@@ -26,11 +30,11 @@ check-wasm:
 
 check: check-wasm
 	SKIP_WASM_BUILD= cargo check
-	cd poc/guest; cargo check
+	cd poc/guests; cargo check
 
 clippy:
 	SKIP_WASM_BUILD= cargo clippy -- -D warnings
-	cd poc/guest; cargo clippy
+	cd poc/guests; cargo clippy
 
 chainspec:
 	cargo build -p poc-runtime --release

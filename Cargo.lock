@@ -2451,7 +2451,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "poc-host"
+name = "poc-host-pass-custom-type"
 version = "0.1.0"
 dependencies = [
  "env_logger",
@@ -2463,6 +2463,7 @@ dependencies = [
 name = "poc-runtime"
 version = "0.1.0"
 dependencies = [
+ "hex",
  "pallet-balances",
  "pallet-sudo",
  "pallet-timestamp",

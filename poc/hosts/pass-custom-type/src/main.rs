@@ -48,7 +48,7 @@ impl poc_executor::XcqExecutorContext for HostFunctions {
 fn main() {
     env_logger::init();
 
-    let raw_blob = include_bytes!("../../../output/poc-guest.polkavm");
+    let raw_blob = include_bytes!("../../../../output/poc-guest.polkavm");
 
     let config = Config::from_env().unwrap();
 
