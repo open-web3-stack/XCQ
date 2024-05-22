@@ -1,6 +1,20 @@
 [workspace]
 resolver = "2"
-members = ["poc/host", "poc/runtime", "poc/executor"]
+members = [
+    "poc/host",
+    "poc/runtime",
+    "poc/executor",
+    "xcq-executor",
+    "xcq-api",
+    "xcq-extension",
+    "xcq-extension-core",
+    "xcq-extension-fungibles",
+    "xcq-runtime-api",
+    "xcq-types",
+    "xcq-test-runner",
+    "examples/example-fungibles",
+    "examples/example-helloworld",
+]
 exclude = ["poc/guest", "vendor"]
 
 [profile.release]

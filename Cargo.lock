@@ -1107,6 +1107,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "example-fungibles"
+version = "0.1.0"
+
+[[package]]
+name = "example-helloworld"
+version = "0.1.0"
+
+[[package]]
 name = "expander"
 version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4891,6 +4899,38 @@ checksum = "05f360fc0b24296329c78fda852a1e9ae82de9cf7b27dae4b7f62f118f77b9ed"
 dependencies = [
  "tap",
 ]
+
+[[package]]
+name = "xcq-api"
+version = "0.1.0"
+
+[[package]]
+name = "xcq-executor"
+version = "0.1.0"
+
+[[package]]
+name = "xcq-extension"
+version = "0.1.0"
+
+[[package]]
+name = "xcq-extension-core"
+version = "0.1.0"
+
+[[package]]
+name = "xcq-extension-fungibles"
+version = "0.1.0"
+
+[[package]]
+name = "xcq-runtime-api"
+version = "0.1.0"
+
+[[package]]
+name = "xcq-test-runner"
+version = "0.1.0"
+
+[[package]]
+name = "xcq-types"
+version = "0.1.0"
 
 [[package]]
 name = "zerocopy"
