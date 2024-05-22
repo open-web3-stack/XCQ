@@ -3,11 +3,15 @@
 extern crate alloc;
 
 use alloc::vec::Vec;
+use alloc::string::String;
+use parity_scale_codec::{Decode, Encode};
+use scale_info::TypeInfo;
 
 pub type XcqResponse = Vec<u8>;
 
+#[derive(Debug, Clone, PartialEq, Eq, Encode, Decode, TypeInfo)]
 pub enum XcqError {
-    Custom(&'static str),
+    Custom(String),
 }
 
 pub type XcqResult = Result<XcqResponse, XcqError>;

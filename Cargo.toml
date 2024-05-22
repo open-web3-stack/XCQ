@@ -44,6 +44,8 @@ xcq-test-runner = { path = "xcq-test-runner", default-features = false }
 xcq-types = { path = "xcq-types", default-features = false }
 
 env_logger = { version = "0.11.3" }
+parity-scale-codec = { version = "3.6.12", default-features = false }
+scale-info = { version = "2.11.3", default-features = false }
 
 polkavm = { path = "vendor/polkavm/crates/polkavm", default-features = false }
 
