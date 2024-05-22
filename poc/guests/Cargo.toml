@@ -1,5 +1,5 @@
 [workspace]
-members = ["poc-guest-pass-custom-type", "poc-guest-query-balance"]
+members = ["pass-custom-type", "query-balance"]
 resolver = "2"
 
 
