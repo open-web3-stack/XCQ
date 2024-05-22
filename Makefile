@@ -20,8 +20,10 @@ chain-spec-builder:
 fmt:
 	cargo fmt --all
 
-check:
-	SKIP_WASM_BUILD= cargo check --no-default-features --target=wasm32-unknown-unknown
+check-wasm:
+	cargo check --no-default-features --target=wasm32-unknown-unknown -p xcq-api -p xcq-executor -p xcq-extension-core -p xcq-extension-fungibles -p xcq-extension -p xcq-primitives -p xcq-runtime-api -p xcq-types
+
+check: check-wasm
 	SKIP_WASM_BUILD= cargo check
 	cd poc/guest; cargo check
 

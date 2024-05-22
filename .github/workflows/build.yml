@@ -25,7 +25,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
-          components: rustfmt, clippy
+          components: rust-src, rustfmt, clippy
 
       - uses: Swatinem/rust-cache@v2
 
@@ -39,7 +39,7 @@ jobs:
         run: SKIP_WASM_BUILD= cargo clippy -- -D warnings
 
       - name: Check no-std
-        run: SKIP_WASM_BUILD= cargo check --no-default-features --target=wasm32-unknown-unknown
+        run: make check-wasm
 
       - name: Check std
         run: SKIP_WASM_BUILD= cargo check
