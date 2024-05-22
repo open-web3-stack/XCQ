@@ -17,12 +17,11 @@ fmt:
 	cargo fmt --all -- --check
 
 check:
-	cargo check --no-default-features --target=wasm32-unknown-unknown -p poc-executor
+	SKIP_WASM_BUILD= cargo check --no-default-features --target=wasm32-unknown-unknown
 	SKIP_WASM_BUILD= cargo check
 	cd poc/guest; cargo check
 
 clippy:
-	cargo clippy --no-default-features --target=wasm32-unknown-unknown -p poc-executor
 	SKIP_WASM_BUILD= cargo clippy -- -D warnings
 	cd poc/guest; cargo clippy
 

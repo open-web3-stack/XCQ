@@ -4921,8 +4921,16 @@ name = "xcq-extension-fungibles"
 version = "0.1.0"
 
 [[package]]
+name = "xcq-primitives"
+version = "0.1.0"
+
+[[package]]
 name = "xcq-runtime-api"
 version = "0.1.0"
+dependencies = [
+ "sp-api",
+ "xcq-primitives",
+]
 
 [[package]]
 name = "xcq-test-runner"

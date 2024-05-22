@@ -1,6 +1,10 @@
 [package]
 name = "xcq-extension-core"
-version = "0.1.0"
-edition = "2021"
+description = "Core extension for XCQ"
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+version.workspace = true
 
 [dependencies]

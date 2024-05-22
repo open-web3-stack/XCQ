@@ -1,17 +1,27 @@
+[workspace.package]
+authors = ["Acala Developers <hello@acala.network>"]
+edition = "2021"
+repository = "https://github.com/open-web3-stack/XCQ"
+license = "Apache-2.0"
+version = "0.1.0"
+
 [workspace]
 resolver = "2"
 members = [
     "poc/host",
     "poc/runtime",
     "poc/executor",
-    "xcq-executor",
+
     "xcq-api",
-    "xcq-extension",
+    "xcq-executor",
     "xcq-extension-core",
     "xcq-extension-fungibles",
+    "xcq-extension",
+    "xcq-primitives",
     "xcq-runtime-api",
-    "xcq-types",
     "xcq-test-runner",
+    "xcq-types",
+
     "examples/example-fungibles",
     "examples/example-helloworld",
 ]
@@ -23,6 +33,18 @@ panic = "unwind"
 opt-level = 3
 
 [workspace.dependencies]
+xcq-api = { path = "xcq-api", default-features = false }
+xcq-executor = { path = "xcq-executor", default-features = false }
+xcq-extension-core = { path = "xcq-extension-core", default-features = false }
+xcq-extension-fungibles = { path = "xcq-extension-fungibles", default-features = false }
+xcq-extension = { path = "xcq-extension", default-features = false }
+xcq-primitives = { path = "xcq-primitives", default-features = false }
+xcq-runtime-api = { path = "xcq-runtime-api", default-features = false }
+xcq-test-runner = { path = "xcq-test-runner", default-features = false }
+xcq-types = { path = "xcq-types", default-features = false }
+
 env_logger = { version = "0.11.3" }
 
 polkavm = { path = "vendor/polkavm/crates/polkavm", default-features = false }
+
+sp-api = { version = "29.0.0", default-features = false }

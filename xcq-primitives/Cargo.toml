@@ -1,0 +1,12 @@
+[package]
+name = "xcq-primitives"
+description = "Primitives for XCQ"
+authors.workspace = true
+edition.workspace = true
+repository.workspace = true
+license.workspace = true
+version.workspace = true
+
+[features]
+default = ["std"]
+std = []

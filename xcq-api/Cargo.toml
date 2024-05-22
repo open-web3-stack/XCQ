@@ -1,6 +1,10 @@
 [package]
 name = "xcq-api"
-version = "0.1.0"
-edition = "2021"
+description = "API between XCQ host and guest program"
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+version.workspace = true
 
 [dependencies]
