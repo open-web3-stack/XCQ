@@ -1,6 +1,6 @@
 [workspace]
+members = ["poc-guest-pass-custom-type", "poc-guest-query-balance"]
 resolver = "2"
-members = ["*"]
 
 
 [workspace.dependencies]
