@@ -5,5 +5,9 @@ extern crate alloc;
 use alloc::vec::Vec;
 
 pub type XcqResponse = Vec<u8>;
-pub type XcqError = ();
+
+pub enum XcqError {
+    Custom(&'static str),
+}
+
 pub type XcqResult = Result<XcqResponse, XcqError>;
