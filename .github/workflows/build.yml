@@ -36,7 +36,7 @@ jobs:
         run: mkdir -p output; touch output/poc-guest.polkavm
 
       - name: Cargo clippy
-        run: make clippy
+        run: SKIP_WASM_BUILD= cargo clippy -- -D warning
 
       - name: Check no-std
         run: SKIP_WASM_BUILD= cargo check --no-default-features --target=wasm32-unknown-unknown
