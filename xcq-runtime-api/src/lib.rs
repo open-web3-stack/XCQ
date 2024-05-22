@@ -1,14 +1,13 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
+#![cfg_attr(not(feature = "std"), no_std)]
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+extern crate alloc;
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+use alloc::vec::Vec;
+use sp_api::decl_runtime_apis;
+use xcq_primitives::XcqResult;
+
+decl_runtime_apis! {
+    pub trait XcqApi {
+        fn execute_query(query: Vec<u8>, input: Vec<u8>) -> XcqResult;
     }
 }

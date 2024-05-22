@@ -1,6 +1,20 @@
 [package]
 name = "xcq-runtime-api"
-version = "0.1.0"
-edition = "2021"
+description = "Runtime API for XCQ"
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+version.workspace = true
 
 [dependencies]
+xcq-primitives = { workspace = true }
+
+sp-api = { workspace = true }
+
+[features]
+default = ["std"]
+std = [
+    "xcq-primitives/std",
+    "sp-api/std",
+]
