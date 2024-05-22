@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -35,15 +35,40 @@ jobs:
       - name: Cargo clippy
         run: make clippy
 
+      - name: Check no-std
+        run: SKIP_WASM_BUILD= cargo check --no-default-features --target=wasm32-unknown-unknown
+
+      - name: Check std
+        run: SKIP_WASM_BUILD= cargo check
+
+  build-guest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install toolchain
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: wasm32-unknown-unknown
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: poc/guest -> poc/guest/target
+
       - name: Install toolchain targeting RV32E
         run: |
           curl -sL https://github.com/paritytech/rustc-rv32e-toolchain/releases/download/v1.1.0/rust-rve-nightly-2024-01-05-x86_64-unknown-linux-gnu.tar.zst -o rv32e.tar.zst
           tar --zstd -xf rv32e.tar.zst
           mv rve-nightly ~/.rustup/toolchains/
 
+      - name: Cargo clippy
+        run: cd poc/guest; cargo clippy
+
       - name: Install polkatool
         run: make polkatool
 
       - name: Generate poc-guest.polkavm
         run: make poc-guest
-

@@ -18,7 +18,7 @@ chain-spec-builder:
 	cargo install --git https://github.com/paritytech/polkadot-sdk --tag polkadot-v1.9.0 staging-chain-spec-builder
 
 fmt:
-	cargo fmt --all -- --check
+	cargo fmt --all
 
 check:
 	SKIP_WASM_BUILD= cargo check --no-default-features --target=wasm32-unknown-unknown
