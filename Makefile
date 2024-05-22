@@ -8,15 +8,21 @@ poc-host-%: poc-guest-%
 
 poc-guests: poc-guest-pass-custom-type poc-guest-query-balance
 
+dummy-poc-guests: dummy-poc-guest-pass-custom-type dummy-poc-guest-query-balance
+
 poc-guest-%:
 	cd poc/guests; RUSTFLAGS=$(GUEST_RUST_FLAGS) cargo build -q --release --bin poc-guest-$* -p poc-guest-$*
 	mkdir -p output
-	polkatool link --run-only-if-newer -s poc/guests/target/riscv32ema-unknown-none-elf/release/poc-guest-$* -o output/poc-guest.polkavm
+	polkatool link --run-only-if-newer -s poc/guests/target/riscv32ema-unknown-none-elf/release/poc-guest-$* -o output/poc-guest-$*.polkavm
+
+dummy-poc-guest-%:
+	mkdir -p output
+	touch output/poc-guest-$*.polkavm
 
 tools: polkatool chain-spec-builder
 
 polkatool:
-	cargo install --git https://github.com/koute/polkavm polkatool
+	cargo install --path vendor/polkavm/tools/polkatool
 
 chain-spec-builder:
 	cargo install --git https://github.com/paritytech/polkadot-sdk --tag polkadot-v1.9.0 staging-chain-spec-builder

@@ -10,18 +10,20 @@ fn panic(_info: &core::panic::PanicInfo) -> ! {
 
 #[polkavm_derive::polkavm_import]
 extern "C" {
-    fn query_balances(variant: u32, accounts_ptr: u32, accounts_len: u32) -> u64;
+    fn query_balance(variant: u32, account_id_ptr: u32, account_id_size: u32) -> u64;
 }
 // return value is u64 instead of (u32, u32) due to https://github.com/koute/polkavm/issues/116
 // higher 32bits are address, lower 32bits are size
 #[polkavm_derive::polkavm_export]
-extern "C" fn main(ptr: u32, len: u32) -> u64 {
+extern "C" fn main(ptr: u32, size: u32) -> u64 {
     // ready first byte from ptr
-    let byte_ptr = ptr as *const u8;
-    let variant = unsafe { core::ptr::read_volatile(byte_ptr) };
-    // TODO: need to figure out which encoding/decoding mechanism is appropriate, self-describing or just specify size or not  when not.
-    // Specifying type may bloat the code, should be researched.
-    // some principles: make host functions api more standardized
-    // like query_balance(variant, single_account_ptr);
-    unsafe { query_balances(variant as u32, byte_ptr.offset(1) as u32, len - 1) }
+    let mut sum = 0u64;
+    let variant = unsafe { core::ptr::read_volatile(ptr as *const u8) };
+    // hardcode since we know account_id_num
+    let account_id_size = (size - 1) / 2;
+    for i in 0..2 {
+        sum += unsafe { query_balance(variant as u32, ptr + 1 + (account_id_size * i), account_id_size) };
+    }
+    // (&sum as *const u64 as u64) << 32 | (core::mem::size_of::<u64>() as u64)
+    sum
 }

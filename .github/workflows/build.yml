@@ -32,8 +32,8 @@ jobs:
       - name: Check format
         run: cargo fmt --all -- --check
 
-      - name: Make dummpy poc-guest.polkavm file
-        run: mkdir -p output; touch output/poc-guest.polkavm
+      - name: Make dummpy poc-guest-%.polkavm files
+        run: make dummy-poc-guests
 
       - name: Cargo clippy
         run: SKIP_WASM_BUILD= cargo clippy -- -D warnings

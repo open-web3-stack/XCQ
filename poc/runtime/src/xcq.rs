@@ -21,26 +21,28 @@ impl poc_executor::XcqExecutorContext for HostFunctions {
     fn register_host_functions<T>(&mut self, linker: &mut poc_executor::Linker<T>) {
         linker
             .func_wrap(
-                "query_balances",
-                move |caller: poc_executor::Caller<_>, variant: u32, accounts_ptr: u32, accounts_len: u32| -> u64 {
+                "query_balance",
+                move |caller: poc_executor::Caller<_>,
+                      variant: u32,
+                      account_id_ptr: u32,
+                      account_id_size: u32|
+                      -> u64 {
                     // variant 0 means free balance
                     // variant 1 means reserved balance
                     // variant 2 means free+reserved
-                    let mut sum = 0u64;
-                    let account_id_in_bytes = caller
-                        .read_memory_into_vec(accounts_ptr, accounts_len)
+                    let account_id_encoded = caller
+                        .read_memory_into_vec(account_id_ptr, account_id_size)
                         .expect("read_memory_into_vec failed");
-                    let account_ids = Vec::<AccountId>::decode(&mut &account_id_in_bytes[..]).expect("decode failed");
-                    for account_id in account_ids {
-                        if variant == 0 {
-                            sum += Balances::free_balance(&account_id)
-                        } else if variant == 1 {
-                            sum += Balances::reserved_balance(&account_id)
-                        } else if variant == 2 {
-                            sum += Balances::free_balance(&account_id) + Balances::reserved_balance(&account_id)
-                        }
+                    let account_id = AccountId::decode(&mut &account_id_encoded[..]).expect("decode failed");
+                    if variant == 0 {
+                        Balances::free_balance(&account_id)
+                    } else if variant == 1 {
+                        Balances::reserved_balance(&account_id)
+                    } else if variant == 2 {
+                        Balances::free_balance(&account_id) + Balances::reserved_balance(&account_id)
+                    } else {
+                        panic!("invalid variant")
                     }
-                    sum
                 },
             )
             .unwrap();
@@ -71,8 +73,8 @@ mod tests {
         let alice_account: AccountId32 = AccountId32::from(alice_public);
         let bob_account: AccountId32 = AccountId32::from(bob_public);
         let mut data = vec![0u8];
-        let accounts = vec![alice_account, bob_account];
-        data.extend_from_slice(&accounts.encode());
+        data.extend_from_slice(&alice_account.encode());
+        data.extend_from_slice(&bob_account.encode());
         dbg!(hex::encode((raw_blob.to_vec(), data).encode()));
     }
     #[test]

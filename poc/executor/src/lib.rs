@@ -71,14 +71,14 @@ impl<Ctx: XcqExecutorContext> XcqExecutor<Ctx> {
             0
         };
 
-        // return value is u64 instead of (u32, u32) due to https://github.com/koute/polkavm/issues/116
         let res = instance.call_typed::<(u32, u32), u64>(&mut self.context, "main", (input_ptr, input.len() as u32))?;
+        // TODO: NEED TO FIX, failed to get return values via guest's stack
         // let res_ptr = (res >> 32) as u32;
-        // let res_len = (res & 0xffffffff) as u32;
+        // let res_size = (res & 0xffffffff) as u32;
         // let result = instance
-        //     .read_memory_into_vec(res_ptr, res_len)
+        //     .read_memory_into_vec(res_ptr, res_size)
         //     .map_err(|e| XcqExecutorError::ExecutionError(polkavm::ExecutionError::Trap(e)))?;
-        let res = res.to_le_bytes();
-        Ok(res.to_vec())
+        let result = res.to_le_bytes().to_vec();
+        Ok(result)
     }
 }
