@@ -8,3 +8,7 @@ repository.workspace = true
 version.workspace = true
 
 [dependencies]
+
+[features]
+default = ["std"]
+std = []
