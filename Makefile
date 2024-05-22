@@ -9,9 +9,13 @@ poc-guest:
 	mkdir -p output
 	polkatool link --run-only-if-newer -s poc/guest/target/riscv32ema-unknown-none-elf/release/poc-guest -o output/poc-guest.polkavm
 
-tools:
-	cargo install --git https://github.com/koute/polkavm --force polkatool
-	cargo install --git https://github.com/paritytech/polkadot-sdk --tag polkadot-v1.9.0 --force staging-chain-spec-builder
+tools: polkatool chain-spec-builder
+
+polkatool:
+	cargo install --git https://github.com/koute/polkavm polkatool
+
+chain-spec-builder:
+	cargo install --git https://github.com/paritytech/polkadot-sdk --tag polkadot-v1.9.0 staging-chain-spec-builder
 
 fmt:
 	cargo fmt --all -- --check
