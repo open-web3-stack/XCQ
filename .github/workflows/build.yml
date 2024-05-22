@@ -32,6 +32,11 @@ jobs:
       - name: Check format
         run: cargo fmt --all -- --check
 
+      - name: Make dummpy poc-guest.polkavm file
+        run:
+          mkdir -p output
+          touch output/poc-guest.polkavm
+
       - name: Cargo clippy
         run: make clippy
 
