@@ -2,8 +2,7 @@
 
 extern crate alloc;
 
-use alloc::vec::Vec;
-use alloc::string::String;
+use alloc::{string::String, vec::Vec};
 use parity_scale_codec::{Decode, Encode};
 use scale_info::TypeInfo;
 
