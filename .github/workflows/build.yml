@@ -62,6 +62,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: poc/guest -> poc/guest/target
+          cache-all-crates: true
 
       - name: Install toolchain targeting RV32E
         run: |
