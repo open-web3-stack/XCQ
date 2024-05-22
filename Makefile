@@ -9,15 +9,22 @@ poc-guest:
 	mkdir -p output
 	polkatool link --run-only-if-newer -s poc/guest/target/riscv32ema-unknown-none-elf/release/poc-guest -o output/poc-guest.polkavm
 
-tools:
-	cargo install --git https://github.com/koute/polkavm --force polkatool
-	cargo install --git https://github.com/paritytech/polkadot-sdk --tag polkadot-v1.9.0 --force staging-chain-spec-builder
+tools: polkatool chain-spec-builder
+
+polkatool:
+	cargo install --git https://github.com/koute/polkavm polkatool
+
+chain-spec-builder:
+	cargo install --git https://github.com/paritytech/polkadot-sdk --tag polkadot-v1.9.0 staging-chain-spec-builder
 
 fmt:
-	cargo fmt --all -- --check
+	cargo fmt --all
 
-check:
-	SKIP_WASM_BUILD= cargo check --no-default-features --target=wasm32-unknown-unknown
+check-wasm:
+	cargo check --no-default-features --target=wasm32-unknown-unknown -p xcq-api -p xcq-executor -p xcq-extension-core -p xcq-extension-fungibles -p xcq-extension -p xcq-primitives -p xcq-runtime-api -p xcq-types
+	SKIP_WASM_BUILD= cargo check --no-default-features --target=wasm32-unknown-unknown -p poc-runtime
+
+check: check-wasm
 	SKIP_WASM_BUILD= cargo check
 	cd poc/guest; cargo check
 

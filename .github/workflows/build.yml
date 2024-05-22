@@ -1,4 +1,4 @@
-name: Check
+name: Build
 
 on:
   push:
@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -22,10 +22,45 @@ jobs:
           submodules: recursive
 
       - name: Install toolchain
-        uses: dtolnay/rust-toolchain@nightly
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+          components: rust-src, rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Check format
+        run: cargo fmt --all -- --check
+
+      - name: Make dummpy poc-guest.polkavm file
+        run: mkdir -p output; touch output/poc-guest.polkavm
+
+      - name: Cargo clippy
+        run: SKIP_WASM_BUILD= cargo clippy -- -D warnings
+
+      - name: Check no-std
+        run: make check-wasm
+
+      - name: Check std
+        run: SKIP_WASM_BUILD= cargo check
+
+  build-guest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install toolchain
+        uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
           components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: poc/guest -> poc/guest/target
+          cache-all-crates: true
 
       - name: Install toolchain targeting RV32E
         run: |
@@ -33,16 +68,11 @@ jobs:
           tar --zstd -xf rv32e.tar.zst
           mv rve-nightly ~/.rustup/toolchains/
 
-      - uses: Swatinem/rust-cache@v2
-
-      - name: Check format
-        run: cargo fmt --all -- --check
+      - name: Cargo clippy
+        run: cd poc/guest; cargo clippy -- -D warnings
 
       - name: Install polkatool
-        run: make tools
+        run: make polkatool
 
       - name: Generate poc-guest.polkavm
         run: make poc-guest
-
-      - name: Custom cargo clippy
-        run: make clippy
