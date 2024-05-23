@@ -8,3 +8,10 @@ repository.workspace = true
 version.workspace = true
 
 [dependencies]
+clap = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+xcq-executor = { workspace = true, features = ["std"] }
+
+polkavm = { workspace = true }
