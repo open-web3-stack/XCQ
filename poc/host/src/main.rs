@@ -1,15 +1,17 @@
-use polkavm::{Config, Linker, Caller};
+use polkavm::{Caller, Config, Linker};
 
 struct HostFunctions;
 
 impl poc_executor::XcqExecutorContext for HostFunctions {
     fn register_host_functions<T>(&mut self, linker: &mut Linker<T>) {
-        linker.func_wrap("host_call", move |caller: Caller<_>, ptr: u32| -> u32 {
-            let mut data = [0u8];
-            let data = caller.read_memory_into_slice(ptr, &mut data).unwrap();
-            println!("host_call: {:?}", data);
-            return (data[0] + 1) as u32;
-        }).unwrap();
+        linker
+            .func_wrap("host_call", move |caller: Caller<_>, ptr: u32| -> u32 {
+                let mut data = [0u8];
+                let data = caller.read_memory_into_slice(ptr, &mut data).unwrap();
+                println!("host_call: {:?}", data);
+                (data[0] + 1) as u32
+            })
+            .unwrap();
     }
 }
 
