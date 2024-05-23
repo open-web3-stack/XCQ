@@ -8,7 +8,20 @@ repository.workspace = true
 version.workspace = true
 
 [dependencies]
+tracing = { workspace = true }
+
+polkavm = { workspace = true }
+
+xcq-api = { workspace = true }
+xcq-primitives = { workspace = true }
 
 [features]
 default = ["std"]
-std = []
+std = [
+    "tracing/std",
+
+    "polkavm/std",
+
+    "xcq-api/std",
+    "xcq-primitives/std",
+]

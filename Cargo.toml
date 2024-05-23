@@ -33,6 +33,7 @@ panic = "unwind"
 opt-level = 3
 
 [workspace.dependencies]
+# local
 xcq-api = { path = "xcq-api", default-features = false }
 xcq-executor = { path = "xcq-executor", default-features = false }
 xcq-extension-core = { path = "xcq-extension-core", default-features = false }
@@ -43,10 +44,18 @@ xcq-runtime-api = { path = "xcq-runtime-api", default-features = false }
 xcq-test-runner = { path = "xcq-test-runner", default-features = false }
 xcq-types = { path = "xcq-types", default-features = false }
 
-env_logger = { version = "0.11.3" }
-parity-scale-codec = { version = "3.6.12", default-features = false }
-scale-info = { version = "2.11.3", default-features = false }
-
+# polkavm
 polkavm = { path = "vendor/polkavm/crates/polkavm", default-features = false }
 
+# polkadot-sdk
 sp-api = { version = "29.0.0", default-features = false }
+
+# nostd
+parity-scale-codec = { version = "3.6.12", default-features = false, features = ["derive", "max-encoded-len"] }
+scale-info = { version = "2.11.3", default-features = false, features = ["derive"] }
+tracing = { version = "0.1.40", default-features = false }
+
+# std
+clap = { version = "4.5.4", features = ["derive"] }
+env_logger = { version = "0.11.3" }
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
