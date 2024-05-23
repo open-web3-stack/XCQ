@@ -42,7 +42,7 @@ fn host_call<Args: Copy, Return: Copy>(input: Args, out: &mut Return) {
 // return value is u64 instead of (u32, u32) due to https://github.com/koute/polkavm/issues/116
 // higher 32bits are address, lower 32bits are size
 #[polkavm_derive::polkavm_export]
-extern "C" fn main(ptr: u32) -> u64 {
+extern "C" fn main(ptr: u32, _size: u32) -> u64 {
     // ready first byte from ptr
     let byte = unsafe { core::ptr::read_volatile(ptr as *const u8) };
     match byte {
@@ -50,8 +50,7 @@ extern "C" fn main(ptr: u32) -> u64 {
             let val = b"test";
             let size = core::mem::size_of_val(val);
             let val_ptr = val.as_ptr();
-
-            (val_ptr as u64) << 32 | (size as u64 / core::mem::size_of::<u8>() as u64)
+            (val_ptr as u64) << 32 | size as u64
         }
         1 => {
             let val = unsafe { core::ptr::read_volatile((ptr + 1) as *const u8) };
@@ -62,8 +61,13 @@ extern "C" fn main(ptr: u32) -> u64 {
             let mut ret: GuestReturn = unsafe { core::mem::zeroed() };
             host_call(guest_args, &mut ret);
             let res = ret.data0 as u32 + 1;
-            let size = core::mem::size_of_val(&res);
-            (&res as *const u32 as u64) << 32 | (size as u64 / core::mem::size_of::<u32>() as u64)
+            let ptr = polkavm_derive::sbrk(core::mem::size_of_val(&res));
+            if ptr.is_null() {
+                return 0;
+            }
+            unsafe { core::ptr::write_volatile(ptr as *mut u32, res) };
+            let size = core::mem::size_of::<u32>();
+            (ptr as u64) << 32 | size as u64
         }
         _ => 0,
     }

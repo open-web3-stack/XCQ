@@ -1,5 +1,5 @@
 [package]
-name = "poc-host"
+name = "poc-host-pass-custom-type"
 version = "0.1.0"
 edition = "2021"
 
@@ -10,4 +10,4 @@ env_logger = { workspace = true }
 
 polkavm = { workspace = true }
 
-poc-executor = { path = "../executor" }
+poc-executor = { path = "../../executor" }

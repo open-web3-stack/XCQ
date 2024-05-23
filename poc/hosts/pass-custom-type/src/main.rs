@@ -38,6 +38,7 @@ impl poc_executor::XcqExecutorContext for HostFunctions {
                             core::mem::size_of::<GuestReturn>(),
                         )
                     };
+                    println!("host_call: res: {:?}", res_bytes);
                     caller.write_memory(out_ptr, res_bytes).unwrap();
                 },
             )
@@ -48,7 +49,7 @@ impl poc_executor::XcqExecutorContext for HostFunctions {
 fn main() {
     env_logger::init();
 
-    let raw_blob = include_bytes!("../../../output/poc-guest.polkavm");
+    let raw_blob = include_bytes!("../../../../output/poc-guest-pass-custom-type.polkavm");
 
     let config = Config::from_env().unwrap();
 
