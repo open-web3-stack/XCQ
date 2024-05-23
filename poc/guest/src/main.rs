@@ -47,9 +47,7 @@ extern "C" fn main(ptr: u32) -> u64 {
     match byte {
         0 => {
             let val = b"test";
-            let size = core::mem::size_of_val(val);
             let val_ptr = val.as_ptr();
-
             (val_ptr as u64) << 32 | 4
         }
         1 => {
@@ -61,7 +59,6 @@ extern "C" fn main(ptr: u32) -> u64 {
             let mut ret: GuestReturn = unsafe { core::mem::zeroed() };
             host_call(guest_args, &mut ret);
             let res = ret.data0 as u32 + 1;
-            let size = core::mem::size_of_val(&res);
             (&res as *const u32 as u64) << 32 | 1
         }
         _ => 0,
