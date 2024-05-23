@@ -24,6 +24,12 @@ extern "C" fn main(ptr: u32, size: u32) -> u64 {
     for i in 0..2 {
         sum += unsafe { query_balance(variant as u32, ptr + 1 + (account_id_size * i), account_id_size) };
     }
-    // (&sum as *const u64 as u64) << 32 | (core::mem::size_of::<u64>() as u64)
-    sum
+    let ptr = polkavm_derive::sbrk(core::mem::size_of_val(&sum));
+    if ptr.is_null() {
+        return 0;
+    }
+    unsafe {
+        core::ptr::write_volatile(ptr as *mut u64, sum);
+    }
+    (ptr as u64) << 32 | (core::mem::size_of::<u64>() as u64)
 }

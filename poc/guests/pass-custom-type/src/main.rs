@@ -50,7 +50,6 @@ extern "C" fn main(ptr: u32, _size: u32) -> u64 {
             let val = b"test";
             let size = core::mem::size_of_val(val);
             let val_ptr = val.as_ptr();
-
             (val_ptr as u64) << 32 | size as u64
         }
         1 => {
@@ -62,8 +61,13 @@ extern "C" fn main(ptr: u32, _size: u32) -> u64 {
             let mut ret: GuestReturn = unsafe { core::mem::zeroed() };
             host_call(guest_args, &mut ret);
             let res = ret.data0 as u32 + 1;
+            let ptr = polkavm_derive::sbrk(core::mem::size_of_val(&res));
+            if ptr.is_null() {
+                return 0;
+            }
+            unsafe { core::ptr::write_volatile(ptr as *mut u32, res) };
             let size = core::mem::size_of::<u32>();
-            (&res as *const u32 as u64) << 32 | size as u64
+            (ptr as u64) << 32 | size as u64
         }
         _ => 0,
     }
