@@ -4,21 +4,24 @@ Cross-Consensus Query Language for Polkadot
 
 ## Getting Started
 
-### Prerequites
+### Prerequisites
 
+-   Pull vendored PolkaVM repo: `git submodule update --init --recursive`
 -   Install [Rust toolchain targeting RISC-V RV32E](https://github.com/paritytech/rustc-rv32e-toolchain)
--   Install [bun](https://bun.sh) (or npm or yarn) to run [Chopsticks](https://github.com/AcalaNetwork/chopsticks)
+-   Install [bun](https://bun.sh) (or npm or yarn) to use [Chopsticks](https://github.com/AcalaNetwork/chopsticks) to run the chain
 -   Install [jq](https://stedolan.github.io/jq/)
+-   Install polkatool[^1] (for relinking the standard RV32E ELF to a PolkaVM blob) and chain-spec-builder[^2](for building chainspec from a wasm): `make tools`
 
-### Run PoC
+### Run E2E PoC
 
-1.  Install polkatool[^1](for relinking to .polkavm blob from a standard RV32E ELF) and chain-spec-builder[^2](for building chainspec from a wasm): `make tools`
-2.  Build a PolkaVM guest program[^1]: `make poc-guest`
-3.  Run a PoC and expected runtime structure:
-    -   Run a simple host program which executes guest program (with trace turned on): `make poc-host`
-    -   Run a runtime with `execute_query` api which executes guest program bytes via [chopsticks](https://github.com/AcalaNetwork/chopsticks): `make run`
+This End-to-End PoC is to query some accounts' balances (the number of accounts is hardcoded for now) and get the sum.
 
-## Explainations
+1. Build PoC guest program[^1]: `make poc-guest-query-balance`
+2. Run the PoC runtime: `make run`
+3. Call runtime api `XcqApi_execute_query` with [encoded guest program and account_ids](https://github.com/open-web3-stack/XCQ/blob/0fb3a86f9de0c9853681d625680d7479d2d944e0/poc/runtime/src/xcq.rs#L64-L79) via [Polkadot/Substrate Portal](https://polkadot.js.org/apps)
+4. [Check the result](https://github.com/open-web3-stack/XCQ/blob/0fb3a86f9de0c9853681d625680d7479d2d944e0/poc/runtime/src/xcq.rs#L80-L89)
+
+## Explanations
 
 ### How guest program communicate with host?
 
@@ -47,7 +50,7 @@ Specific Usages in Details:
     Before calling guest function, host calls `sbrk` and [`polkavm::Instance::write_memory`](https://docs.rs/polkavm/latest/polkavm/struct.Instance.html#method.write_memory) to allocate and write memory, then pass ptr as argument to guest via [`polkavm::Instance::call_typed`](https://docs.rs/polkavm/latest/polkavm/struct.Instance.html#method.call_typed).
 
 -   Return value from guest to host (at the end of the host function):
-    In this case, it's viable to put the returned value on stack or heap. We recommend put the data on stack to prevent unnecessary memory allocation. The guest will return a `u64` which has the higher 32 bits as ptr and lower 32 bits as size due the limit of the ABI, and then have the host [`read_memory_into_vec`](https://docs.rs/polkavm/latest/polkavm/struct.Instance.html#method.read_memory_into_vec) to get the result.
+    In this case, We recommend put the data on heap since put it on stack seems an UB (we are not sure yet). The guest will `sbrk` the proper space for placing the return value, and write to it, then return a `u64` which has the higher 32 bits as ptr and lower 32 bits as size due the limit of the ABI, and then have the host [`read_memory_into_vec`](https://docs.rs/polkavm/latest/polkavm/struct.Instance.html#method.read_memory_into_vec) to get the result.
 
 -   Call host function from guest, pass some data and get back some data (during the execution of the host function):
     We construct arguments and returned values on the stack, then we pass the address of them to host to have the host read, process input and write output to the given address.
