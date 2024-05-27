@@ -1,0 +1,11 @@
+[package]
+name = "poc-extension"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+poc-executor = { path = "../executor", default-features = false }
+
+[features]
+default = ["std"]
+std = ["poc-executor/std"]

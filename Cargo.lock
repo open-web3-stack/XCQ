@@ -2522,6 +2522,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "poc-extension"
+version = "0.1.0"
+dependencies = [
+ "poc-executor",
+]
+
+[[package]]
 name = "poc-host-pass-custom-type"
 version = "0.1.0"
 dependencies = [

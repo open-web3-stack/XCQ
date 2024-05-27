@@ -11,6 +11,7 @@ members = [
     "poc/hosts/*",
     "poc/runtime",
     "poc/executor",
+    "poc/extensions",
 
     "xcq-api",
     "xcq-executor",
@@ -51,8 +52,13 @@ polkavm = { path = "vendor/polkavm/crates/polkavm", default-features = false }
 sp-api = { version = "29.0.0", default-features = false }
 
 # nostd
-parity-scale-codec = { version = "3.6.12", default-features = false, features = ["derive", "max-encoded-len"] }
-scale-info = { version = "2.11.3", default-features = false, features = ["derive"] }
+parity-scale-codec = { version = "3.6.12", default-features = false, features = [
+    "derive",
+    "max-encoded-len",
+] }
+scale-info = { version = "2.11.3", default-features = false, features = [
+    "derive",
+] }
 tracing = { version = "0.1.40", default-features = false }
 
 # std
