@@ -10,6 +10,7 @@ mod macros;
 type ExtensionTypeId = u32;
 type Error = String;
 
+// Runtime Side
 // General trait for all extensions
 pub trait Extension {
     fn type_id(&self) -> ExtensionTypeId;
@@ -17,8 +18,8 @@ pub trait Extension {
 }
 
 // Example extension trait
-pub trait ExtensionCoreType {
-    // TODO: Should host functions impls be associated types or generic types?
+// Implemented by Runtime
+pub trait ExtensionCore {
     type HostFunctions;
     // TODO: should be generated automatically by macro
     const EXTENSION_TYPE_ID: ExtensionTypeId;
