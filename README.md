@@ -29,7 +29,7 @@ Polkavm adopts a similar approach for guest accessing host functions to WASM.[^3
 In guest program, the host functions declarations are annotated with polkavm's proc-marco [`polkavm_import`](https://docs.rs/polkavm-derive/latest/polkavm_derive/attr.polkavm_import.html).
 The definitions of guest functions are annotated with [`polkavm_export`](https://docs.rs/polkavm-derive/latest/polkavm_derive/attr.polkavm_export.html).
 In host program, we register host functions through [`linker.func_wrap`](https://docs.rs/polkavm/latest/polkavm/struct.Linker.html#method.func_wrap)
-Due to the limit of ABI, the signature of the those functions are limited to some primitive numeric types like `u32`, `i32`, `u64`(represented by two `u32` register).
+Due to the limit of ABI, the signatures of those functions are limited to some primitive numeric types like `u32`, `i32`, `u64`(represented by two `u32` register).
 
 ### How to pass bytes from host to guest and vice versa?
 
@@ -41,16 +41,16 @@ In general, we can pass bytes between host and guest via guest's stack or heap. 
 
     According to the PolkaVM's doc[^6], memory allocated through `sbrk` can only be freed once the program finishes execution and its whole memory is cleared.
 
-    Note: Including a global allocator in guest will cause the guest program bloats, which is unacceptable because we need keep the guest program as small as possible to store it on chain compactly.
+    Note: Including a global allocator in guest will cause the guest program bloats, which is unacceptable because we need to keep the guest program as small as possible to store it on chain compactly.
 
 Specific Usages in Details:
 
--   Pass arguements (at the entrypoint of the host function):
-    Currently we only support passing argumensts via heap memory.
+-   Pass arguments (at the entrypoint of the host function):
+    Currently we only support passing arguments via heap memory.
     Before calling guest function, host calls `sbrk` and [`polkavm::Instance::write_memory`](https://docs.rs/polkavm/latest/polkavm/struct.Instance.html#method.write_memory) to allocate and write memory, then pass ptr as argument to guest via [`polkavm::Instance::call_typed`](https://docs.rs/polkavm/latest/polkavm/struct.Instance.html#method.call_typed).
 
 -   Return value from guest to host (at the end of the host function):
-    In this case, We recommend put the data on heap since put it on stack seems an UB (we are not sure yet). The guest will `sbrk` the proper space for placing the return value, and write to it, then return a `u64` which has the higher 32 bits as ptr and lower 32 bits as size due the limit of the ABI, and then have the host [`read_memory_into_vec`](https://docs.rs/polkavm/latest/polkavm/struct.Instance.html#method.read_memory_into_vec) to get the result.
+    In this case, We recommend to put the data on heap since putting it on stack seems an UB (we are not sure yet). The guest will `sbrk` the proper space for placing the return value, and write to it, then return a `u64` which has the higher 32 bits as ptr and lower 32 bits as size due the limit of the ABI, and then have the host [`read_memory_into_vec`](https://docs.rs/polkavm/latest/polkavm/struct.Instance.html#method.read_memory_into_vec) to get the result.
 
 -   Call host function from guest, pass some data and get back some data (during the execution of the host function):
     We construct arguments and returned values on the stack, then we pass the address of them to host to have the host read, process input and write output to the given address.
