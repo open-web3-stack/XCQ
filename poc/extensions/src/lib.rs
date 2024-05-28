@@ -11,31 +11,54 @@ type ExtensionTypeId = u32;
 type Error = String;
 
 // Runtime Side
-// General trait for all extensions
-pub trait Extension {
+// General trait for all host extension interfaces
+pub trait HostInterface {
     fn type_id(&self) -> ExtensionTypeId;
     fn methods(&self) -> Vec<String>;
 }
 
 // Example extension trait
 // Implemented by Runtime
-pub trait ExtensionCore {
-    type HostFunctions;
+pub trait SomeHostInterface {
+    type HostFunctions: XcqExecutorContext;
     // TODO: should be generated automatically by macro
     const EXTENSION_TYPE_ID: ExtensionTypeId;
-    fn core_fn(&self) -> Result<(), Error>;
+    fn some_host_function() -> XcqResult;
+    fn another_host_function() -> XcqResult;
+}
+
+// Guest Side
+pub trait Guest {
+    fn type_id(&self) -> ExtensionTypeId;
+    fn methods(&self) -> Vec<String>;
+}
+
+struct GuestImpl {
+    program: Vec<u8>,
+}
+
+impl Guest for GuestImpl {
+    fn type_id(&self) -> ExtensionTypeId {
+        unimplemented!()
+    }
+    fn methods(&self) -> Vec<String> {
+        unimplemented!()
+    }
 }
 
 type Method = String;
 // Which should be implemented by the runtime
 pub trait ExtensionsExecutor {
     type SafeGuard: PermController;
+    fn register_host_interface<H: HostInterface>(&mut self, host_interface: H) -> Result<(), Error>;
     fn support_extension_types() -> Result<Vec<ExtensionTypeId>, Error>;
-    fn discover_methods<E: Extension>(extension: &E) -> Result<Vec<Method>, Error>;
-    fn execute_method<E: Extension>(&self, extension: E, method: Method, input: Vec<u8>) -> XcqResult;
+    // extension type is opaque to the runtime
+    // or we parse it before
+    fn discover_methods<G: Guest>(guest: G) -> Result<Vec<Method>, Error>;
+    fn execute_method<G: Guest>(&self, guest: G, method: Method, input: Vec<u8>) -> XcqResult;
 }
 pub trait PermController {
-    fn check<E: Extension>(extension: &E, method: &Method) -> Result<(), Error>;
+    fn check<G: Guest>(extension: &E, method: &Method) -> Result<(), Error>;
 }
 
 struct SimplePermController;
@@ -52,24 +75,27 @@ impl ExtensionsExecutor for ExtensionApiImpl {
     fn support_extension_types() -> Result<Vec<ExtensionTypeId>, Error> {
         unimplemented!()
     }
-    // TODO: Actually, extension is opaque to the runtime,
-    // we need to use polkavm discover symbols to get the methods
-    fn discover_methods<E: Extension>(extension: &E) -> Result<Vec<Method>, Error> {
-        Ok(extension.methods())
+    fn register_host_interface<H: HostInterface>(&mut self, host_interface: H) -> Result<(), Error> {
+        unimplemented!()
     }
-    fn execute_method<E: Extension>(&self, extension: E, method: Method, input: Vec<u8>) -> XcqResult {
+    fn discover_methods<G: Guest>(guest_impl: G) -> Result<Vec<Method>, Error> {
+        // TODO: extension is opaque to the runtime,
+        // we need to use polkavm discover symbols to get the methods
+        unimplemented!()
+    }
+    fn execute_method<G: Guest>(&self, guest: G, method: Method, input: Vec<u8>) -> XcqResult {
         // Check if the extension is supported
         let extension_ids = Self::support_extension_types()?;
-        if !extension_ids.contains(&extension.type_id()) {
+        if !extension_ids.contains(&guest.type_id()) {
             return Err("Extension not supported".to_string());
         }
         // Check if the method is supported
-        let methods = Self::discover_methods(&extension)?;
+        let methods = Self::discover_methods(&guest)?;
         if !methods.contains(&method) {
             return Err("Method not supported".to_string());
         }
         // Check if the method pass the safe guard
-        Self::SafeGuard::check(&extension, &method)?;
+        Self::SafeGuard::check(&guest, &method)?;
         // TODO: Execute the method
         Ok(vec![])
     }
