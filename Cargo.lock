@@ -2526,6 +2526,7 @@ name = "poc-extension"
 version = "0.1.0"
 dependencies = [
  "poc-executor",
+ "scale-info",
 ]
 
 [[package]]

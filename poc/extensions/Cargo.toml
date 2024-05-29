@@ -4,8 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+scale-info = { version = "2.6.0", default-features = false }
 poc-executor = { path = "../executor", default-features = false }
 
 [features]
 default = ["std"]
-std = ["poc-executor/std"]
+std = ["scale-info/std", "poc-executor/std"]
