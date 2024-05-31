@@ -4,9 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+parity-scale-codec = { version = "3.6.12", default-features = false }
 scale-info = { version = "2.6.0", default-features = false }
 poc-executor = { path = "../executor", default-features = false }
 
 [features]
 default = ["std"]
-std = ["scale-info/std", "poc-executor/std"]
+std = ["parity-scale-codec/std", "scale-info/std", "poc-executor/std"]

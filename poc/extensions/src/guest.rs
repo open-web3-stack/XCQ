@@ -4,9 +4,9 @@ pub trait Guest {
     fn program(&self) -> &[u8];
 }
 
-struct GuestImpl {
-    extension_type: ExtensionTypeId,
-    program: Vec<u8>,
+pub struct GuestImpl {
+    pub extension_type: ExtensionTypeId,
+    pub program: Vec<u8>,
 }
 
 impl Guest for GuestImpl {
@@ -25,9 +25,9 @@ pub trait Input {
     fn args(&self) -> &[u8];
 }
 
-struct InputImpl {
-    method: Method,
-    args: Vec<u8>,
+pub struct InputImpl {
+    pub method: Method,
+    pub args: Vec<u8>,
 }
 
 impl Input for InputImpl {
