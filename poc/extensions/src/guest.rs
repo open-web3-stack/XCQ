@@ -1,4 +1,4 @@
-use super::ExtensionTypeId;
+use crate::ExtensionTypeId;
 pub trait Guest {
     fn type_id(&self) -> ExtensionTypeId;
     fn program(&self) -> &[u8];

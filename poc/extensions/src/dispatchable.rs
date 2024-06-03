@@ -1,8 +1,9 @@
 pub trait Dispatchable {
-    type MethodName;
-    type MethodIndex;
-    fn query_method(method_name: Self::MethodName) -> Self::MethodIndex;
-    fn dispatch(self) -> Vec<u8>;
+    fn dispatch(self) -> Result<Vec<u8>, DispatchError>;
 }
 
 pub type ExtensionTypeId = u64;
+
+pub enum DispatchError {
+    InvalidMethod,
+}
