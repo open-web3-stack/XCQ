@@ -1,5 +1,4 @@
-use crate::DispatchError;
-use crate::Dispatchable;
+use crate::{DispatchError, Dispatchable};
 use crate::{ExtensionId, ExtensionIdTy};
 use core::marker::PhantomData;
 use parity_scale_codec::{Decode, Encode};
@@ -13,6 +12,7 @@ pub trait ExtensionFungibles: ExtensionId {
 // type Call;
 
 mod generated_by_extension_decl {
+
     use super::*;
     #[derive(Decode)]
     pub enum ExtensionFungiblesCall<Impl: ExtensionFungibles> {

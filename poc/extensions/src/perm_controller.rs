@@ -1,10 +1,18 @@
+use crate::ExtensionIdTy;
 pub trait PermController {
-    fn check<G: Guest>(extension: &E, method: &Method) -> Result<(), Error>;
+    fn is_allowed(extension_id: ExtensionIdTy, call: Vec<u8>, source: InvokeSource) -> bool;
 }
 
-struct SimplePermController;
-impl PermController for SimplePermController {
-    fn check<E: Extension>(extension: &E, method: &Method) -> Result<(), Error> {
-        unimplemented!()
+#[derive(Clone)]
+pub enum InvokeSource {
+    RuntimeAPI,
+    XCM,
+    Extrinsic,
+    Runtime,
+}
+
+impl PermController for () {
+    fn is_allowed(_extension_id: ExtensionIdTy, _call: Vec<u8>, _context: InvokeSource) -> bool {
+        true
     }
 }

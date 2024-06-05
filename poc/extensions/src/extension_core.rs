@@ -1,5 +1,4 @@
-use crate::DispatchError;
-use crate::Dispatchable;
+use crate::{DispatchError, Dispatchable};
 use crate::{ExtensionId, ExtensionIdTy};
 use parity_scale_codec::{Decode, Encode};
 
@@ -15,7 +14,8 @@ pub trait Config {
     type ResultOfSomeHostFunction: Encode;
 }
 
-// #[extension(ExtensionFungibles)]
+// #[extension(ExtensionCore)]
+// #[disallow_context(XCM)]
 // type Call;
 mod generated_by_extension_decl {
     use super::*;

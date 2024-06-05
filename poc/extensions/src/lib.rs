@@ -20,6 +20,9 @@ mod macros;
 mod extension_core;
 mod extension_fungibles;
 
+mod perm_controller;
+pub use perm_controller::{InvokeSource, PermController};
+
 mod guest;
 pub use guest::{Guest, Input, Method};
 
@@ -31,27 +34,42 @@ trait ExtensionTuple {
     fn dispatch(extension_id: ExtensionIdTy, data: Vec<u8>) -> Result<Vec<u8>, ExtensionError>;
 }
 
-struct HostFunctions<E: ExtensionTuple> {
-    phantom: PhantomData<E>,
+pub struct Context<E: ExtensionTuple, P: PermController> {
+    invoke_source: InvokeSource,
+    phantom_p: PhantomData<P>,
+    phantom_e: PhantomData<E>,
 }
 
-impl<E: ExtensionTuple> XcqExecutorContext for HostFunctions<E> {
+impl<E: ExtensionTuple, P: PermController> Context<E, P> {
+    pub fn new(invoke_source: InvokeSource) -> Self {
+        Self {
+            invoke_source,
+            phantom_p: PhantomData,
+            phantom_e: PhantomData,
+        }
+    }
+}
+
+impl<E: ExtensionTuple, P: PermController> XcqExecutorContext for Context<E, P> {
     fn register_host_functions<T>(&mut self, linker: &mut poc_executor::Linker<T>) {
+        let invoke_source = self.invoke_source.clone();
         linker
             .func_wrap(
                 "_",
-                |mut caller: poc_executor::Caller<_>,
-                 extension_id: u64,
-                 call_ptr: u32,
-                 call_len: u32,
-                 res_ptr: u32|
-                 -> u32 {
+                move |mut caller: poc_executor::Caller<_>,
+                      extension_id: u64,
+                      call_ptr: u32,
+                      call_len: u32,
+                      res_ptr: u32|
+                      -> u32 {
                     // useful closure to handle early return
                     let mut func_with_result = || -> Result<u32, ExtensionError> {
-                        // TODO: first check if the caller has the permission to call the extension
                         let call_bytes = caller
                             .read_memory_into_vec(call_ptr, call_len)
                             .map_err(|_| ExtensionError::PolkavmError)?;
+                        if P::is_allowed(extension_id, call_bytes.clone(), invoke_source) {
+                            return Err(ExtensionError::PermissionError);
+                        }
                         let res_bytes = E::dispatch(extension_id, call_bytes)?;
                         caller
                             .write_memory(res_ptr, &res_bytes[..])
@@ -65,16 +83,14 @@ impl<E: ExtensionTuple> XcqExecutorContext for HostFunctions<E> {
     }
 }
 
-struct ExtensionsExecutor<E: ExtensionTuple> {
-    executor: XcqExecutor<HostFunctions<E>>,
+struct ExtensionsExecutor<E: ExtensionTuple, P: PermController> {
+    executor: XcqExecutor<Context<E, P>>,
 }
-impl<E: ExtensionTuple> ExtensionsExecutor<E> {
+impl<E: ExtensionTuple, P: PermController> ExtensionsExecutor<E, P> {
     #[allow(dead_code)]
-    pub fn new() -> Self {
-        let host_functions = HostFunctions::<E> {
-            phantom: core::marker::PhantomData,
-        };
-        let executor = XcqExecutor::new(Default::default(), host_functions);
+    pub fn new(source: InvokeSource) -> Self {
+        let context = Context::<E, P>::new(source);
+        let executor = XcqExecutor::new(Default::default(), context);
         Self { executor }
     }
     // In PoC, guest and input are opaque to the runtime
@@ -174,7 +190,7 @@ mod tests {
     // TODO: refine the test
     #[test]
     fn extensions_executor_fails() {
-        let mut executor = ExtensionsExecutor::<Extensions>::new();
+        let mut executor = ExtensionsExecutor::<Extensions, ()>::new(InvokeSource::RuntimeAPI);
         let guest = GuestImpl {
             program: vec![0, 1, 2, 3],
         };
