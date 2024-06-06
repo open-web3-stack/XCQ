@@ -54,9 +54,9 @@ fn main() {
     let config = Config::from_env().unwrap();
 
     let mut executor: poc_executor::XcqExecutor<HostFunctions> = poc_executor::XcqExecutor::new(config, HostFunctions);
-    let res = executor.execute(raw_blob, &[0u8]).unwrap();
+    let res = executor.execute(raw_blob, "main", &[0u8]).unwrap();
     println!("Result: {:?}", res);
 
-    let res = executor.execute(raw_blob, &[1u8, 40u8]).unwrap();
+    let res = executor.execute(raw_blob, "main", &[1u8, 40u8]).unwrap();
     println!("Result: {:?}", res);
 }

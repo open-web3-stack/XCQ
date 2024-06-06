@@ -2522,6 +2522,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "poc-extension"
+version = "0.1.0"
+dependencies = [
+ "impl-trait-for-tuples",
+ "parity-scale-codec",
+ "poc-executor",
+ "scale-info",
+]
+
+[[package]]
 name = "poc-host-pass-custom-type"
 version = "0.1.0"
 dependencies = [

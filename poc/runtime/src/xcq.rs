@@ -51,7 +51,7 @@ impl poc_executor::XcqExecutorContext for HostFunctions {
 
 pub fn execute_query(query: Vec<u8>, input: Vec<u8>) -> XcqResult {
     let mut executor = poc_executor::XcqExecutor::new(Default::default(), HostFunctions);
-    executor.execute(&query, &input).map_err(|e| format!("{:?}", e))
+    executor.execute(&query, "main", &input).map_err(|e| format!("{:?}", e))
 }
 
 #[cfg(test)]
