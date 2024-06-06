@@ -36,16 +36,14 @@ trait ExtensionTuple {
 
 struct Context<E: ExtensionTuple, P: PermController> {
     invoke_source: InvokeSource,
-    phantom_p: PhantomData<P>,
-    phantom_e: PhantomData<E>,
+    _marker: PhantomData<(E, P)>,
 }
 
 impl<E: ExtensionTuple, P: PermController> Context<E, P> {
     pub fn new(invoke_source: InvokeSource) -> Self {
         Self {
             invoke_source,
-            phantom_p: PhantomData,
-            phantom_e: PhantomData,
+            _marker: PhantomData,
         }
     }
 }
@@ -126,10 +124,6 @@ mod tests {
         type ResultOfSomeHostFunction = u32;
     }
 
-    impl ExtensionId for ExtensionCoreImpl {
-        const EXTENSION_ID: ExtensionIdTy = 0u64;
-    }
-
     impl ExtensionCore for ExtensionCoreImpl {
         type Config = ConfigImpl;
         fn some_host_function(
@@ -141,10 +135,6 @@ mod tests {
 
     // extension_fungibles impls
     pub struct ExtensionFungiblesImpl;
-
-    impl ExtensionId for ExtensionFungiblesImpl {
-        const EXTENSION_ID: ExtensionIdTy = 1u64;
-    }
 
     impl ExtensionFungibles for ExtensionFungiblesImpl {
         fn free_balance_of(_who: [u8; 32]) -> u32 {
@@ -184,9 +174,7 @@ mod tests {
             &self.args
         }
     }
-    impl ExtensionId for GuestImpl {
-        const EXTENSION_ID: ExtensionIdTy = 0u64;
-    }
+
     // TODO: refine the test
     #[test]
     fn extensions_executor_fails() {
@@ -201,4 +189,6 @@ mod tests {
         let res = executor.execute_method(guest, input);
         assert!(res.is_err())
     }
+
+    // TODO: add success test
 }

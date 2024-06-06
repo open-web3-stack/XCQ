@@ -3,7 +3,7 @@ use crate::{ExtensionId, ExtensionIdTy};
 use core::marker::PhantomData;
 use parity_scale_codec::{Decode, Encode};
 
-pub trait ExtensionFungibles: ExtensionId {
+pub trait ExtensionFungibles {
     fn free_balance_of(who: [u8; 32]) -> u32;
     fn reserved_balance_of(who: [u8; 32]) -> u32;
 }
@@ -16,21 +16,23 @@ mod generated_by_extension_decl {
     use super::*;
     #[derive(Decode)]
     pub enum ExtensionFungiblesCall<Impl: ExtensionFungibles> {
-        FreeBalanceOf { who: [u8; 32], _marker: PhantomData<Impl> },
-        ReservedBalanceOf { who: [u8; 32], _marker: PhantomData<Impl> },
+        FreeBalanceOf { who: [u8; 32] },
+        ReservedBalanceOf { who: [u8; 32] },
+        _Marker(PhantomData<Impl>),
     }
 
     impl<Impl: ExtensionFungibles> Dispatchable for ExtensionFungiblesCall<Impl> {
         fn dispatch(self) -> Result<Vec<u8>, DispatchError> {
             match self {
-                Self::FreeBalanceOf { who, .. } => Ok(Impl::free_balance_of(who).encode()),
-                Self::ReservedBalanceOf { who, .. } => Ok(Impl::reserved_balance_of(who).encode()),
+                Self::FreeBalanceOf { who } => Ok(Impl::free_balance_of(who).encode()),
+                Self::ReservedBalanceOf { who } => Ok(Impl::reserved_balance_of(who).encode()),
+                Self::_Marker(_) => Err(DispatchError::PhantomData),
             }
         }
     }
 
     impl<Impl: ExtensionFungibles> ExtensionId for ExtensionFungiblesCall<Impl> {
-        const EXTENSION_ID: ExtensionIdTy = Impl::EXTENSION_ID;
+        const EXTENSION_ID: ExtensionIdTy = 1u64;
     }
 
     // TODO: remove this when formalized

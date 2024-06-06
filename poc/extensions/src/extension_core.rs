@@ -2,7 +2,7 @@ use crate::{DispatchError, Dispatchable};
 use crate::{ExtensionId, ExtensionIdTy};
 use parity_scale_codec::{Decode, Encode};
 
-pub trait ExtensionCore: ExtensionId {
+pub trait ExtensionCore {
     type Config: Config;
     fn some_host_function(
         args: <Self::Config as Config>::ArgsOfSomeHostFunction,
@@ -36,7 +36,7 @@ mod generated_by_extension_decl {
     }
 
     impl<Impl: ExtensionCore> ExtensionId for ExtensionCoreCall<Impl> {
-        const EXTENSION_ID: ExtensionIdTy = Impl::EXTENSION_ID;
+        const EXTENSION_ID: ExtensionIdTy = 0u64;
     }
 
     // TODO: remove this when formalized

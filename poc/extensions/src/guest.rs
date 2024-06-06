@@ -1,5 +1,4 @@
-use crate::ExtensionId;
-pub trait Guest: ExtensionId {
+pub trait Guest {
     fn program(&self) -> &[u8];
 }
 
