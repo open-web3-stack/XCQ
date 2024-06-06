@@ -15,8 +15,8 @@ pub trait Config {
 }
 
 // #[extension(ExtensionCore)]
-// #[disallow_context(XCM)]
 // type Call;
+
 mod generated_by_extension_decl {
     use super::*;
 

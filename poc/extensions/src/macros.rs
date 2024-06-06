@@ -5,7 +5,7 @@ use crate::ExtensionTuple;
 macro_rules! impl_extension_tuple {
     ($($Ts:ident),*) => {
         impl<$($Ts: Extension),*> ExtensionTuple for ($($Ts,)*) {
-            fn dispatch(extension_id: ExtensionIdTy, data: Vec<u8>) -> Result<Vec<u8>, ExtensionError> {
+            fn dispatch(extension_id: ExtensionIdTy, data: &[u8]) -> Result<Vec<u8>, ExtensionError> {
                 $(
                     if extension_id == $Ts::EXTENSION_ID {
                         return $Ts::decode(&mut &data[..])

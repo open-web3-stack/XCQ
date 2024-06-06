@@ -1,6 +1,4 @@
 #![cfg_attr(not(feature = "std"), no_std)]
-extern crate alloc;
-use alloc::sync::Arc;
 use core::marker::PhantomData;
 
 use parity_scale_codec::Decode;
@@ -33,7 +31,7 @@ trait Extension: Dispatchable + ExtensionId + Decode {}
 impl<T> Extension for T where T: Dispatchable + ExtensionId + Decode {}
 
 trait ExtensionTuple {
-    fn dispatch(extension_id: ExtensionIdTy, data: Vec<u8>) -> Result<Vec<u8>, ExtensionError>;
+    fn dispatch(extension_id: ExtensionIdTy, data: &[u8]) -> Result<Vec<u8>, ExtensionError>;
 }
 
 struct Context<E: ExtensionTuple, P: PermController> {
@@ -54,7 +52,7 @@ impl<E: ExtensionTuple, P: PermController> Context<E, P> {
 
 impl<E: ExtensionTuple, P: PermController> XcqExecutorContext for Context<E, P> {
     fn register_host_functions<T>(&mut self, linker: &mut poc_executor::Linker<T>) {
-        let invoke_source = Arc::new(self.invoke_source.clone());
+        let invoke_source = self.invoke_source;
         linker
             .func_wrap(
                 "_",
@@ -69,10 +67,10 @@ impl<E: ExtensionTuple, P: PermController> XcqExecutorContext for Context<E, P> 
                         let call_bytes = caller
                             .read_memory_into_vec(call_ptr, call_len)
                             .map_err(|_| ExtensionError::PolkavmError)?;
-                        if P::is_allowed(extension_id, call_bytes.clone(), &invoke_source) {
+                        if P::is_allowed(extension_id, &call_bytes, invoke_source) {
                             return Err(ExtensionError::PermissionError);
                         }
-                        let res_bytes = E::dispatch(extension_id, call_bytes)?;
+                        let res_bytes = E::dispatch(extension_id, &call_bytes)?;
                         caller
                             .write_memory(res_ptr, &res_bytes[..])
                             .map_err(|_| ExtensionError::PolkavmError)?;
