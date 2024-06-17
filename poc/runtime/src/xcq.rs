@@ -1,5 +1,3 @@
-use crate::interface::AccountId;
-use crate::Balances;
 use frame::deps::codec::{Decode, Encode};
 #[allow(unused_imports)]
 use frame::deps::scale_info::prelude::{format, string::String};
@@ -106,7 +104,7 @@ mod tests {
     use frame::deps::sp_core::{sr25519, Pair};
     #[test]
     fn get_data_hex() {
-        let raw_blob = include_bytes!("../../../output/poc-guest-query-balance.polkavm");
+        let raw_blob = include_bytes!("../../../output/poc-guest-query-balance-fungibles.polkavm");
 
         let alice_public = sr25519::Pair::from_string("//Alice", None)
             .expect("static values are valid; qed")

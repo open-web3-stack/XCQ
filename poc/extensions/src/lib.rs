@@ -55,7 +55,7 @@ impl<E: ExtensionTuple, P: PermController> XcqExecutorContext for Context<E, P> 
         let invoke_source = self.invoke_source;
         linker
             .func_wrap(
-                "_",
+                "call",
                 move |mut caller: poc_executor::Caller<_>, extension_id: u64, call_ptr: u32, call_len: u32| -> u64 {
                     // useful closure to handle early return
                     let mut func_with_result = || -> Result<u64, ExtensionError> {
