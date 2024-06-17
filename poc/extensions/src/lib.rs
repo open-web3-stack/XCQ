@@ -62,10 +62,17 @@ impl<E: ExtensionTuple, P: PermController> XcqExecutorContext for Context<E, P> 
                         let call_bytes = caller
                             .read_memory_into_vec(call_ptr, call_len)
                             .map_err(|_| ExtensionError::PolkavmError)?;
-                        if P::is_allowed(extension_id, &call_bytes, invoke_source) {
+                        #[cfg(feature = "std")]
+                        println!(
+                            "(host call): extension_id: {}, call_bytes: {:?}",
+                            extension_id, call_bytes
+                        );
+                        if !P::is_allowed(extension_id, &call_bytes, invoke_source) {
                             return Err(ExtensionError::PermissionError);
                         }
                         let res_bytes = E::dispatch(extension_id, &call_bytes)?;
+                        #[cfg(feature = "std")]
+                        println!("(host call): res_bytes: {:?}", res_bytes);
                         let res_bytes_len = res_bytes.len();
                         let res_ptr = caller.sbrk(res_bytes_len as u32).ok_or(ExtensionError::PolkavmError)?;
                         caller
@@ -73,7 +80,10 @@ impl<E: ExtensionTuple, P: PermController> XcqExecutorContext for Context<E, P> 
                             .map_err(|_| ExtensionError::PolkavmError)?;
                         Ok(((res_ptr as u64) << 32) | (res_bytes_len as u64))
                     };
-                    func_with_result().unwrap_or(0)
+                    let result = func_with_result();
+                    #[cfg(feature = "std")]
+                    println!("(host call): result: {:?}", result);
+                    result.unwrap_or(0)
                 },
             )
             .unwrap();
@@ -105,6 +115,7 @@ mod tests {
     use super::*;
     use crate::extension_core::ExtensionCore;
     use crate::extension_fungibles::ExtensionFungibles;
+    use parity_scale_codec::{Decode, Encode};
 
     // extension_core impls
     pub struct ExtensionCoreImpl;
@@ -129,7 +140,7 @@ mod tests {
     impl extension_fungibles::Config for ExtensionFungiblesConfigImpl {
         type AccountId = [u8; 32];
         type Balance = u32;
-        type AssetId = u32;
+        type AssetId = u64;
     }
 
     use crate::extension_fungibles::AccountIdFor;
@@ -188,19 +199,47 @@ mod tests {
         }
     }
 
-    // TODO: refine the test
+    #[derive(Encode, Decode)]
+    enum CoreMethod {
+        HasExtension { id: u64 },
+    }
+
+    #[derive(Encode, Decode)]
+    enum FungiblesMethod {
+        Balance { asset: u64, who: [u8; 32] },
+        TotalSupply { asset: u64 },
+    }
+
     #[test]
-    fn extensions_executor_fails() {
+    fn call_core_works() {
+        let blob = include_bytes!("../../../output/poc-guest-transparent-call.polkavm");
         let mut executor = ExtensionsExecutor::<Extensions, ()>::new(InvokeSource::RuntimeAPI);
-        let guest = GuestImpl {
-            program: vec![0, 1, 2, 3],
-        };
+        let guest = GuestImpl { program: blob.to_vec() };
+        let method = CoreMethod::HasExtension { id: 0 };
+        let mut input_data = 0u64.encode();
+        input_data.extend_from_slice(&method.encode());
         let input = InputImpl {
             method: "main".to_string(),
-            args: vec![0, 1, 2, 3],
+            args: input_data,
         };
-        let res = executor.execute_method(guest, input);
-        assert!(res.is_err())
+        let res = executor.execute_method(guest, input).unwrap();
+        assert_eq!(res, vec![1]);
+    }
+
+    #[test]
+    fn call_fungibles_works() {
+        let blob = include_bytes!("../../../output/poc-guest-transparent-call.polkavm");
+        let mut executor = ExtensionsExecutor::<Extensions, ()>::new(InvokeSource::RuntimeAPI);
+        let guest = GuestImpl { program: blob.to_vec() };
+        let method = FungiblesMethod::TotalSupply { asset: 1u64 };
+        let mut input_data = 1u64.encode();
+        input_data.extend_from_slice(&method.encode());
+        let input = InputImpl {
+            method: "main".to_string(),
+            args: input_data,
+        };
+        let res = executor.execute_method(guest, input).unwrap();
+        assert_eq!(res, vec![100u8, 0u8, 0u8, 0u8]);
     }
 
     // TODO: add success test

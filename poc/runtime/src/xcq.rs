@@ -1,4 +1,3 @@
-use frame::deps::codec::{Decode, Encode};
 #[allow(unused_imports)]
 use frame::deps::scale_info::prelude::{format, string::String};
 use frame::deps::sp_api::decl_runtime_apis;
@@ -100,32 +99,74 @@ pub fn execute_query(query: Vec<u8>, input: Vec<u8>) -> XcqResult {
 mod tests {
 
     use super::*;
-    use frame::deps::sp_core::crypto::AccountId32;
+    use crate::interface::{AccountId, AssetId};
+    use frame::deps::codec::{Decode, Encode};
     use frame::deps::sp_core::{sr25519, Pair};
-    #[test]
-    fn get_data_hex() {
-        let raw_blob = include_bytes!("../../../output/poc-guest-query-balance-fungibles.polkavm");
 
+    #[derive(Encode, Decode, Clone, PartialEq, Eq, Debug)]
+    enum FungiblesMethod {
+        Balance { asset: AssetId, who: AccountId },
+        TotalSupply { asset: AssetId },
+    }
+
+    #[derive(Encode, Decode, Clone, PartialEq, Eq, Debug)]
+    enum CoreMethod {
+        HasExtension { id: u64 },
+    }
+    #[test]
+    fn call_transparent_data_hex() {
+        let raw_blob = include_bytes!("../../../output/poc-guest-transparent-call.polkavm");
+        // call fungible extension
+        let mut data = 1u64.encode();
+        let method = FungiblesMethod::TotalSupply { asset: 21 };
+        data.extend_from_slice(&method.encode());
+        dbg!(hex::encode((raw_blob.to_vec(), data).encode()));
+    }
+
+    #[test]
+    fn call_fungibles_hex() {
+        let raw_blob = include_bytes!("../../../output/poc-guest-query-balance-fungibles.polkavm");
         let alice_public = sr25519::Pair::from_string("//Alice", None)
             .expect("static values are valid; qed")
             .public();
-        let bob_public = sr25519::Pair::from_string("//Bob", None)
-            .expect("static values are valid; qed")
-            .public();
-        let alice_account: AccountId32 = AccountId32::from(alice_public);
-        let bob_account: AccountId32 = AccountId32::from(bob_public);
-        let mut data = vec![0u8];
-        data.extend_from_slice(&alice_account.encode());
-        data.extend_from_slice(&bob_account.encode());
+        let alice_account = AccountId::from(alice_public);
+        // query num
+        let mut data = vec![2u8];
+        let method1 = FungiblesMethod::Balance {
+            asset: 21,
+            who: alice_account.clone(),
+        };
+        let method2 = FungiblesMethod::Balance {
+            asset: 1984,
+            who: alice_account,
+        };
+        data.extend_from_slice(&method1.encode());
+        data.extend_from_slice(&method2.encode());
         dbg!(hex::encode((raw_blob.to_vec(), data).encode()));
     }
+
     #[test]
-    fn check_balance() {
-        // paste from e2e result
-        let bytes = hex::decode("200000e8890423c78a").unwrap();
+    fn check_supply() {
+        let bytes = hex::decode("2000ca9a3b00000000").unwrap();
         let decoded_bytes = Vec::<u8>::decode(&mut &bytes[..]).unwrap();
-        let u64_array = <[u8; 8]>::try_from(decoded_bytes).unwrap();
-        let res = u64::from_le_bytes(u64_array);
-        assert_eq!(res, 10000000000000000000);
+        let balance = u64::decode(&mut &decoded_bytes[..]).unwrap();
+        assert_eq!(balance, 1_000_000_000);
+    }
+
+    #[test]
+    fn check_balance_sum() {
+        let bytes = hex::decode("200094357700000000").unwrap();
+        let decoded_bytes = Vec::<u8>::decode(&mut &bytes[..]).unwrap();
+        let balance = u64::decode(&mut &decoded_bytes[..]).unwrap();
+        assert_eq!(balance, 2_000_000_000);
+    }
+
+    #[test]
+    fn check_bool() {
+        // paste from e2e result
+        let bytes = hex::decode("0401").unwrap();
+        let decoded_bytes = Vec::<u8>::decode(&mut &bytes[..]).unwrap();
+        let true_value = bool::decode(&mut &decoded_bytes[..]).unwrap();
+        assert!(true_value);
     }
 }

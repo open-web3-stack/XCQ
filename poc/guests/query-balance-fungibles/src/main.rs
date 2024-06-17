@@ -24,7 +24,7 @@ extern "C" fn main(ptr: u32, size: u32) -> u64 {
     for i in 0..num_query {
         let res = unsafe { call(1, ptr + 1 + query_size * i as u32, query_size) };
         let res_ptr = (res >> 32) as *const u8;
-        let res_len = res as u32;
+        let res_len = (res & 0xffffffff) as u32;
         let res_bytes = unsafe { core::slice::from_raw_parts(res_ptr, res_len as usize) };
         sum += u64::from_le_bytes(res_bytes.try_into().unwrap());
     }

@@ -59,6 +59,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "poc-guest-transparent-call"
+version = "0.1.0"
+dependencies = [
+ "polkavm-derive",
+]
+
+[[package]]
 name = "polkavm-common"
 version = "0.10.0"
 
