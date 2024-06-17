@@ -1,0 +1,9 @@
+[package]
+name = "poc-guest-query-balance-fungibles"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+parity-scale-codec = { version = "3.6.12", default-features = false }
+polkavm-derive = { workspace = true }

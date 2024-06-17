@@ -18,6 +18,7 @@ use frame::{
         },
         prelude::*,
     },
+    traits::AsEnsureOriginWithArg,
 };
 
 #[runtime_version]
@@ -57,6 +58,7 @@ construct_runtime!(
         System: frame_system,
         Timestamp: pallet_timestamp,
 
+        Assets: pallet_assets,
         Balances: pallet_balances,
         Sudo: pallet_sudo,
         TransactionPayment: pallet_transaction_payment,
@@ -78,6 +80,14 @@ impl frame_system::Config for Runtime {
 #[derive_impl(pallet_balances::config_preludes::TestDefaultConfig as pallet_balances::DefaultConfig)]
 impl pallet_balances::Config for Runtime {
     type AccountStore = System;
+}
+
+#[derive_impl(pallet_assets::config_preludes::TestDefaultConfig as pallet_assets::DefaultConfig)]
+impl pallet_assets::Config for Runtime {
+    type Currency = Balances;
+    type ForceOrigin = frame_system::EnsureRoot<Self::AccountId>;
+    type CreateOrigin = AsEnsureOriginWithArg<EnsureSigned<Self::AccountId>>;
+    type Freezer = ();
 }
 
 #[derive_impl(pallet_sudo::config_preludes::TestDefaultConfig as pallet_sudo::DefaultConfig)]
@@ -229,6 +239,7 @@ pub mod interface {
 
     pub type Block = super::Block;
     pub use frame::runtime::types_common::OpaqueBlock;
+    pub type AssetId = <Runtime as pallet_assets::Config>::AssetId;
     pub type AccountId = <Runtime as frame_system::Config>::AccountId;
     pub type Nonce = <Runtime as frame_system::Config>::Nonce;
     pub type Hash = <Runtime as frame_system::Config>::Hash;

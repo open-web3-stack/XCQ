@@ -2,6 +2,7 @@ use crate::Extension;
 use crate::ExtensionError;
 use crate::ExtensionIdTy;
 use crate::ExtensionTuple;
+use crate::Vec;
 
 // Use the macro to implement ExtensionTuple for tuples of different lengths
 #[impl_trait_for_tuples::impl_for_tuples(10)]

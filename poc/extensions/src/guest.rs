@@ -1,3 +1,4 @@
+use scale_info::prelude::string::String;
 pub trait Guest {
     fn program(&self) -> &[u8];
 }

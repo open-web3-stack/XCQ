@@ -1,57 +1,101 @@
 use crate::interface::AccountId;
 use crate::Balances;
+use frame::deps::codec::{Decode, Encode};
+#[allow(unused_imports)]
+use frame::deps::scale_info::prelude::{format, string::String};
 use frame::deps::sp_api::decl_runtime_apis;
 use frame::prelude::*;
-#[allow(unused_imports)]
-use scale_info::prelude::{format, string::String};
 
 pub type XcqResponse = Vec<u8>;
 pub type XcqError = String;
 pub type XcqResult = Result<XcqResponse, XcqError>;
 
+use poc_extensions::extension_core::{self, ExtensionCore};
+use poc_extensions::extension_fungibles::{self, ExtensionFungibles};
+use poc_extensions::{ExtensionsExecutor, Guest, Input, InvokeSource, Method};
 decl_runtime_apis! {
     pub trait XcqApi {
         fn execute_query(query: Vec<u8>, input: Vec<u8>) -> XcqResult;
     }
 }
 
-struct HostFunctions;
+// extension_core impls
+pub struct ExtensionCoreImpl;
 
-impl poc_executor::XcqExecutorContext for HostFunctions {
-    fn register_host_functions<T>(&mut self, linker: &mut poc_executor::Linker<T>) {
-        linker
-            .func_wrap(
-                "query_balance",
-                move |caller: poc_executor::Caller<_>,
-                      variant: u32,
-                      account_id_ptr: u32,
-                      account_id_size: u32|
-                      -> u64 {
-                    // variant 0 means free balance
-                    // variant 1 means reserved balance
-                    // variant 2 means free+reserved
-                    let account_id_encoded = caller
-                        .read_memory_into_vec(account_id_ptr, account_id_size)
-                        .expect("read_memory_into_vec failed");
-                    let account_id = AccountId::decode(&mut &account_id_encoded[..]).expect("decode failed");
-                    if variant == 0 {
-                        Balances::free_balance(&account_id)
-                    } else if variant == 1 {
-                        Balances::reserved_balance(&account_id)
-                    } else if variant == 2 {
-                        Balances::free_balance(&account_id) + Balances::reserved_balance(&account_id)
-                    } else {
-                        panic!("invalid variant")
-                    }
-                },
-            )
-            .unwrap();
+pub struct ExtensionCoreConfigImpl;
+impl extension_core::Config for ExtensionCoreConfigImpl {
+    type ExtensionId = u64;
+}
+
+impl ExtensionCore for ExtensionCoreImpl {
+    type Config = ExtensionCoreConfigImpl;
+    fn has_extension(id: <Self::Config as extension_core::Config>::ExtensionId) -> bool {
+        matches!(id, 0 | 1)
     }
 }
 
+// extension_fungibles impls
+pub struct ExtensionFungiblesImpl;
+
+pub struct ExtensionFungiblesConfigImpl;
+
+impl extension_fungibles::Config for ExtensionFungiblesConfigImpl {
+    type AccountId = crate::interface::AccountId;
+    type Balance = crate::interface::Balance;
+    type AssetId = crate::interface::AssetId;
+}
+
+type AccountIdFor<T> = <<T as ExtensionFungibles>::Config as extension_fungibles::Config>::AccountId;
+type BalanceFor<T> = <<T as ExtensionFungibles>::Config as extension_fungibles::Config>::Balance;
+type AssetIdFor<T> = <<T as ExtensionFungibles>::Config as extension_fungibles::Config>::AssetId;
+
+impl ExtensionFungibles for ExtensionFungiblesImpl {
+    type Config = ExtensionFungiblesConfigImpl;
+    fn balance(asset: AssetIdFor<Self>, who: AccountIdFor<Self>) -> BalanceFor<Self> {
+        crate::Assets::balance(asset, who)
+    }
+    fn total_supply(asset: AssetIdFor<Self>) -> BalanceFor<Self> {
+        crate::Assets::total_supply(asset)
+    }
+}
+
+type Extensions = (
+    extension_core::Call<ExtensionCoreImpl>,
+    extension_fungibles::Call<ExtensionFungiblesImpl>,
+);
+
+// guest impls
+pub struct GuestImpl {
+    pub program: Vec<u8>,
+}
+
+impl Guest for GuestImpl {
+    fn program(&self) -> &[u8] {
+        &self.program
+    }
+}
+
+pub struct InputImpl {
+    pub method: Method,
+    pub args: Vec<u8>,
+}
+
+impl Input for InputImpl {
+    fn method(&self) -> Method {
+        self.method.clone()
+    }
+    fn args(&self) -> &[u8] {
+        &self.args
+    }
+}
 pub fn execute_query(query: Vec<u8>, input: Vec<u8>) -> XcqResult {
-    let mut executor = poc_executor::XcqExecutor::new(Default::default(), HostFunctions);
-    executor.execute(&query, "main", &input).map_err(|e| format!("{:?}", e))
+    let mut executor = ExtensionsExecutor::<Extensions, ()>::new(InvokeSource::RuntimeAPI);
+    let guest = GuestImpl { program: query };
+    let input = InputImpl {
+        method: "main".to_owned(),
+        args: input,
+    };
+    executor.execute_method(guest, input)
 }
 
 #[cfg(test)]
