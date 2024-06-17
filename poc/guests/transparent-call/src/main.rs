@@ -16,6 +16,5 @@ extern "C" {
 #[polkavm_derive::polkavm_export]
 extern "C" fn main(ptr: u32, size: u32) -> u64 {
     let extension_id = unsafe { core::ptr::read_volatile(ptr as *const u64) };
-    let res = unsafe { call(extension_id, ptr + 8, size - 8) };
-    res
+    unsafe { call(extension_id, ptr + 8, size - 8) }
 }
