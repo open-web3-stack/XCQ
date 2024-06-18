@@ -63,16 +63,17 @@ impl<E: ExtensionTuple, P: PermController> XcqExecutorContext for Context<E, P> 
                             .read_memory_into_vec(call_ptr, call_len)
                             .map_err(|_| ExtensionError::PolkavmError)?;
                         #[cfg(feature = "std")]
-                        println!(
+                        log::trace!(
                             "(host call): extension_id: {}, call_bytes: {:?}",
-                            extension_id, call_bytes
+                            extension_id,
+                            call_bytes
                         );
                         if !P::is_allowed(extension_id, &call_bytes, invoke_source) {
                             return Err(ExtensionError::PermissionError);
                         }
                         let res_bytes = E::dispatch(extension_id, &call_bytes)?;
                         #[cfg(feature = "std")]
-                        println!("(host call): res_bytes: {:?}", res_bytes);
+                        log::trace!("(host call): res_bytes: {:?}", res_bytes);
                         let res_bytes_len = res_bytes.len();
                         let res_ptr = caller.sbrk(res_bytes_len as u32).ok_or(ExtensionError::PolkavmError)?;
                         caller
@@ -82,7 +83,7 @@ impl<E: ExtensionTuple, P: PermController> XcqExecutorContext for Context<E, P> 
                     };
                     let result = func_with_result();
                     #[cfg(feature = "std")]
-                    println!("(host call): result: {:?}", result);
+                    log::trace!("(host call): result: {:?}", result);
                     result.unwrap_or(0)
                 },
             )
@@ -241,6 +242,4 @@ mod tests {
         let res = executor.execute_method(guest, input).unwrap();
         assert_eq!(res, vec![100u8, 0u8, 0u8, 0u8]);
     }
-
-    // TODO: add success test
 }

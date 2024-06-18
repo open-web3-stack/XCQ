@@ -2965,6 +2965,7 @@ name = "poc-extensions"
 version = "0.1.0"
 dependencies = [
  "impl-trait-for-tuples",
+ "log",
  "parity-scale-codec",
  "poc-executor",
  "scale-info",
