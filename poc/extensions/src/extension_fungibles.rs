@@ -1,11 +1,28 @@
+use crate::Vec;
 use crate::{DispatchError, Dispatchable};
 use crate::{ExtensionId, ExtensionIdTy};
-use core::marker::PhantomData;
 use parity_scale_codec::{Decode, Encode};
 
+pub type AccountIdFor<T> = <<T as ExtensionFungibles>::Config as Config>::AccountId;
+pub type BalanceFor<T> = <<T as ExtensionFungibles>::Config as Config>::Balance;
+pub type AssetIdFor<T> = <<T as ExtensionFungibles>::Config as Config>::AssetId;
+
 pub trait ExtensionFungibles {
-    fn free_balance_of(who: [u8; 32]) -> u32;
-    fn reserved_balance_of(who: [u8; 32]) -> u32;
+    type Config: Config;
+    // fungibles::Inspect (not extensive)
+    // fn total_inssuance(asset: AssetIdFor<Self>) -> BalanceFor<Self>;
+    // fn minimum_balance(asset: AssetIdFor<Self>) -> BalanceFor<Self>;
+    fn total_supply(asset: AssetIdFor<Self>) -> BalanceFor<Self>;
+    fn balance(asset: AssetIdFor<Self>, who: AccountIdFor<Self>) -> BalanceFor<Self>;
+    // fungibles::InspectEnumerable
+    // fn asset_ids() -> Vec<AccountIdFor<Self>>;
+    // fn account_balances(who: AccountIdFor<Self>) -> Vec<(AssetIdFor<Self>, BalanceFor<Self>)>;
+}
+
+pub trait Config {
+    type AccountId: Decode;
+    type AssetId: Decode;
+    type Balance: Encode;
 }
 
 // #[extension(ExtensionFungibles)]
@@ -14,19 +31,24 @@ pub trait ExtensionFungibles {
 mod generated_by_extension_decl {
 
     use super::*;
+
     #[derive(Decode)]
     pub enum ExtensionFungiblesCall<Impl: ExtensionFungibles> {
-        FreeBalanceOf { who: [u8; 32] },
-        ReservedBalanceOf { who: [u8; 32] },
-        _Marker(PhantomData<Impl>),
+        // TODO: not extensive
+        Balance {
+            asset: AssetIdFor<Impl>,
+            who: AccountIdFor<Impl>,
+        },
+        TotalSupply {
+            asset: AssetIdFor<Impl>,
+        },
     }
 
     impl<Impl: ExtensionFungibles> Dispatchable for ExtensionFungiblesCall<Impl> {
         fn dispatch(self) -> Result<Vec<u8>, DispatchError> {
             match self {
-                Self::FreeBalanceOf { who } => Ok(Impl::free_balance_of(who).encode()),
-                Self::ReservedBalanceOf { who } => Ok(Impl::reserved_balance_of(who).encode()),
-                Self::_Marker(_) => Err(DispatchError::PhantomData),
+                Self::Balance { asset, who } => Ok(Impl::balance(asset, who).encode()),
+                Self::TotalSupply { asset } => Ok(Impl::total_supply(asset).encode()),
             }
         }
     }

@@ -6,40 +6,41 @@ edition = "2021"
 [dependencies]
 parity-scale-codec = { version = "3.0.0", default-features = false }
 scale-info = { version = "2.6.0", default-features = false }
-
 # this is a frame-based runtime, thus importing `frame` with runtime feature enabled.
-frame = { version = "0.1.1", package = "polkadot-sdk-frame", default-features = false, features = [
+frame = { version = "0.2.0", package = "polkadot-sdk-frame", default-features = false, features = [
     "experimental",
     "runtime",
 ] }
 
 # pallets that we want to use
-pallet-balances = { version = "31.0.0", default-features = false }
-pallet-sudo = { version = "31.0.0", default-features = false }
-pallet-timestamp = { version = "30.0.0", default-features = false }
-pallet-transaction-payment = { version = "31.0.0", default-features = false }
-pallet-transaction-payment-rpc-runtime-api = { version = "31.0.0", default-features = false }
+pallet-balances = { version = "34.0.0", default-features = false }
+pallet-assets = { version = "34.0.0", default-features = false }
+pallet-sudo = { version = "33.0.0", default-features = false }
+pallet-timestamp = { version = "32.0.0", default-features = false }
+pallet-transaction-payment = { version = "33.0.0", default-features = false }
+pallet-transaction-payment-rpc-runtime-api = { version = "33.0.0", default-features = false }
 
 # genesis builder that allows us to interacto with runtime genesis config
-sp-genesis-builder = { version = "0.10.0", default-features = false }
+sp-genesis-builder = { version = "0.12.0", default-features = false }
 
 poc-executor = { path = "../executor", default-features = false }
+poc-extensions = { path = "../extensions", default-features = false }
 
 [dev-dependencies]
 hex = "0.4"
 
 [build-dependencies]
-substrate-wasm-builder = { version = "22.0.0", optional = true }
+substrate-wasm-builder = { version = "22.0.1", optional = true }
 
 [features]
 default = ["std"]
 std = [
     "parity-scale-codec/std",
     "scale-info/std",
-
     "frame/std",
 
     "pallet-balances/std",
+    "pallet-assets/std",
     "pallet-sudo/std",
     "pallet-timestamp/std",
     "pallet-transaction-payment-rpc-runtime-api/std",
@@ -49,4 +50,5 @@ std = [
     "substrate-wasm-builder",
 
     "poc-executor/std",
+    "poc-extensions/std",
 ]

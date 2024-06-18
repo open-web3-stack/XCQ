@@ -1,5 +1,10 @@
 [workspace]
-members = ["pass-custom-type", "query-balance"]
+members = [
+    "pass-custom-type",
+    "query-balance",
+    "query-balance-fungibles",
+    "transparent-call",
+]
 resolver = "2"
 
 

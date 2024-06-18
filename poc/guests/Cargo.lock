@@ -3,6 +3,40 @@
 version = 3
 
 [[package]]
+name = "arrayvec"
+version = "0.7.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "96d30a06541fbafbc7f82ed10c06164cfbd2c401138f6addd8404629c4b16711"
+
+[[package]]
+name = "byte-slice-cast"
+version = "1.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c3ac9f8b63eca6fd385229b3675f6cc0dc5c8a5c8a54a59d4f52ffd670d87b0c"
+
+[[package]]
+name = "impl-trait-for-tuples"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "11d7a9f6330b71fea57921c9b61c47ee6e84f72d394754eff6163ae67e7395eb"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "parity-scale-codec"
+version = "3.6.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "306800abfa29c7f16596b5970a588435e3d5b3149683d00c12b699cc19f895ee"
+dependencies = [
+ "arrayvec",
+ "byte-slice-cast",
+ "impl-trait-for-tuples",
+]
+
+[[package]]
 name = "poc-guest-pass-custom-type"
 version = "0.1.0"
 dependencies = [
@@ -11,6 +45,21 @@ dependencies = [
 
 [[package]]
 name = "poc-guest-query-balance"
+version = "0.1.0"
+dependencies = [
+ "polkavm-derive",
+]
+
+[[package]]
+name = "poc-guest-query-balance-fungibles"
+version = "0.1.0"
+dependencies = [
+ "parity-scale-codec",
+ "polkavm-derive",
+]
+
+[[package]]
+name = "poc-guest-transparent-call"
 version = "0.1.0"
 dependencies = [
  "polkavm-derive",
@@ -34,7 +83,7 @@ dependencies = [
  "polkavm-common",
  "proc-macro2",
  "quote",
- "syn",
+ "syn 2.0.63",
 ]
 
 [[package]]
@@ -42,7 +91,7 @@ name = "polkavm-derive-impl-macro"
 version = "0.10.0"
 dependencies = [
  "polkavm-derive-impl",
- "syn",
+ "syn 2.0.63",
 ]
 
 [[package]]
@@ -61,6 +110,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0fa76aaf39101c457836aec0ce2316dbdc3ab723cdda1c6bd4e6ad4208acaca7"
 dependencies = [
  "proc-macro2",
+]
+
+[[package]]
+name = "syn"
+version = "1.0.109"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "72b64191b275b66ffe2469e8af2c1cfe3bafa67b529ead792a6d0160888b4237"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "unicode-ident",
 ]
 
 [[package]]

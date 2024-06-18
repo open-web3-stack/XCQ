@@ -6,9 +6,9 @@ run: chainspec
 poc-host-%: poc-guest-%
 	RUST_LOG=trace cargo run -p poc-host-$*
 
-poc-guests: poc-guest-pass-custom-type poc-guest-query-balance
+poc-guests: poc-guest-pass-custom-type poc-guest-query-balance poc-guest-query-balance-fungibles poc-guest-transparent-call
 
-dummy-poc-guests: dummy-poc-guest-pass-custom-type dummy-poc-guest-query-balance
+dummy-poc-guests: dummy-poc-guest-pass-custom-type dummy-poc-guest-query-balance dummy-poc-guest-query-balance-fungibles dummy-poc-guest-transparent-call
 
 poc-guest-%:
 	cd poc/guests; RUSTFLAGS=$(GUEST_RUST_FLAGS) cargo build -q --release --bin poc-guest-$* -p poc-guest-$*
@@ -25,7 +25,7 @@ polkatool:
 	cargo install --path vendor/polkavm/tools/polkatool
 
 chain-spec-builder:
-	cargo install --git https://github.com/paritytech/polkadot-sdk --tag polkadot-v1.9.0 staging-chain-spec-builder
+	cargo install --git https://github.com/paritytech/polkadot-sdk --tag polkadot-v1.12.0 staging-chain-spec-builder
 
 fmt:
 	cargo fmt --all

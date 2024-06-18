@@ -1,5 +1,5 @@
 [package]
-name = "poc-extension"
+name = "poc-extensions"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,6 +8,7 @@ parity-scale-codec = { version = "3.6.12", default-features = false }
 scale-info = { version = "2.6.0", default-features = false }
 poc-executor = { path = "../executor", default-features = false }
 impl-trait-for-tuples = "0.2.2"
+log = "0.4.21"
 
 [features]
 default = ["std"]
