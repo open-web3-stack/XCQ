@@ -25,7 +25,7 @@ polkatool:
 	cargo install --path vendor/polkavm/tools/polkatool
 
 chain-spec-builder:
-	cargo install --git https://github.com/paritytech/polkadot-sdk --tag polkadot-v1.10.0 staging-chain-spec-builder
+	cargo install --git https://github.com/paritytech/polkadot-sdk --tag polkadot-v1.12.0 staging-chain-spec-builder
 
 fmt:
 	cargo fmt --all
