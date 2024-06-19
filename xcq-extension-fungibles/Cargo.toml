@@ -8,7 +8,9 @@ repository.workspace = true
 version.workspace = true
 
 [dependencies]
+parity-scale-codec = { workspace = true }
+xcq-extension = { workspace = true }
 
 [features]
 default = ["std"]
-std = []
+std = ["parity-scale-codec/std", "xcq-extension/std"]

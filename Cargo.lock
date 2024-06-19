@@ -5574,14 +5574,31 @@ dependencies = [
 [[package]]
 name = "xcq-extension"
 version = "0.1.0"
+dependencies = [
+ "impl-trait-for-tuples",
+ "parity-scale-codec",
+ "scale-info",
+ "tracing",
+ "xcq-executor",
+ "xcq-extension-core",
+ "xcq-extension-fungibles",
+]
 
 [[package]]
 name = "xcq-extension-core"
 version = "0.1.0"
+dependencies = [
+ "parity-scale-codec",
+ "xcq-extension",
+]
 
 [[package]]
 name = "xcq-extension-fungibles"
 version = "0.1.0"
+dependencies = [
+ "parity-scale-codec",
+ "xcq-extension",
+]
 
 [[package]]
 name = "xcq-primitives"

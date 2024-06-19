@@ -8,7 +8,21 @@ repository.workspace = true
 version.workspace = true
 
 [dependencies]
+parity-scale-codec = { workspace = true }
+scale-info = { workspace = true }
+xcq-executor = { workspace = true }
+impl-trait-for-tuples = "0.2.2"
+tracing = { workspace = true }
+
+[dev-dependencies]
+xcq-extension-core = { workspace = true }
+xcq-extension-fungibles = { workspace = true }
 
 [features]
 default = ["std"]
-std = []
+std = [
+    "parity-scale-codec/std",
+    "scale-info/std",
+    "xcq-executor/std",
+    "tracing/std",
+]
