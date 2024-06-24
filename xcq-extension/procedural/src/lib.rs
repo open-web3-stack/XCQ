@@ -1,8 +1,9 @@
 use proc_macro2::TokenStream;
 use quote::quote;
+use std::hash::Hasher;
 use syn::token::Comma;
-use syn::{parse_macro_input, parse_quote, spanned::Spanned};
-use syn::{punctuated::Punctuated, ExprCall, Field, Ident, ItemImpl, LitInt, Pat, TraitItem, Variant};
+use syn::{parse_macro_input, parse_quote, parse_str, spanned::Spanned};
+use syn::{punctuated::Punctuated, ExprCall, Field, Ident, ItemImpl, Pat, TraitItem, Variant};
 
 #[derive(Clone)]
 struct Method {
@@ -13,7 +14,7 @@ struct Method {
 }
 
 #[proc_macro_attribute]
-pub fn extension(args: proc_macro::TokenStream, input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+pub fn extension(_args: proc_macro::TokenStream, input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input = parse_macro_input!(input as syn::ItemTrait);
 
     let methods = match methods(&input.items) {
@@ -27,8 +28,7 @@ pub fn extension(args: proc_macro::TokenStream, input: proc_macro::TokenStream) 
     };
 
     let dispatchable_impl = dispatchable_impl(&input.ident, &methods);
-    let extension_id = parse_macro_input!(args as LitInt);
-    let extension_id_impl = extension_id_impl(&input.ident, &extension_id);
+    let extension_id_impl = extension_id_impl(&input.ident, &input.items);
 
     let expanded = quote! {
         #input
@@ -40,7 +40,6 @@ pub fn extension(args: proc_macro::TokenStream, input: proc_macro::TokenStream) 
 }
 
 fn call_enum_def(trait_ident: &Ident, methods: &[Method]) -> syn::Result<syn::ItemEnum> {
-    // TODO: add phantom data if Impl is not used
     let mut variants = Punctuated::<Variant, Comma>::new();
     for method in methods {
         let name = &method.name;
@@ -58,6 +57,11 @@ fn call_enum_def(trait_ident: &Ident, methods: &[Method]) -> syn::Result<syn::It
             }
         });
     }
+    // Add phantom data
+    variants.push(parse_quote!(
+        #[doc(hidden)]
+        __Phantom(std::marker::PhantomData<Impl>)
+    ));
     Ok(parse_quote!(
         #[derive(Decode)]
         pub enum Call<Impl: #trait_ident> {
@@ -103,16 +107,16 @@ fn dispatchable_impl(trait_ident: &Ident, methods: &[Method]) -> TokenStream {
         impl<Impl: #trait_ident> xcq_extension::Dispatchable for Call<Impl> {
             fn dispatch(self) -> Result<Vec<u8>, xcq_extension::DispatchError> {
                 match self {
-                    #( #pats => Ok(#method_calls.encode())),*
+                    #( #pats => Ok(#method_calls.encode()),)*
+                    Self::__Phantom(_) => unreachable!(),
                 }
             }
         }
     }
 }
 
-fn extension_id_impl(trait_ident: &Ident, extension_id: &LitInt) -> ItemImpl {
-    // TODO calculate according to trait definition
-    // Currently, specify the extension_id as `args`
+fn extension_id_impl(trait_ident: &Ident, trait_items: &Vec<TraitItem>) -> ItemImpl {
+    let extension_id = calculate_hash(trait_items);
     parse_quote! {
         impl<Impl: #trait_ident> xcq_extension::ExtensionId for Call<Impl> {
             const EXTENSION_ID: xcq_extension::ExtensionIdTy = #extension_id;
@@ -150,15 +154,23 @@ fn methods(trait_items: &Vec<TraitItem>) -> syn::Result<Vec<Method>> {
     Ok(methods)
 }
 
+// TODO: refine this to make it more stable
 fn replace_self_to_impl(ty: &syn::Type) -> syn::Result<Box<syn::Type>> {
-    // replace Self in ty to Impl
     let ty_str = quote!(#ty).to_string();
 
     let modified_ty_str = ty_str.replace("Self", "Impl");
 
-    let modified_ty = syn::parse_str(&modified_ty_str)?;
+    let modified_ty = parse_str(&modified_ty_str)?;
 
     Ok(Box::new(modified_ty))
+}
+
+// TODO: may rely on whole syn::File where we can replace the type alias to get stable hash results
+// Or we rejects the type alias
+fn calculate_hash(trait_items: &Vec<TraitItem>) -> u64 {
+    let mut hasher = std::hash::DefaultHasher::new();
+    std::hash::Hash::hash_slice(trait_items, &mut hasher);
+    hasher.finish()
 }
 
 // #[cfg(test)]
