@@ -115,7 +115,7 @@ fn dispatchable_impl(trait_ident: &Ident, methods: &[Method]) -> TokenStream {
     }
 }
 
-fn extension_id_impl(trait_ident: &Ident, trait_items: &Vec<TraitItem>) -> ItemImpl {
+fn extension_id_impl(trait_ident: &Ident, trait_items: &[TraitItem]) -> ItemImpl {
     let extension_id = calculate_hash(trait_items);
     parse_quote! {
         impl<Impl: #trait_ident> xcq_extension::ExtensionId for Call<Impl> {
@@ -125,7 +125,7 @@ fn extension_id_impl(trait_ident: &Ident, trait_items: &Vec<TraitItem>) -> ItemI
 }
 
 // helper functions
-fn methods(trait_items: &Vec<TraitItem>) -> syn::Result<Vec<Method>> {
+fn methods(trait_items: &[TraitItem]) -> syn::Result<Vec<Method>> {
     let mut methods = vec![];
     for item in trait_items {
         if let TraitItem::Fn(method) = item {
@@ -167,40 +167,9 @@ fn replace_self_to_impl(ty: &syn::Type) -> syn::Result<Box<syn::Type>> {
 
 // TODO: may rely on whole syn::File where we can replace the type alias to get stable hash results
 // Or we rejects the type alias
-fn calculate_hash(trait_items: &Vec<TraitItem>) -> u64 {
+// TODO: check hasher implementation is collision resistant and stable
+fn calculate_hash(trait_items: &[TraitItem]) -> u64 {
     let mut hasher = std::hash::DefaultHasher::new();
     std::hash::Hash::hash_slice(trait_items, &mut hasher);
     hasher.finish()
 }
-
-// #[cfg(test)]
-// mod tests {
-// use super::*;
-// #[test]
-// fn methods_works() {
-//     let input: ItemTrait = parse_quote!(
-//         pub trait NoGenericsTrait {
-//             fn method1(a: u32) -> u32;
-//             fn method2(a: u32, b: u32) -> u32;
-//         }
-//     )
-//     .unwrap();
-//     let methods = methods(&input.items).unwrap();
-//     assert_eq!(methods.len(), 1);
-// assert_eq!(
-//     quote! {#(#methods),*},
-//     quote! { method1 {a: i32}, method2 {a:u32,b:u32}}
-// )
-// }
-
-// fn methods_rejects_self() {
-//     let input: ItemTrait = parse_quote!(
-//         pub trait TraitWithSelf {
-//             fn test(&self, a: u32) -> u32;
-//         }
-//     )
-//     .unwrap();
-//     let methods = methods(&input.items);
-//     assert!(methods.is_err());
-// }
-// }
