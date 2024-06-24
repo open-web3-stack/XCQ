@@ -1,8 +1,7 @@
 use parity_scale_codec::{Decode, Encode};
-use xcq_extension::Vec;
-use xcq_extension::{DispatchError, Dispatchable};
-use xcq_extension::{ExtensionId, ExtensionIdTy};
+use xcq_extension::extension;
 
+#[extension(0)]
 pub trait ExtensionCore {
     type Config: Config;
     fn has_extension(id: <Self::Config as Config>::ExtensionId) -> bool;
@@ -16,32 +15,3 @@ pub trait ExtensionCore {
 pub trait Config {
     type ExtensionId: Decode;
 }
-
-// #[extension(ExtensionCore)]
-// type Call;
-
-mod generated_by_extension_decl {
-    use super::*;
-
-    type ExtensionIdOf<T> = <<T as ExtensionCore>::Config as Config>::ExtensionId;
-    #[derive(Decode)]
-    pub enum ExtensionCoreCall<Impl: ExtensionCore> {
-        HasExtension { id: ExtensionIdOf<Impl> },
-    }
-
-    impl<Impl: ExtensionCore> Dispatchable for ExtensionCoreCall<Impl> {
-        fn dispatch(self) -> Result<Vec<u8>, DispatchError> {
-            match self {
-                Self::HasExtension { id } => Ok(Impl::has_extension(id).encode()),
-            }
-        }
-    }
-
-    impl<Impl: ExtensionCore> ExtensionId for ExtensionCoreCall<Impl> {
-        const EXTENSION_ID: ExtensionIdTy = 0u64;
-    }
-
-    pub type Call<Impl> = ExtensionCoreCall<Impl>;
-}
-
-pub use generated_by_extension_decl::*;

@@ -18,6 +18,7 @@ pub use extension_id::{ExtensionId, ExtensionIdTy};
 mod error;
 pub use error::ExtensionError;
 mod macros;
+pub use xcq_extension_procedural::extension;
 
 mod perm_controller;
 pub use perm_controller::{InvokeSource, PermController};
@@ -101,120 +102,5 @@ impl<E: ExtensionTuple, P: PermController> ExtensionsExecutor<E, P> {
         self.executor
             .execute(guest.program(), input.method(), input.args())
             .map_err(|e| format!("{:?}", e))
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use parity_scale_codec::{Decode, Encode};
-    use xcq_extension_core::ExtensionCore;
-    use xcq_extension_fungibles::{AccountIdFor, AssetIdFor, BalanceFor, ExtensionFungibles};
-
-    // extension_core impls
-    pub struct ExtensionCoreImpl;
-
-    pub struct ExtensionCoreConfigImpl;
-    impl xcq_extension_core::Config for ExtensionCoreConfigImpl {
-        type ExtensionId = u64;
-    }
-
-    impl ExtensionCore for ExtensionCoreImpl {
-        type Config = ExtensionCoreConfigImpl;
-        fn has_extension(id: <Self::Config as xcq_extension_core::Config>::ExtensionId) -> bool {
-            matches!(id, 0 | 1)
-        }
-    }
-
-    // extension_fungibles impls
-    pub struct ExtensionFungiblesImpl;
-    pub struct ExtensionFungiblesConfigImpl;
-
-    impl xcq_extension_fungibles::Config for ExtensionFungiblesConfigImpl {
-        type AccountId = [u8; 32];
-        type Balance = u32;
-        type AssetId = u64;
-    }
-
-    impl ExtensionFungibles for ExtensionFungiblesImpl {
-        type Config = ExtensionFungiblesConfigImpl;
-        fn balance(_asset: AssetIdFor<Self>, _who: AccountIdFor<Self>) -> BalanceFor<Self> {
-            0
-        }
-        fn total_supply(_asset: AssetIdFor<Self>) -> BalanceFor<Self> {
-            100
-        }
-    }
-
-    type Extensions = (
-        xcq_extension_core::Call<ExtensionCoreImpl>,
-        xcq_extension_fungibles::Call<ExtensionFungiblesImpl>,
-    );
-
-    // guest impls
-    pub struct GuestImpl {
-        pub program: Vec<u8>,
-    }
-
-    impl Guest for GuestImpl {
-        fn program(&self) -> &[u8] {
-            &self.program
-        }
-    }
-
-    pub struct InputImpl {
-        pub method: Method,
-        pub args: Vec<u8>,
-    }
-
-    impl Input for InputImpl {
-        fn method(&self) -> Method {
-            self.method.clone()
-        }
-        fn args(&self) -> &[u8] {
-            &self.args
-        }
-    }
-
-    #[derive(Encode, Decode)]
-    enum CoreMethod {
-        HasExtension { id: u64 },
-    }
-
-    #[derive(Encode, Decode)]
-    enum FungiblesMethod {
-        Balance { asset: u64, who: [u8; 32] },
-        TotalSupply { asset: u64 },
-    }
-    #[test]
-    fn call_core_works() {
-        let blob = include_bytes!("../../output/poc-guest-transparent-call.polkavm");
-        let mut executor = ExtensionsExecutor::<Extensions, ()>::new(InvokeSource::RuntimeAPI);
-        let guest = GuestImpl { program: blob.to_vec() };
-        let method = CoreMethod::HasExtension { id: 0 };
-        let mut input_data = 0u64.encode();
-        input_data.extend_from_slice(&method.encode());
-        let input = InputImpl {
-            method: "main".to_string(),
-            args: input_data,
-        };
-        let res = executor.execute_method(guest, input).unwrap();
-        assert_eq!(res, vec![1]);
-    }
-
-    #[test]
-    fn call_fungibles_works() {
-        let blob = include_bytes!("../../output/poc-guest-transparent-call.polkavm");
-        let mut executor = ExtensionsExecutor::<Extensions, ()>::new(InvokeSource::RuntimeAPI);
-        let guest = GuestImpl { program: blob.to_vec() };
-        let method = FungiblesMethod::TotalSupply { asset: 1u64 };
-        let mut input_data = 1u64.encode();
-        input_data.extend_from_slice(&method.encode());
-        let input = InputImpl {
-            method: "main".to_string(),
-            args: input_data,
-        };
-        let res = executor.execute_method(guest, input).unwrap();
-        assert_eq!(res, vec![100u8, 0u8, 0u8, 0u8]);
     }
 }

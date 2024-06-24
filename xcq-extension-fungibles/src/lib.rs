@@ -1,12 +1,11 @@
 use parity_scale_codec::{Decode, Encode};
-use xcq_extension::Vec;
-use xcq_extension::{DispatchError, Dispatchable};
-use xcq_extension::{ExtensionId, ExtensionIdTy};
+use xcq_extension::extension;
 
 pub type AccountIdFor<T> = <<T as ExtensionFungibles>::Config as Config>::AccountId;
 pub type BalanceFor<T> = <<T as ExtensionFungibles>::Config as Config>::Balance;
 pub type AssetIdFor<T> = <<T as ExtensionFungibles>::Config as Config>::AssetId;
 
+#[extension(1)]
 pub trait ExtensionFungibles {
     type Config: Config;
     // fungibles::Inspect (not extensive)
@@ -24,40 +23,3 @@ pub trait Config {
     type AssetId: Decode;
     type Balance: Encode;
 }
-
-// #[extension(ExtensionFungibles)]
-// type Call;
-
-mod generated_by_extension_decl {
-
-    use super::*;
-
-    #[derive(Decode)]
-    pub enum ExtensionFungiblesCall<Impl: ExtensionFungibles> {
-        // TODO: not extensive
-        Balance {
-            asset: AssetIdFor<Impl>,
-            who: AccountIdFor<Impl>,
-        },
-        TotalSupply {
-            asset: AssetIdFor<Impl>,
-        },
-    }
-
-    impl<Impl: ExtensionFungibles> Dispatchable for ExtensionFungiblesCall<Impl> {
-        fn dispatch(self) -> Result<Vec<u8>, DispatchError> {
-            match self {
-                Self::Balance { asset, who } => Ok(Impl::balance(asset, who).encode()),
-                Self::TotalSupply { asset } => Ok(Impl::total_supply(asset).encode()),
-            }
-        }
-    }
-
-    impl<Impl: ExtensionFungibles> ExtensionId for ExtensionFungiblesCall<Impl> {
-        const EXTENSION_ID: ExtensionIdTy = 1u64;
-    }
-
-    pub type Call<Impl> = ExtensionFungiblesCall<Impl>;
-}
-
-pub use generated_by_extension_decl::*;
