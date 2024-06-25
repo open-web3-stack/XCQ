@@ -121,7 +121,7 @@ fn call_core_works() {
     let mut executor = ExtensionsExecutor::<Extensions, ()>::new(InvokeSource::RuntimeAPI);
     let guest = GuestImpl { program: blob.to_vec() };
     let method = CoreMethod::HasExtension { id: 0 };
-    let mut input_data = 0u64.encode();
+    let mut input_data = 16086776565154421753u64.encode();
     input_data.extend_from_slice(&method.encode());
     let input = InputImpl {
         method: "main".to_string(),
@@ -137,7 +137,7 @@ fn call_fungibles_works() {
     let mut executor = ExtensionsExecutor::<Extensions, ()>::new(InvokeSource::RuntimeAPI);
     let guest = GuestImpl { program: blob.to_vec() };
     let method = FungiblesMethod::TotalSupply { asset: 1u64 };
-    let mut input_data = 1u64.encode();
+    let mut input_data = 18438207628271534596u64.encode();
     input_data.extend_from_slice(&method.encode());
     let input = InputImpl {
         method: "main".to_string(),
