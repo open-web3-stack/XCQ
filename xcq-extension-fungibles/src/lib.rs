@@ -5,7 +5,7 @@ pub type AccountIdFor<T> = <<T as ExtensionFungibles>::Config as Config>::Accoun
 pub type BalanceFor<T> = <<T as ExtensionFungibles>::Config as Config>::Balance;
 pub type AssetIdFor<T> = <<T as ExtensionFungibles>::Config as Config>::AssetId;
 
-#[extension(1)]
+#[extension]
 pub trait ExtensionFungibles {
     type Config: Config;
     // fungibles::Inspect (not extensive)

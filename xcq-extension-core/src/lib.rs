@@ -1,7 +1,7 @@
 use parity_scale_codec::{Decode, Encode};
 use xcq_extension::extension;
 
-#[extension(0)]
+#[extension]
 pub trait ExtensionCore {
     type Config: Config;
     fn has_extension(id: <Self::Config as Config>::ExtensionId) -> bool;

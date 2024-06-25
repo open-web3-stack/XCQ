@@ -3,7 +3,7 @@ use xcq_extension::{extension, ExtensionsExecutor, Guest, Input, InvokeSource, M
 
 mod extension_core {
     use super::*;
-    #[extension(0)]
+    #[extension]
     pub trait ExtensionCore {
         type Config: Config;
         fn has_extension(id: <Self::Config as Config>::ExtensionId) -> bool;
@@ -24,7 +24,7 @@ mod extension_fungibles {
     pub type AccountIdFor<T> = <<T as ExtensionFungibles>::Config as Config>::AccountId;
     pub type BalanceFor<T> = <<T as ExtensionFungibles>::Config as Config>::Balance;
     pub type AssetIdFor<T> = <<T as ExtensionFungibles>::Config as Config>::AssetId;
-    #[extension(1)]
+    #[extension]
     pub trait ExtensionFungibles {
         type Config: Config;
         fn total_supply(asset: AssetIdFor<Self>) -> BalanceFor<Self>;
