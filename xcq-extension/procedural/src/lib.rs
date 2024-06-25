@@ -168,9 +168,13 @@ fn replace_self_to_impl(ty: &syn::Type) -> syn::Result<Box<syn::Type>> {
 // TODO: currently we only hash on trait ident and function names,
 fn calculate_hash(trait_ident: &Ident, trait_items: &[TraitItem]) -> u64 {
     let mut hasher = twox_hash::XxHash64::default();
+    // reduce the chance of hash collision
+    "xcq-ext$".hash(&mut hasher);
     trait_ident.hash(&mut hasher);
     for trait_item in trait_items {
         if let TraitItem::Fn(method) = trait_item {
+            // reduce the chance of hash collision
+            "@".hash(&mut hasher);
             method.sig.ident.hash(&mut hasher);
         }
     }
