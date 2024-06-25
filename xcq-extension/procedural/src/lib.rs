@@ -1,6 +1,6 @@
 use proc_macro2::TokenStream;
 use quote::quote;
-use std::hash::Hasher;
+use std::hash::{Hash, Hasher};
 use syn::token::Comma;
 use syn::{parse_macro_input, parse_quote, parse_str, spanned::Spanned};
 use syn::{punctuated::Punctuated, ExprCall, Field, Ident, ItemImpl, Pat, TraitItem, Variant};
@@ -116,7 +116,7 @@ fn dispatchable_impl(trait_ident: &Ident, methods: &[Method]) -> TokenStream {
 }
 
 fn extension_id_impl(trait_ident: &Ident, trait_items: &[TraitItem]) -> ItemImpl {
-    let extension_id = calculate_hash(trait_items);
+    let extension_id = calculate_hash(trait_ident, trait_items);
     parse_quote! {
         impl<Impl: #trait_ident> xcq_extension::ExtensionId for Call<Impl> {
             const EXTENSION_ID: xcq_extension::ExtensionIdTy = #extension_id;
@@ -165,11 +165,14 @@ fn replace_self_to_impl(ty: &syn::Type) -> syn::Result<Box<syn::Type>> {
     Ok(Box::new(modified_ty))
 }
 
-// TODO: may rely on whole syn::File where we can replace the type alias to get stable hash results
-// Or we rejects the type alias
-// TODO: check hasher implementation is collision resistant and stable
-fn calculate_hash(trait_items: &[TraitItem]) -> u64 {
-    let mut hasher = std::hash::DefaultHasher::new();
-    std::hash::Hash::hash_slice(trait_items, &mut hasher);
+// TODO: currently we only hash on trait ident and function names,
+fn calculate_hash(trait_ident: &Ident, trait_items: &[TraitItem]) -> u64 {
+    let mut hasher = twox_hash::XxHash64::default();
+    trait_ident.hash(&mut hasher);
+    for trait_item in trait_items {
+        if let TraitItem::Fn(method) = trait_item {
+            method.sig.ident.hash(&mut hasher);
+        }
+    }
     hasher.finish()
 }
