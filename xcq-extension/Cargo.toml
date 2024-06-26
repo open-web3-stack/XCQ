@@ -13,10 +13,8 @@ scale-info = { workspace = true }
 xcq-executor = { workspace = true }
 impl-trait-for-tuples = "0.2.2"
 tracing = { workspace = true }
+xcq-extension-procedural = { path = "procedural" }
 
-[dev-dependencies]
-xcq-extension-core = { workspace = true }
-xcq-extension-fungibles = { workspace = true }
 
 [features]
 default = ["std"]
