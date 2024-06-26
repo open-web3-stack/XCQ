@@ -121,11 +121,7 @@ fn call_core_works() {
     let mut executor = ExtensionsExecutor::<Extensions, ()>::new(InvokeSource::RuntimeAPI);
     let guest = GuestImpl { program: blob.to_vec() };
     let method = CoreMethod::HasExtension { id: 0 };
-<<<<<<< HEAD
-    let mut input_data = 980409741042475474u64.encode();
-=======
     let mut input_data = 9413763400367702439u64.encode();
->>>>>>> 9832607 (modify hash calculation)
     input_data.extend_from_slice(&method.encode());
     let input = InputImpl {
         method: "main".to_string(),
@@ -141,11 +137,7 @@ fn call_fungibles_works() {
     let mut executor = ExtensionsExecutor::<Extensions, ()>::new(InvokeSource::RuntimeAPI);
     let guest = GuestImpl { program: blob.to_vec() };
     let method = FungiblesMethod::TotalSupply { asset: 1u64 };
-<<<<<<< HEAD
-    let mut input_data = 10604941536775757594u64.encode();
-=======
     let mut input_data = 10588899351449456541u64.encode();
->>>>>>> 9832607 (modify hash calculation)
     input_data.extend_from_slice(&method.encode());
     let input = InputImpl {
         method: "main".to_string(),
