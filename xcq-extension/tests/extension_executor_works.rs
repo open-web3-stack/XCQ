@@ -1,5 +1,5 @@
 use parity_scale_codec::{Decode, Encode};
-use xcq_extension::{extension, ExtensionsExecutor, Guest, Input, InvokeSource, Method};
+use xcq_extension::{extension, ExtensionId, ExtensionsExecutor, Guest, Input, InvokeSource, Method};
 
 mod extension_core {
     use super::*;
@@ -121,7 +121,7 @@ fn call_core_works() {
     let mut executor = ExtensionsExecutor::<Extensions, ()>::new(InvokeSource::RuntimeAPI);
     let guest = GuestImpl { program: blob.to_vec() };
     let method = CoreMethod::HasExtension { id: 0 };
-    let mut input_data = 9413763400367702439u64.encode();
+    let mut input_data = <extension_core::Call<ExtensionCoreImpl> as ExtensionId>::EXTENSION_ID.encode();
     input_data.extend_from_slice(&method.encode());
     let input = InputImpl {
         method: "main".to_string(),
@@ -137,7 +137,7 @@ fn call_fungibles_works() {
     let mut executor = ExtensionsExecutor::<Extensions, ()>::new(InvokeSource::RuntimeAPI);
     let guest = GuestImpl { program: blob.to_vec() };
     let method = FungiblesMethod::TotalSupply { asset: 1u64 };
-    let mut input_data = 10588899351449456541u64.encode();
+    let mut input_data = <extension_fungibles::Call<ExtensionFungiblesImpl> as ExtensionId>::EXTENSION_ID.encode();
     input_data.extend_from_slice(&method.encode());
     let input = InputImpl {
         method: "main".to_string(),
