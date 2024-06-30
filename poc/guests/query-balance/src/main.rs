@@ -31,5 +31,5 @@ extern "C" fn main(ptr: u32, size: u32) -> u64 {
     unsafe {
         core::ptr::write_volatile(ptr as *mut u64, sum);
     }
-    (ptr as u64) << 32 | (core::mem::size_of::<u64>() as u64)
+    (core::mem::size_of::<u64>() as u64) << 32 | (ptr as u64)
 }

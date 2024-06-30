@@ -36,5 +36,5 @@ extern "C" fn main(ptr: u32, size: u32) -> u64 {
     unsafe {
         core::ptr::copy_nonoverlapping(sum_bytes.as_ptr(), ptr, sum_bytes.len());
     }
-    (ptr as u64) << 32 | (sum_bytes.len() as u64)
+    (sum_bytes.len() as u64) << 32 | (ptr as u64)
 }
