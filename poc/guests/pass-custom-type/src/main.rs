@@ -50,7 +50,7 @@ extern "C" fn main(ptr: u32, _size: u32) -> u64 {
             let val = b"test";
             let size = core::mem::size_of_val(val);
             let val_ptr = val.as_ptr();
-            (val_ptr as u64) << 32 | size as u64
+            (size as u64) << 32 | val_ptr as u64
         }
         1 => {
             let val = unsafe { core::ptr::read_volatile((ptr + 1) as *const u8) };
@@ -67,7 +67,7 @@ extern "C" fn main(ptr: u32, _size: u32) -> u64 {
             }
             unsafe { core::ptr::write_volatile(ptr as *mut u32, res) };
             let size = core::mem::size_of::<u32>();
-            (ptr as u64) << 32 | size as u64
+            (size as u64) << 32 | ptr as u64
         }
         _ => 0,
     }

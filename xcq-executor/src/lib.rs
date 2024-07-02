@@ -77,8 +77,8 @@ impl<Ctx: XcqExecutorContext> XcqExecutor<Ctx> {
         };
 
         let res = instance.call_typed::<(u32, u32), u64>(&mut self.context, method, (input_ptr, input.len() as u32))?;
-        let res_ptr = (res >> 32) as u32;
-        let res_size = (res & 0xffffffff) as u32;
+        let res_size = (res >> 32) as u32;
+        let res_ptr = (res & 0xffffffff) as u32;
         let result = instance
             .read_memory_into_vec(res_ptr, res_size)
             .map_err(|e| XcqExecutorError::ExecutionError(polkavm::ExecutionError::Trap(e)))?;

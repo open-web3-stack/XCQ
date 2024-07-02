@@ -75,7 +75,7 @@ impl<E: ExtensionTuple, P: PermController> XcqExecutorContext for Context<E, P> 
                         caller
                             .write_memory(res_ptr, &res_bytes)
                             .map_err(|_| ExtensionError::PolkavmError)?;
-                        Ok(((res_ptr as u64) << 32) | (res_bytes_len as u64))
+                        Ok(((res_bytes_len as u64) << 32) | (res_ptr as u64))
                     };
                     let result = func_with_result();
                     tracing::trace!("(host call): result: {:?}", result);
