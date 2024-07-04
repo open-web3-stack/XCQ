@@ -42,6 +42,9 @@ clippy:
 	SKIP_WASM_BUILD= cargo clippy -- -D warnings
 	cd poc/guests; cargo clippy
 
+test:
+	SKIP_WASM_BUILD= cargo test
+
 chainspec:
 	cargo build -p poc-runtime --release
 	mkdir -p output

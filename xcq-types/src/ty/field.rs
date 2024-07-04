@@ -1,6 +1,7 @@
-use super::Type;
-// A field of a struct or enum variant.
+use crate::XcqType;
+// A Named or Unnamed field in a composite type
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Debug)]
 pub struct Field {
-    ident: Vec<u8>,
-    ty: Type,
+    pub ident: Vec<u8>,
+    pub ty: XcqType,
 }

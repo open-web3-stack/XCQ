@@ -1264,6 +1264,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "fortuples"
+version = "0.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "87630a8087e9cac4b7edfb6ee5e250ddca9112b57b6b17d8f5107375a3a8eace"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
 name = "frame-benchmarking"
 version = "33.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5639,6 +5650,22 @@ dependencies = [
 [[package]]
 name = "xcq-types"
 version = "0.1.0"
+dependencies = [
+ "cfg-if",
+ "fortuples",
+ "parity-scale-codec",
+ "serde",
+ "xcq-types-derive",
+]
+
+[[package]]
+name = "xcq-types-derive"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.66",
+]
 
 [[package]]
 name = "yoke"
