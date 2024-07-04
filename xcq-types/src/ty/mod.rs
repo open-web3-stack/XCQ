@@ -11,6 +11,8 @@ pub enum XcqType {
     Primitive(PrimitiveType),
     Struct(StructType),
     Enum(EnumType),
+    // TODO: deal with self-referential types
     Tuple(Vec<XcqType>),
+    // TODO: deal with self-referential types
     Sequence(Box<XcqType>),
 }

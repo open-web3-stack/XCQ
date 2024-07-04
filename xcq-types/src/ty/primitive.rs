@@ -1,4 +1,3 @@
-use crate::XcqType;
 use codec::Encode;
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
