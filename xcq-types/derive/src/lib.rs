@@ -1,5 +1,6 @@
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
+use proc_macro_crate::{crate_name, FoundCrate};
 use quote::quote;
 use syn::{punctuated::Punctuated, token::Comma, Data, DataEnum, DataStruct, DeriveInput, Field, Fields};
 
@@ -38,6 +39,7 @@ impl XcqTypeInfoImpl {
     }
 
     fn expand(&self) -> syn::Result<TokenStream2> {
+        let xcq_types = import_xcq_types();
         let ident = &self.ast.ident;
 
         // Assume no generics
@@ -58,9 +60,9 @@ impl XcqTypeInfoImpl {
 
         // TODO: No token replacement supported yet
         Ok(quote! {
-            impl xcq_types::XcqTypeInfo for #ident {
+            impl #xcq_types::XcqTypeInfo for #ident {
                 type Identity = Self;
-                fn type_info() -> xcq_types::XcqType {
+                fn type_info() -> #xcq_types::XcqType {
                     #type_info
                 }
             }
@@ -68,6 +70,7 @@ impl XcqTypeInfoImpl {
     }
 
     fn generate_struct_type(&self, data_struct: &DataStruct) -> TokenStream2 {
+        let xcq_types = import_xcq_types();
         let ident = &self.ast.ident;
         let fields = match data_struct.fields {
             Fields::Named(ref fields) => self.generate_fields(&fields.named),
@@ -76,7 +79,7 @@ impl XcqTypeInfoImpl {
         };
 
         quote! {
-            xcq_types::StructType {
+            #xcq_types::StructType {
                 ident: stringify!(#ident).as_bytes().to_vec(),
                 fields: vec![#(#fields),*],
             }.into()
@@ -84,6 +87,7 @@ impl XcqTypeInfoImpl {
     }
 
     fn generate_enum_type(&self, data_enum: &DataEnum) -> TokenStream2 {
+        let xcq_types = import_xcq_types();
         let ident = &self.ast.ident;
         let variants = data_enum.variants.iter().map(|variant| {
             let ident = &variant.ident;
@@ -93,14 +97,14 @@ impl XcqTypeInfoImpl {
                 Fields::Unit => return quote! {},
             };
             quote! {
-                xcq_types::Variant {
+                #xcq_types::Variant {
                     ident: stringify!(#ident).as_bytes().to_vec(),
                     fields: vec![#(#fields),*],
                 }
             }
         });
         quote! {
-            xcq_types::EnumType {
+            #xcq_types::EnumType {
                 ident: stringify!(#ident).as_bytes().to_vec(),
                 variants: vec![#(#variants),*],
             }.into()
@@ -108,6 +112,7 @@ impl XcqTypeInfoImpl {
     }
 
     fn generate_fields(&self, fields: &Punctuated<Field, Comma>) -> Vec<TokenStream2> {
+        let xcq_types = import_xcq_types();
         fields
             .iter()
             .map(|f| {
@@ -117,12 +122,23 @@ impl XcqTypeInfoImpl {
                     None => quote! { vec![] },
                 };
                 quote! {
-                    xcq_types::Field {
+                    #xcq_types::Field {
                         ident: #ident_toks,
-                        ty: <#ty as xcq_types::XcqTypeInfo>::type_info(),
+                        ty: <#ty as #xcq_types::XcqTypeInfo>::type_info(),
                     }
                 }
             })
             .collect()
+    }
+}
+
+fn import_xcq_types() -> TokenStream2 {
+    let found_crate = crate_name("xcq-types").expect("xcq-types not found in Cargo.toml");
+    match found_crate {
+        FoundCrate::Itself => quote! { crate },
+        FoundCrate::Name(name) => {
+            let name = syn::Ident::new(&name, proc_macro2::Span::call_site());
+            quote! { ::#name }
+        }
     }
 }

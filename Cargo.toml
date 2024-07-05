@@ -71,3 +71,4 @@ tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 syn = { version = "2", features = ["full", "extra-traits"] }
 quote = "1"
 proc-macro2 = "1"
+proc-macro-crate = "3"

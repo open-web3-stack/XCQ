@@ -85,7 +85,9 @@ fn tuple_primitives() {
 
 #[derive(XcqTypeInfo)]
 struct Person {
+    #[allow(dead_code)]
     name: String,
+    #[allow(dead_code)]
     age_in_years: u8,
 }
 #[test]
