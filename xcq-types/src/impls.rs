@@ -172,3 +172,4 @@ impl XcqTypeInfo for String {
     }
 }
 // No impl for PhantomData, codec::Compact, Range, RangeInclusive, str, BTreeMap, BTreeSet, BinaryHeap, VecDeque yet.
+// No support for self-referential types yet.
