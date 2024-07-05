@@ -28,6 +28,6 @@ use crate::{vec::Vec, Field};
 /// ```
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Debug)]
 pub struct StructType {
-    ident: Vec<u8>,
-    fields: Vec<Field>,
+    pub ident: Vec<u8>,
+    pub fields: Vec<Field>,
 }

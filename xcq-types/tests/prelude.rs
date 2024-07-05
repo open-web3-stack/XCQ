@@ -1,15 +1,6 @@
-use crate::{EnumType, Field, Variant};
-use crate::{PrimitiveType, XcqType, XcqTypeInfo};
-
-fn assert_eq<T: XcqTypeInfo + ?Sized>(expect: XcqType) {
-    assert_eq!(T::type_info(), expect);
-}
-
-macro_rules! assert_type {
-    ($ty:ty, $expected: expr) => {{
-        assert_eq::<$ty>($expected);
-    }};
-}
+use crate::assert_type;
+use xcq_types::{EnumType, Field, Variant};
+use xcq_types::{PrimitiveType, XcqType, XcqTypeInfo};
 
 #[test]
 fn primitives() {
