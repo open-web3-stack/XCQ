@@ -9,6 +9,8 @@ pub use ty::*;
 mod impls;
 mod prelude;
 pub use prelude::*;
+#[cfg(test)]
+mod tests;
 
 pub use xcq_types_derive::XcqTypeInfo;
 

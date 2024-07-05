@@ -1,6 +1,14 @@
-use crate::assert_type;
-use xcq_types::{EnumType, Field, Variant};
-use xcq_types::{PrimitiveType, XcqType, XcqTypeInfo};
+use crate::{EnumType, Field, PrimitiveType, StructType, Variant, XcqType, XcqTypeInfo};
+
+fn assert_type_fn<T: XcqTypeInfo + ?Sized>(expect: XcqType) {
+    assert_eq!(T::type_info(), expect);
+}
+
+macro_rules! assert_type {
+    ($ty:ty, $expected: expr) => {{
+        assert_type_fn::<$ty>($expected);
+    }};
+}
 
 #[test]
 fn primitives() {
@@ -72,5 +80,30 @@ fn tuple_primitives() {
             XcqType::Tuple(vec![PrimitiveType::I8.into(), PrimitiveType::I16.into()]),
             XcqType::Tuple(vec![PrimitiveType::U32.into(), PrimitiveType::U64.into()]),
         ])
+    );
+}
+
+#[derive(XcqTypeInfo)]
+struct Person {
+    name: String,
+    age_in_years: u8,
+}
+#[test]
+fn struct_types() {
+    assert_type!(
+        Person,
+        XcqType::Struct(StructType {
+            ident: "Person".as_bytes().to_vec(),
+            fields: vec![
+                Field {
+                    ident: "name".as_bytes().to_vec(),
+                    ty: XcqType::Sequence(Box::new(XcqType::Primitive(PrimitiveType::U8.into()))),
+                },
+                Field {
+                    ident: "age_in_years".as_bytes().to_vec(),
+                    ty: PrimitiveType::U8.into(),
+                },
+            ],
+        })
     );
 }
