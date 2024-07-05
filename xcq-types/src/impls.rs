@@ -1,4 +1,4 @@
-use crate::{boxed::Box, rc::Rc, sync::Arc};
+use crate::{boxed::Box, rc::Rc, string::String, sync::Arc, vec::Vec};
 use crate::{EnumType, Field, PrimitiveType, StructType, Variant};
 use crate::{XcqType, XcqTypeInfo};
 use fortuples::fortuples;

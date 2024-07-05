@@ -2,6 +2,7 @@ mod r#enum;
 mod field;
 mod primitive;
 mod r#struct;
+use crate::{boxed::Box, vec::Vec};
 
 pub use self::{field::*, primitive::*, r#enum::*, r#struct::*};
 

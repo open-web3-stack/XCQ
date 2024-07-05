@@ -1,5 +1,3 @@
-#[cfg(not(feature = "std"))]
-extern crate alloc;
 
 use cfg_if::cfg_if;
 

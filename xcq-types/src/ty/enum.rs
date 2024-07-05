@@ -1,4 +1,4 @@
-use crate::Field;
+use crate::{vec::Vec, Field};
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Debug)]
 pub struct Variant {

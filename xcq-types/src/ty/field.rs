@@ -1,3 +1,4 @@
+use crate::vec::Vec;
 use crate::XcqType;
 // A Named or Unnamed field in a composite type
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Debug)]

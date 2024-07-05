@@ -1,5 +1,4 @@
-use crate::prelude::vec::Vec;
-use crate::Field;
+use crate::{vec::Vec, Field};
 
 /// A struct type, consisting of a named (struct) or unnamed (tuple struct) fields or unit struct.
 /// Note: in fact, it can represent a
