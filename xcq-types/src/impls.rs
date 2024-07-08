@@ -65,14 +65,14 @@ where
     type Identity = Self;
     fn type_info() -> XcqType {
         EnumType {
-            ident: "Option".as_bytes().to_vec(),
+            ident: b"Option".to_vec(),
             variants: vec![
                 Variant {
-                    ident: "None".as_bytes().to_vec(),
+                    ident: b"None".to_vec(),
                     fields: vec![],
                 },
                 Variant {
-                    ident: "Some".as_bytes().to_vec(),
+                    ident: b"Some".to_vec(),
                     fields: vec![Field {
                         ident: vec![],
                         ty: T::type_info(),
@@ -92,17 +92,17 @@ where
     type Identity = Self;
     fn type_info() -> XcqType {
         EnumType {
-            ident: "Result".as_bytes().to_vec(),
+            ident: b"Result".to_vec(),
             variants: vec![
                 Variant {
-                    ident: "Ok".as_bytes().to_vec(),
+                    ident: b"Ok".to_vec(),
                     fields: vec![Field {
                         ident: vec![],
                         ty: T::type_info(),
                     }],
                 },
                 Variant {
-                    ident: "Err".as_bytes().to_vec(),
+                    ident: b"Err".to_vec(),
                     fields: vec![Field {
                         ident: vec![],
                         ty: E::type_info(),

@@ -25,14 +25,14 @@ fn prelude_items() {
     assert_type!(
         Option<u128>,
         XcqType::Enum(EnumType {
-            ident: "Option".as_bytes().to_vec(),
+            ident: b"Option".to_vec(),
             variants: vec![
                 Variant {
-                    ident: "None".as_bytes().to_vec(),
+                    ident: b"None".to_vec(),
                     fields: vec![],
                 },
                 Variant {
-                    ident: "Some".as_bytes().to_vec(),
+                    ident: b"Some".to_vec(),
                     fields: vec![Field {
                         ident: vec![],
                         ty: PrimitiveType::U128.into(),
@@ -45,17 +45,17 @@ fn prelude_items() {
     assert_type!(
         Result<bool, String>,
         XcqType::Enum(EnumType {
-            ident: "Result".as_bytes().to_vec(),
+            ident: b"Result".to_vec(),
             variants: vec![
                 Variant {
-                    ident: "Ok".as_bytes().to_vec(),
+                    ident: b"Ok".to_vec(),
                     fields: vec![Field {
                         ident: vec![],
                         ty: PrimitiveType::Bool.into(),
                     }],
                 },
                 Variant {
-                    ident: "Err".as_bytes().to_vec(),
+                    ident: b"Err".to_vec(),
                     fields: vec![Field {
                         ident: vec![],
                         ty: XcqType::Sequence(Box::new(PrimitiveType::U8.into())),
@@ -95,14 +95,14 @@ fn struct_types() {
     assert_type!(
         Person,
         XcqType::Struct(StructType {
-            ident: "Person".as_bytes().to_vec(),
+            ident: b"Person".to_vec(),
             fields: vec![
                 Field {
-                    ident: "name".as_bytes().to_vec(),
+                    ident: b"name".to_vec(),
                     ty: XcqType::Sequence(Box::new(XcqType::Primitive(PrimitiveType::U8.into()))),
                 },
                 Field {
-                    ident: "age_in_years".as_bytes().to_vec(),
+                    ident: b"age_in_years".to_vec(),
                     ty: PrimitiveType::U8.into(),
                 },
             ],
