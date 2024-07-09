@@ -1,16 +1,27 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
+#[cfg(not(feature = "std"))]
+#[macro_use]
+extern crate alloc;
 
+mod ty;
+pub use ty::*;
+mod impls;
+mod prelude;
+pub use prelude::*;
 #[cfg(test)]
-mod tests {
-    use super::*;
+mod tests;
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
+pub use xcq_types_derive::XcqTypeInfo;
+
+/// Implementors return the meta type information.
+pub trait XcqTypeInfo {
+    /// This is used to uniquely identify the type via [`core::any::TypeId::of`]
+    /// In most case it is Self, but for reference types it is the type of the reference.
+    type Identity: ?Sized + 'static;
+    fn type_info() -> XcqType;
 }
+/// helper trait for combining `XcqTypeInfo` and `'static
+pub trait XcqStaticTypeInfo: XcqTypeInfo + 'static {}
+
+impl<T> XcqStaticTypeInfo for T where T: XcqTypeInfo + 'static {}

@@ -8,7 +8,16 @@ repository.workspace = true
 version.workspace = true
 
 [dependencies]
+cfg-if = "1.0"
+codec = { package = "parity-scale-codec", version = "3", default-features = false, features = [
+    "derive",
+] }
+serde = { version = "1", default-features = false, optional = true, features = [
+    "derive",
+] }
+fortuples = "0.9"
+xcq-types-derive = { path = "derive" }
 
 [features]
 default = ["std"]
-std = []
+std = ["codec/std"]
