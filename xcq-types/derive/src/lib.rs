@@ -137,7 +137,7 @@ fn import_xcq_types() -> TokenStream2 {
     match found_crate {
         FoundCrate::Itself => quote! { crate },
         FoundCrate::Name(name) => {
-            let crate_ = syn::Ident::new(&name.replace('-', '_'), proc_macro2::Span::call_site());
+            let crate_ = syn::Ident::new(&name.replace('-', "_"), proc_macro2::Span::call_site());
             quote! { ::#crate_ }
         }
     }
