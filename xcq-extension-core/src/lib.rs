@@ -1,4 +1,6 @@
+#![cfg_attr(not(feature = "std"), no_std)]
 use parity_scale_codec::{Decode, Encode};
+use scale_info::prelude::vec::Vec;
 use xcq_extension::extension;
 
 #[extension]

@@ -7,9 +7,7 @@ pub type XcqResponse = Vec<u8>;
 pub type XcqError = String;
 pub type XcqResult = Result<XcqResponse, XcqError>;
 
-use poc_extensions::extension_core::{self, ExtensionCore};
-use poc_extensions::extension_fungibles::{self, ExtensionFungibles};
-use poc_extensions::{ExtensionsExecutor, Guest, Input, InvokeSource, Method};
+use xcq_extension::{ExtensionsExecutor, Guest, Input, InvokeSource, Method};
 decl_runtime_apis! {
     pub trait XcqApi {
         fn execute_query(query: Vec<u8>, input: Vec<u8>) -> XcqResult;
@@ -17,48 +15,42 @@ decl_runtime_apis! {
 }
 
 // extension_core impls
-pub struct ExtensionCoreImpl;
+pub struct ExtensionImpl;
 
-pub struct ExtensionCoreConfigImpl;
-impl extension_core::Config for ExtensionCoreConfigImpl {
+impl xcq_extension_core::Config for ExtensionImpl {
     type ExtensionId = u64;
 }
 
-impl ExtensionCore for ExtensionCoreImpl {
-    type Config = ExtensionCoreConfigImpl;
-    fn has_extension(id: <Self::Config as extension_core::Config>::ExtensionId) -> bool {
+impl xcq_extension_core::ExtensionCore for ExtensionImpl {
+    type Config = ExtensionImpl;
+    fn has_extension(id: <Self::Config as xcq_extension_core::Config>::ExtensionId) -> bool {
         matches!(id, 0 | 1)
     }
 }
 
 // extension_fungibles impls
-pub struct ExtensionFungiblesImpl;
-
-pub struct ExtensionFungiblesConfigImpl;
-
-impl extension_fungibles::Config for ExtensionFungiblesConfigImpl {
+impl xcq_extension_fungibles::Config for ExtensionImpl {
     type AccountId = crate::interface::AccountId;
     type Balance = crate::interface::Balance;
     type AssetId = crate::interface::AssetId;
 }
 
-type AccountIdFor<T> = <<T as ExtensionFungibles>::Config as extension_fungibles::Config>::AccountId;
-type BalanceFor<T> = <<T as ExtensionFungibles>::Config as extension_fungibles::Config>::Balance;
-type AssetIdFor<T> = <<T as ExtensionFungibles>::Config as extension_fungibles::Config>::AssetId;
-
-impl ExtensionFungibles for ExtensionFungiblesImpl {
-    type Config = ExtensionFungiblesConfigImpl;
-    fn balance(asset: AssetIdFor<Self>, who: AccountIdFor<Self>) -> BalanceFor<Self> {
+impl xcq_extension_fungibles::ExtensionFungibles for ExtensionImpl {
+    type Config = ExtensionImpl;
+    fn balance(
+        asset: xcq_extension_fungibles::AssetIdFor<Self>,
+        who: xcq_extension_fungibles::AccountIdFor<Self>,
+    ) -> xcq_extension_fungibles::BalanceFor<Self> {
         crate::Assets::balance(asset, who)
     }
-    fn total_supply(asset: AssetIdFor<Self>) -> BalanceFor<Self> {
+    fn total_supply(asset: xcq_extension_fungibles::AssetIdFor<Self>) -> xcq_extension_fungibles::BalanceFor<Self> {
         crate::Assets::total_supply(asset)
     }
 }
 
 type Extensions = (
-    extension_core::Call<ExtensionCoreImpl>,
-    extension_fungibles::Call<ExtensionFungiblesImpl>,
+    xcq_extension_core::Call<ExtensionImpl>,
+    xcq_extension_fungibles::Call<ExtensionImpl>,
 );
 
 // guest impls
