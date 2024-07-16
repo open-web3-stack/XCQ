@@ -11,7 +11,11 @@ version.workspace = true
 clap = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
+parity-scale-codec = { workspace = true, features = ["std"] }
 
 xcq-executor = { workspace = true, features = ["std"] }
+xcq-extension = { workspace = true, features = ["std"] }
+xcq-extension-core = { workspace = true, features = ["std"] }
+xcq-extension-fungibles = { workspace = true, features = ["std"] }
 
 polkavm = { workspace = true }

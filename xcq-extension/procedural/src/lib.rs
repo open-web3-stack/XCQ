@@ -60,7 +60,7 @@ fn call_enum_def(trait_ident: &Ident, methods: &[Method]) -> syn::Result<syn::It
     // Add phantom data
     variants.push(parse_quote!(
         #[doc(hidden)]
-        __Phantom(std::marker::PhantomData<Impl>)
+        __Phantom(core::marker::PhantomData<Impl>)
     ));
     Ok(parse_quote!(
         #[derive(Decode)]

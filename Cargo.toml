@@ -49,7 +49,7 @@ xcq-types = { path = "xcq-types", default-features = false }
 polkavm = { path = "vendor/polkavm/crates/polkavm", default-features = false }
 
 # polkadot-sdk
-sp-api = { version = "29.0.0", default-features = false }
+sp-api = { version = "31.0.0", default-features = false }
 
 # nostd
 parity-scale-codec = { version = "3.6.12", default-features = false, features = [
@@ -72,3 +72,4 @@ syn = { version = "2", features = ["full", "extra-traits"] }
 quote = "1"
 proc-macro2 = "1"
 proc-macro-crate = "3"
+Inflector = { version = "0.11.4" }

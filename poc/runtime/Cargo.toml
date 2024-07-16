@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-parity-scale-codec = { version = "3.0.0", default-features = false }
-scale-info = { version = "2.6.0", default-features = false }
+parity-scale-codec = { workspace = true }
+scale-info = { workspace = true }
 # this is a frame-based runtime, thus importing `frame` with runtime feature enabled.
 frame = { version = "0.2.0", package = "polkadot-sdk-frame", default-features = false, features = [
     "experimental",
@@ -23,8 +23,10 @@ pallet-transaction-payment-rpc-runtime-api = { version = "33.0.0", default-featu
 # genesis builder that allows us to interacto with runtime genesis config
 sp-genesis-builder = { version = "0.12.0", default-features = false }
 
-poc-executor = { path = "../executor", default-features = false }
-poc-extensions = { path = "../extensions", default-features = false }
+xcq-executor = { workspace = true }
+xcq-extension = { workspace = true }
+xcq-extension-core = { workspace = true }
+xcq-extension-fungibles = { workspace = true }
 
 [dev-dependencies]
 hex = "0.4"
@@ -49,6 +51,8 @@ std = [
     "sp-genesis-builder/std",
     "substrate-wasm-builder",
 
-    "poc-executor/std",
-    "poc-extensions/std",
+    "xcq-executor/std",
+    "xcq-extension/std",
+    "xcq-extension-core/std",
+    "xcq-extension-fungibles/std",
 ]
