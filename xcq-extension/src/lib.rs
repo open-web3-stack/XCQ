@@ -18,7 +18,7 @@ pub use extension_id::{ExtensionId, ExtensionIdTy};
 mod error;
 pub use error::ExtensionError;
 mod macros;
-pub use xcq_extension_procedural::extension;
+pub use xcq_extension_procedural::{decl_extensions, impl_extensions};
 
 mod perm_controller;
 pub use perm_controller::{InvokeSource, PermController};

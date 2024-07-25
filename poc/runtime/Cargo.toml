@@ -27,6 +27,7 @@ xcq-executor = { workspace = true }
 xcq-extension = { workspace = true }
 xcq-extension-core = { workspace = true }
 xcq-extension-fungibles = { workspace = true }
+xcq-primitives = { workspace = true }
 
 [dev-dependencies]
 hex = "0.4"

@@ -22,7 +22,14 @@ extern "C" fn main(ptr: u32, size: u32) -> u64 {
     // in this settings, the return type is same for total_supply/balance
     // otherwise, we need to recognize return type through input data
     for i in 0..num_query {
-        let res = unsafe { call(1, ptr + 1 + query_size * i as u32, query_size) };
+        let res = unsafe {
+            call(
+                10588899351449456541u64,
+                // xcq_extension_fungibles::EXTENSION_ID,
+                ptr + 1 + query_size * i as u32,
+                query_size,
+            )
+        };
         let res_ptr = (res >> 32) as *const u8;
         let res_len = (res & 0xffffffff) as u32;
         let res_bytes = unsafe { core::slice::from_raw_parts(res_ptr, res_len as usize) };

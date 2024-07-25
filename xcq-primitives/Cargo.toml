@@ -10,7 +10,8 @@ version.workspace = true
 [dependencies]
 parity-scale-codec = { workspace = true }
 scale-info = { workspace = true }
+xcq-types = { workspace = true }
 
 [features]
 default = ["std"]
-std = ["parity-scale-codec/std", "scale-info/std"]
+std = ["parity-scale-codec/std", "scale-info/std", "xcq-types/std"]

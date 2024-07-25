@@ -9,6 +9,8 @@ pub use ty::*;
 mod impls;
 mod prelude;
 pub use prelude::*;
+mod meta_type;
+pub use meta_type::MetaType;
 #[cfg(test)]
 mod tests;
 
@@ -25,3 +27,11 @@ pub trait XcqTypeInfo {
 pub trait XcqStaticTypeInfo: XcqTypeInfo + 'static {}
 
 impl<T> XcqStaticTypeInfo for T where T: XcqTypeInfo + 'static {}
+
+/// Returns the runtime bridge to the types compile-time type information.
+pub fn meta_type<T>() -> MetaType
+where
+    T: ?Sized + XcqTypeInfo + 'static,
+{
+    MetaType::new::<T>()
+}

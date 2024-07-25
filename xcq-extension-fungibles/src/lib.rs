@@ -1,27 +1,22 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 use parity_scale_codec::{Decode, Encode};
-use scale_info::prelude::vec::Vec;
-use xcq_extension::extension;
-
-pub type AccountIdFor<T> = <<T as ExtensionFungibles>::Config as Config>::AccountId;
-pub type BalanceFor<T> = <<T as ExtensionFungibles>::Config as Config>::Balance;
-pub type AssetIdFor<T> = <<T as ExtensionFungibles>::Config as Config>::AssetId;
-
-#[extension]
-pub trait ExtensionFungibles {
-    type Config: Config;
-    // fungibles::Inspect (not extensive)
-    // fn total_inssuance(asset: AssetIdFor<Self>) -> BalanceFor<Self>;
-    // fn minimum_balance(asset: AssetIdFor<Self>) -> BalanceFor<Self>;
-    fn total_supply(asset: AssetIdFor<Self>) -> BalanceFor<Self>;
-    fn balance(asset: AssetIdFor<Self>, who: AccountIdFor<Self>) -> BalanceFor<Self>;
-    // fungibles::InspectEnumerable
-    // fn asset_ids() -> Vec<AccountIdFor<Self>>;
-    // fn account_balances(who: AccountIdFor<Self>) -> Vec<(AssetIdFor<Self>, BalanceFor<Self>)>;
-}
+use xcq_extension::decl_extensions;
 
 pub trait Config {
-    type AccountId: Decode;
-    type AssetId: Decode;
-    type Balance: Encode;
+    type AssetId: Encode + Decode;
+    type AccountId: Encode + Decode;
+    type Balance: Encode + Decode;
+}
+decl_extensions! {
+    pub trait ExtensionFungibles {
+        // fungibles::Inspect (not extensive)
+        // fn total_inssuance(asset: AssetIdFor<Self>) -> BalanceFor<Self>;
+        // fn minimum_balance(asset: AssetIdFor<Self>) -> BalanceFor<Self>;
+        type Config: Config;
+        fn total_supply(asset: <Self::Config as Config>::AssetId) -> <Self::Config as Config>::Balance;
+        fn balance(asset: <Self::Config as Config>::AssetId, who: <Self::Config as Config>::AccountId) -> <Self::Config as Config>::Balance;
+        // fungibles::InspectEnumerable
+        // fn asset_ids() -> Vec<AccountIdFor<Self>>;
+        // fn account_balances(who: AccountIdFor<Self>) -> Vec<(AssetIdFor<Self>, BalanceFor<Self>)>;
+    }
 }
