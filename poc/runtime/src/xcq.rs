@@ -119,14 +119,15 @@ mod tests {
             .public();
         let alice_account = AccountId::from(alice_public);
         // query num
-        let mut data = vec![2u8];
+        let mut data = xcq_extension_fungibles::EXTENSION_ID.encode();
+        data.extend_from_slice(&vec![2u8]);
         let method1 = FungiblesMethod::Balance {
             asset: 21,
-            who: alice_account.clone(),
+            who: alice_account.clone().into(),
         };
         let method2 = FungiblesMethod::Balance {
             asset: 1984,
-            who: alice_account,
+            who: alice_account.into(),
         };
         data.extend_from_slice(&method1.encode());
         data.extend_from_slice(&method2.encode());

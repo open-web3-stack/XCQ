@@ -67,7 +67,7 @@ impl extension_core::Config for ExtensionImpl {
 impl extension_fungibles::Config for ExtensionImpl {
     type AssetId = u32;
     type AccountId = [u8; 32];
-    type Balance = u32;
+    type Balance = u64;
 }
 
 // guest impls
@@ -123,16 +123,25 @@ fn call_core_works() {
 
 #[test]
 fn call_fungibles_works() {
-    let blob = include_bytes!("../../output/poc-guest-transparent-call.polkavm");
+    let blob = include_bytes!("../../output/poc-guest-query-balance-fungibles.polkavm");
     let mut executor = ExtensionsExecutor::<Extensions, ()>::new(InvokeSource::RuntimeAPI);
     let guest = GuestImpl { program: blob.to_vec() };
-    let method = FungiblesMethod::TotalSupply { asset: 1u32 };
     let mut input_data = extension_fungibles::EXTENSION_ID.encode();
-    input_data.extend_from_slice(&method.encode());
+    input_data.extend_from_slice(&vec![2u8]);
+    let method1 = FungiblesMethod::Balance {
+        asset: 1,
+        who: [0u8; 32],
+    };
+    let method2 = FungiblesMethod::Balance {
+        asset: 2,
+        who: [0u8; 32],
+    };
+    input_data.extend_from_slice(&method1.encode());
+    input_data.extend_from_slice(&method2.encode());
     let input = InputImpl {
         method: "main".to_string(),
         args: input_data,
     };
     let res = executor.execute_method(guest, input).unwrap();
-    assert_eq!(res, vec![100u8, 0u8, 0u8, 0u8]);
+    assert_eq!(res, vec![200u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8]);
 }
