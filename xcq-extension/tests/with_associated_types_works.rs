@@ -1,7 +1,5 @@
 use parity_scale_codec::{Decode, Encode};
-use xcq_extension::{
-    decl_extensions, impl_extensions, ExtensionId, ExtensionsExecutor, Guest, Input, InvokeSource, Method,
-};
+use xcq_extension::{decl_extensions, impl_extensions, ExtensionsExecutor, Guest, Input, InvokeSource, Method};
 
 mod extension_core {
     use super::*;
