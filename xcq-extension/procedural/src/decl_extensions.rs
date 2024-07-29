@@ -20,13 +20,10 @@ pub fn decl_extension_inner(item_trait: &ItemTrait) -> Result<TokenStream2> {
     let mod_name = generate_mod_name_for_trait(&item_trait.ident);
 
     // Assume single config associated type.
-    let mut has_config = false;
-    for item in &item_trait.items {
-        if let syn::TraitItem::Type(_) = item {
-            has_config = true;
-            break;
-        }
-    }
+    let has_config = item_trait
+        .items
+        .iter()
+        .any(|item| matches!(item, syn::TraitItem::Type(_)));
     let methods = methods(&item_trait.items)?;
 
     let call_enum_def = call_enum_def(&item_trait.ident, &methods)?;

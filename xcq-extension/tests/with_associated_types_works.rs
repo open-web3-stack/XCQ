@@ -1,5 +1,7 @@
 use parity_scale_codec::{Decode, Encode};
 use xcq_extension::{decl_extensions, impl_extensions, ExtensionsExecutor, Guest, Input, InvokeSource, Method};
+use xcq_primitives::metadata::{ExtensionMetadata, Metadata, MethodMetadata, MethodParamMetadata};
+use xcq_primitives::umbrella::xcq_types::{PrimitiveType, XcqType};
 
 mod extension_core {
     use super::*;
@@ -142,4 +144,55 @@ fn call_fungibles_works() {
     };
     let res = executor.execute_method(guest, input).unwrap();
     assert_eq!(res, vec![200u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8]);
+}
+
+#[test]
+fn metadata_works() {
+    let metadata: Metadata = ExtensionImpl::runtime_metadata().into();
+    println!("{:?}", metadata);
+    assert_eq!(
+        metadata,
+        Metadata {
+            extensions: vec![
+                ExtensionMetadata {
+                    name: "ExtensionCore",
+                    methods: vec![MethodMetadata {
+                        name: "has_extension",
+                        inputs: vec![MethodParamMetadata {
+                            name: "id",
+                            ty: XcqType::Primitive(PrimitiveType::U64)
+                        }],
+                        output: XcqType::Primitive(PrimitiveType::Bool)
+                    }]
+                },
+                ExtensionMetadata {
+                    name: "ExtensionFungibles",
+                    methods: vec![
+                        MethodMetadata {
+                            name: "total_supply",
+                            inputs: vec![MethodParamMetadata {
+                                name: "asset",
+                                ty: XcqType::Primitive(PrimitiveType::U32)
+                            }],
+                            output: XcqType::Primitive(PrimitiveType::U64)
+                        },
+                        MethodMetadata {
+                            name: "balance",
+                            inputs: vec![
+                                MethodParamMetadata {
+                                    name: "asset",
+                                    ty: XcqType::Primitive(PrimitiveType::U32)
+                                },
+                                MethodParamMetadata {
+                                    name: "who",
+                                    ty: XcqType::Primitive(PrimitiveType::H256)
+                                }
+                            ],
+                            output: XcqType::Primitive(PrimitiveType::U64)
+                        }
+                    ]
+                }
+            ]
+        }
+    )
 }
