@@ -1,3 +1,4 @@
+use parity_scale_codec::Encode;
 mod r#enum;
 mod field;
 mod primitive;
@@ -7,7 +8,7 @@ use crate::{boxed::Box, vec::Vec};
 pub use self::{field::*, primitive::*, r#enum::*, r#struct::*};
 
 /// Note: no Array Type yet
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Debug)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Debug, Encode)]
 pub enum XcqType {
     Primitive(PrimitiveType),
     Struct(StructType),

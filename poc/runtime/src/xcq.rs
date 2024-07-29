@@ -8,9 +8,11 @@ pub type XcqError = String;
 pub type XcqResult = Result<XcqResponse, XcqError>;
 
 use xcq_extension::{impl_extensions, ExtensionsExecutor, Guest, Input, InvokeSource, Method};
+use xcq_primitives::metadata::Metadata;
 decl_runtime_apis! {
     pub trait XcqApi {
         fn execute_query(query: Vec<u8>, input: Vec<u8>) -> XcqResult;
+        fn metadata() -> Vec<u8>;
     }
 }
 
@@ -81,6 +83,10 @@ pub fn execute_query(query: Vec<u8>, input: Vec<u8>) -> XcqResult {
         args: input,
     };
     executor.execute_method(guest, input)
+}
+
+pub fn metadata() -> Metadata {
+    ExtensionImpl::runtime_metadata().into()
 }
 
 #[cfg(test)]

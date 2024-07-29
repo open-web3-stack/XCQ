@@ -201,8 +201,10 @@ pub fn generate_impl_metadata(impls: &[ItemImpl]) -> Result<TokenStream2> {
 
     Ok(quote!(
         impl #extension_impl_name {
-            fn runtime_metadata(&self) -> #xcq_primitives::umbrella::xcq_types::vec::Vec<#xcq_primitives::metadata_ir::ExtensionMetadataIR> {
-                #xcq_primitives::umbrella::xcq_types::vec![ #( #metadata, )* ]
+            pub fn runtime_metadata() -> #xcq_primitives::metadata_ir::MetadataIR {
+                #xcq_primitives::metadata_ir::MetadataIR {
+                    extensions: #xcq_primitives::umbrella::xcq_types::vec![ #( #metadata, )* ],
+                }
             }
         }
     ))

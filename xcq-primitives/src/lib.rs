@@ -15,6 +15,7 @@ pub enum XcqError {
 
 pub type XcqResult = Result<XcqResponse, XcqError>;
 
+pub mod metadata;
 pub mod metadata_ir;
 
 pub mod umbrella {

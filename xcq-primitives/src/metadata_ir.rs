@@ -24,3 +24,9 @@ pub struct ExtensionMetadataIR {
     pub name: &'static str,
     pub methods: Vec<MethodMetadataIR>,
 }
+
+/// Metadata of extensions
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub struct MetadataIR {
+    pub extensions: Vec<ExtensionMetadataIR>,
+}
