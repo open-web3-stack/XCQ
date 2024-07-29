@@ -1,6 +1,5 @@
 use crate::metadata_ir::{ExtensionMetadataIR, MetadataIR, MethodMetadataIR, MethodParamMetadataIR};
-use parity_scale_codec::{Decode, Encode};
-use scale_info::TypeInfo;
+use parity_scale_codec::Encode;
 use xcq_types::{vec::Vec, XcqType};
 /// Metadata of an extension method.
 #[derive(Clone, PartialEq, Eq, Debug, Encode)]
