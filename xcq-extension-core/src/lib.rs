@@ -1,5 +1,5 @@
 #![cfg_attr(not(feature = "std"), no_std)]
-use parity_scale_codec::{Decode, Encode};
+use parity_scale_codec::Encode;
 use xcq_extension::decl_extensions;
 
 pub trait Config {
