@@ -43,7 +43,7 @@ impl_extensions! {
             asset: <Self::Config as xcq_extension_fungibles::Config>::AssetId,
             who: <Self::Config as xcq_extension_fungibles::Config>::AccountId,
         ) -> <Self::Config as xcq_extension_fungibles::Config>::Balance {
-            crate::Assets::balance(asset, Into::<crate::interface::AccountId>::into(who))
+            crate::Assets::balance(asset, crate::interface::AccountId::from(who))
         }
         fn total_supply(asset: <Self::Config as xcq_extension_fungibles::Config>::AssetId) -> <Self::Config as xcq_extension_fungibles::Config>::Balance {
             crate::Assets::total_supply(asset)

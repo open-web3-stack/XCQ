@@ -28,7 +28,7 @@ pub fn decl_extension_inner(item_trait: &ItemTrait) -> Result<TokenStream2> {
 
     let call_enum_def = call_enum_def(&item_trait.ident, &methods)?;
     let dispatchable_impl = dispatchable_impl(&item_trait.ident, &methods)?;
-    let extension_id_impl = extension_id_impl(&item_trait.ident, &item_trait.items);
+    let extension_id_impl = extension_id_impl(&item_trait.ident, &item_trait.items)?;
 
     let runtime_metadata = crate::runtime_metadata::generate_decl_metadata(item_trait, has_config)?;
 
@@ -78,15 +78,8 @@ fn call_enum_def(trait_ident: &Ident, methods: &[Method]) -> Result<ItemEnum> {
         #[doc(hidden)]
         __Phantom(core::marker::PhantomData<Impl>)
     ));
-    // let config = if has_config {
-    //     quote! {
-    //         +Config
-    //     }
-    // } else {
-    //     quote! {}
-    // };
     Ok(parse_quote!(
-        #[derive(Decode)]
+        #[derive(parity_scale_codec::Decode)]
         pub enum Call<Impl: #trait_ident> {
             #variants
         }
@@ -130,7 +123,7 @@ fn dispatchable_impl(trait_ident: &Ident, methods: &[Method]) -> Result<ItemImpl
 
     Ok(parse_quote! {
         impl<Impl: #trait_ident> #xcq_extension::Dispatchable for Call<Impl> {
-            fn dispatch(self) -> Result<#xcq_primitives::umbrella::xcq_types::vec::Vec<u8>, xcq_extension::DispatchError> {
+            fn dispatch(self) -> Result<#xcq_primitives::umbrella::xcq_types::vec::Vec<u8>, #xcq_extension::DispatchError> {
                 match self {
                     #( #pats => Ok(#method_calls.encode()),)*
                     Self::__Phantom(_) => unreachable!(),
@@ -140,15 +133,16 @@ fn dispatchable_impl(trait_ident: &Ident, methods: &[Method]) -> Result<ItemImpl
     })
 }
 
-fn extension_id_impl(trait_ident: &Ident, trait_items: &[TraitItem]) -> TokenStream2 {
+fn extension_id_impl(trait_ident: &Ident, trait_items: &[TraitItem]) -> Result<TokenStream2> {
+    let xcq_extension = generate_crate_access("xcq-extension")?;
     let extension_id = calculate_hash(trait_ident, trait_items);
-    quote! {
+    Ok(quote! {
         // TODO: check if we need a extension_id trait
-        impl<Impl: #trait_ident> xcq_extension::ExtensionId for Call<Impl> {
-            const EXTENSION_ID: xcq_extension::ExtensionIdTy = #extension_id;
+        impl<Impl: #trait_ident> #xcq_extension::ExtensionId for Call<Impl> {
+            const EXTENSION_ID: #xcq_extension::ExtensionIdTy = #extension_id;
         }
-        pub const EXTENSION_ID: xcq_extension::ExtensionIdTy = #extension_id;
-    }
+        pub const EXTENSION_ID: #xcq_extension::ExtensionIdTy = #extension_id;
+    })
 }
 
 // helper functions

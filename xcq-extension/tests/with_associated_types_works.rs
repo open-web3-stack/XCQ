@@ -1,4 +1,4 @@
-use parity_scale_codec::{Decode, Encode};
+use parity_scale_codec::{Codec, Decode, Encode};
 use xcq_extension::{decl_extensions, impl_extensions, ExtensionsExecutor, Guest, Input, InvokeSource, Method};
 use xcq_primitives::metadata::{ExtensionMetadata, Metadata, MethodMetadata, MethodParamMetadata};
 use xcq_primitives::umbrella::xcq_types::{PrimitiveType, XcqType};
@@ -6,7 +6,7 @@ use xcq_primitives::umbrella::xcq_types::{PrimitiveType, XcqType};
 mod extension_core {
     use super::*;
     pub trait Config {
-        type ExtensionId: Encode + Decode;
+        type ExtensionId: Codec;
     }
     decl_extensions! {
         pub trait ExtensionCore {
@@ -25,9 +25,9 @@ mod extension_core {
 mod extension_fungibles {
     use super::*;
     pub trait Config {
-        type AssetId: Encode + Decode;
-        type AccountId: Encode + Decode;
-        type Balance: Encode + Decode;
+        type AssetId: Codec;
+        type AccountId: Codec;
+        type Balance: Codec;
     }
     decl_extensions! {
         pub trait ExtensionFungibles {

@@ -1,11 +1,11 @@
 #![cfg_attr(not(feature = "std"), no_std)]
-use parity_scale_codec::{Decode, Encode};
+use parity_scale_codec::{Codec, Encode};
 use xcq_extension::decl_extensions;
 
 pub trait Config {
-    type AssetId: Encode + Decode;
-    type AccountId: Encode + Decode;
-    type Balance: Encode + Decode;
+    type AssetId: Codec;
+    type AccountId: Codec;
+    type Balance: Codec;
 }
 decl_extensions! {
     pub trait ExtensionFungibles {
