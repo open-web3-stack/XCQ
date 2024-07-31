@@ -56,6 +56,7 @@ struct Method {
 }
 
 fn call_enum_def(trait_ident: &Ident, methods: &[Method]) -> Result<ItemEnum> {
+    let xcq_primitives = generate_crate_access("xcq-primitives")?;
     let mut variants = Punctuated::<Variant, Comma>::new();
     for method in methods {
         let name = &method.name;
@@ -79,7 +80,7 @@ fn call_enum_def(trait_ident: &Ident, methods: &[Method]) -> Result<ItemEnum> {
         __Phantom(core::marker::PhantomData<Impl>)
     ));
     Ok(parse_quote!(
-        #[derive(parity_scale_codec::Decode)]
+        #[derive(#xcq_primitives::deps::parity_scale_codec::Decode)]
         pub enum Call<Impl: #trait_ident> {
             #variants
         }
@@ -123,7 +124,7 @@ fn dispatchable_impl(trait_ident: &Ident, methods: &[Method]) -> Result<ItemImpl
 
     Ok(parse_quote! {
         impl<Impl: #trait_ident> #xcq_extension::Dispatchable for Call<Impl> {
-            fn dispatch(self) -> Result<#xcq_primitives::umbrella::xcq_types::vec::Vec<u8>, #xcq_extension::DispatchError> {
+            fn dispatch(self) -> Result<#xcq_primitives::deps::xcq_types::vec::Vec<u8>, #xcq_extension::DispatchError> {
                 match self {
                     #( #pats => Ok(#method_calls.encode()),)*
                     Self::__Phantom(_) => unreachable!(),

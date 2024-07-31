@@ -1,7 +1,7 @@
 use parity_scale_codec::{Codec, Decode, Encode};
 use xcq_extension::{decl_extensions, impl_extensions, ExtensionsExecutor, Guest, Input, InvokeSource, Method};
+use xcq_primitives::deps::xcq_types::{PrimitiveType, XcqType};
 use xcq_primitives::metadata::{ExtensionMetadata, Metadata, MethodMetadata, MethodParamMetadata};
-use xcq_primitives::umbrella::xcq_types::{PrimitiveType, XcqType};
 
 mod extension_core {
     use super::*;
