@@ -27,7 +27,7 @@ extern "C" fn main(ptr: u32, size: u32) -> u64 {
         let res_len = (res >> 32) as u32;
         let res_ptr = (res & 0xffffffff) as *const u8;
         let res_bytes = unsafe { core::slice::from_raw_parts(res_ptr, res_len as usize) };
-        sum += u64::from_le_bytes(res_bytes.try_into().unwrap());
+        sum += unsafe { core::ptr::read_volatile(res_ptr as *const u64) };
     }
     let sum_bytes = sum.to_le_bytes();
     let ptr = polkavm_derive::sbrk(sum_bytes.len());
