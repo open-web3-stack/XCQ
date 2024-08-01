@@ -1,7 +1,7 @@
 use clap::Parser;
 use parity_scale_codec::{Decode, Encode};
 use tracing_subscriber::prelude::*;
-use xcq_extension::{ExtensionId, ExtensionsExecutor, Guest, Input, InvokeSource, Method};
+use xcq_extension::{impl_extensions, ExtensionId, ExtensionsExecutor, Guest, Input, InvokeSource, Method};
 
 #[derive(Parser, Debug)]
 #[command(version, about)]
@@ -33,7 +33,9 @@ fn main() {
         program: raw_blob.to_vec(),
     };
     let method = CoreMethod::HasExtension { id: 0 };
-    let mut input_data = <xcq_extension_core::Call<ExtensionImpl> as ExtensionId>::EXTENSION_ID.encode();
+    let mut input_data =
+        <xcq_extension_core::decl_extension_for_extension_core::Call<ExtensionImpl> as ExtensionId>::EXTENSION_ID
+            .encode();
     input_data.extend_from_slice(&method.encode());
     let input = InputImpl {
         method: "main".to_string(),
@@ -43,43 +45,41 @@ fn main() {
     tracing::info!("Result: {:?}", res);
 }
 
-// extension_core impls
 pub struct ExtensionImpl;
+
 impl xcq_extension_core::Config for ExtensionImpl {
     type ExtensionId = u64;
 }
-impl xcq_extension_core::ExtensionCore for ExtensionImpl {
-    type Config = Self;
-    fn has_extension(id: <Self::Config as xcq_extension_core::Config>::ExtensionId) -> bool {
-        matches!(id, 0 | 1)
-    }
-}
 
-// extension_fungibles impls
 impl xcq_extension_fungibles::Config for ExtensionImpl {
+    type AssetId = u32;
     type AccountId = [u8; 32];
-    type Balance = u32;
-    type AssetId = u64;
+    type Balance = u64;
 }
 
-impl xcq_extension_fungibles::ExtensionFungibles for ExtensionImpl {
-    type Config = Self;
-    fn balance(
-        _asset: xcq_extension_fungibles::AssetIdFor<Self>,
-        _who: xcq_extension_fungibles::AccountIdFor<Self>,
-    ) -> xcq_extension_fungibles::BalanceFor<Self> {
-        0
+impl_extensions! {
+    impl xcq_extension_core::ExtensionCore for ExtensionImpl {
+        type Config = ExtensionImpl;
+        fn has_extension(id: <Self::Config as xcq_extension_core::Config>::ExtensionId) -> bool {
+            matches!(id, 0 | 1)
+        }
     }
-    fn total_supply(_asset: xcq_extension_fungibles::AssetIdFor<Self>) -> xcq_extension_fungibles::BalanceFor<Self> {
-        100
+
+    impl xcq_extension_fungibles::ExtensionFungibles for ExtensionImpl {
+        type Config = ExtensionImpl;
+        #[allow(unused_variables)]
+        fn balance(
+            asset: <Self::Config as xcq_extension_fungibles::Config>::AssetId,
+            who: <Self::Config as xcq_extension_fungibles::Config>::AccountId,
+        ) -> <Self::Config as xcq_extension_fungibles::Config>::Balance {
+            100
+        }
+        #[allow(unused_variables)]
+        fn total_supply(asset: <Self::Config as xcq_extension_fungibles::Config>::AssetId) -> <Self::Config as xcq_extension_fungibles::Config>::Balance {
+            0
+        }
     }
 }
-
-type Extensions = (
-    xcq_extension_core::Call<ExtensionImpl>,
-    xcq_extension_fungibles::Call<ExtensionImpl>,
-);
-
 // guest impls
 pub struct GuestImpl {
     pub program: Vec<u8>,

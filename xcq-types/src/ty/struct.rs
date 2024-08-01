@@ -1,4 +1,5 @@
 use crate::{vec::Vec, Field};
+use parity_scale_codec::Encode;
 
 /// A struct type, consisting of a named (struct) or unnamed (tuple struct) fields or unit struct.
 /// Note: in fact, it can represent a
@@ -26,7 +27,7 @@ use crate::{vec::Vec, Field};
 /// ```
 /// struct JustAMarker;
 /// ```
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Debug)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Debug, Encode)]
 pub struct StructType {
     pub ident: Vec<u8>,
     pub fields: Vec<Field>,

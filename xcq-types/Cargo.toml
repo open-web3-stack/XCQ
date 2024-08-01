@@ -13,7 +13,7 @@ parity-scale-codec = { workspace = true }
 serde = { version = "1", default-features = false, optional = true, features = [
     "derive",
 ] }
-fortuples = "0.9"
+fortuples = { workspace = true }
 xcq-types-derive = { path = "derive" }
 
 [features]

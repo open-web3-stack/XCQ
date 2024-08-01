@@ -1,6 +1,7 @@
 use crate::{vec::Vec, Field};
+use parity_scale_codec::Encode;
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Debug)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Debug, Encode)]
 pub struct Variant {
     pub ident: Vec<u8>,
     pub fields: Vec<Field>,
@@ -29,7 +30,7 @@ pub struct Variant {
 /// }
 /// ```
 ///
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Debug)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Debug, Encode)]
 pub struct EnumType {
     pub ident: Vec<u8>,
     pub variants: Vec<Variant>,

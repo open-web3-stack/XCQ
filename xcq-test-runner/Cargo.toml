@@ -17,5 +17,6 @@ xcq-executor = { workspace = true, features = ["std"] }
 xcq-extension = { workspace = true, features = ["std"] }
 xcq-extension-core = { workspace = true, features = ["std"] }
 xcq-extension-fungibles = { workspace = true, features = ["std"] }
+xcq-primitives = { workspace = true }
 
 polkavm = { workspace = true }

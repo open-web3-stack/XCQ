@@ -14,7 +14,4 @@ sp-api = { workspace = true }
 
 [features]
 default = ["std"]
-std = [
-    "xcq-primitives/std",
-    "sp-api/std",
-]
+std = ["xcq-primitives/std", "sp-api/std"]

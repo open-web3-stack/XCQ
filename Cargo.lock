@@ -2455,6 +2455,7 @@ dependencies = [
  "xcq-extension",
  "xcq-extension-core",
  "xcq-extension-fungibles",
+ "xcq-primitives",
 ]
 
 [[package]]
@@ -4525,6 +4526,7 @@ dependencies = [
  "tracing",
  "xcq-executor",
  "xcq-extension-procedural",
+ "xcq-primitives",
 ]
 
 [[package]]
@@ -4534,6 +4536,7 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "xcq-extension",
+ "xcq-primitives",
 ]
 
 [[package]]
@@ -4543,12 +4546,15 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "xcq-extension",
+ "xcq-primitives",
 ]
 
 [[package]]
 name = "xcq-extension-procedural"
 version = "0.1.0"
 dependencies = [
+ "Inflector",
+ "proc-macro-crate",
  "proc-macro2",
  "quote",
  "syn 2.0.66",
@@ -4561,6 +4567,7 @@ version = "0.1.0"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
+ "xcq-types",
 ]
 
 [[package]]
@@ -4569,18 +4576,6 @@ version = "0.1.0"
 dependencies = [
  "sp-api",
  "xcq-primitives",
- "xcq-runtime-api-procedural",
-]
-
-[[package]]
-name = "xcq-runtime-api-procedural"
-version = "0.1.0"
-dependencies = [
- "Inflector",
- "proc-macro-crate",
- "proc-macro2",
- "quote",
- "syn 2.0.66",
 ]
 
 [[package]]
@@ -4596,6 +4591,7 @@ dependencies = [
  "xcq-extension",
  "xcq-extension-core",
  "xcq-extension-fungibles",
+ "xcq-primitives",
 ]
 
 [[package]]

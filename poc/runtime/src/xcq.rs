@@ -7,10 +7,12 @@ pub type XcqResponse = Vec<u8>;
 pub type XcqError = String;
 pub type XcqResult = Result<XcqResponse, XcqError>;
 
-use xcq_extension::{ExtensionsExecutor, Guest, Input, InvokeSource, Method};
+use xcq_extension::{impl_extensions, ExtensionsExecutor, Guest, Input, InvokeSource, Method};
+use xcq_primitives::metadata::Metadata;
 decl_runtime_apis! {
     pub trait XcqApi {
         fn execute_query(query: Vec<u8>, input: Vec<u8>) -> XcqResult;
+        fn metadata() -> Vec<u8>;
     }
 }
 
@@ -21,37 +23,33 @@ impl xcq_extension_core::Config for ExtensionImpl {
     type ExtensionId = u64;
 }
 
-impl xcq_extension_core::ExtensionCore for ExtensionImpl {
-    type Config = ExtensionImpl;
-    fn has_extension(id: <Self::Config as xcq_extension_core::Config>::ExtensionId) -> bool {
-        matches!(id, 0 | 1)
-    }
-}
-
 // extension_fungibles impls
 impl xcq_extension_fungibles::Config for ExtensionImpl {
-    type AccountId = crate::interface::AccountId;
+    type AccountId = [u8; 32];
     type Balance = crate::interface::Balance;
     type AssetId = crate::interface::AssetId;
 }
-
-impl xcq_extension_fungibles::ExtensionFungibles for ExtensionImpl {
-    type Config = ExtensionImpl;
-    fn balance(
-        asset: xcq_extension_fungibles::AssetIdFor<Self>,
-        who: xcq_extension_fungibles::AccountIdFor<Self>,
-    ) -> xcq_extension_fungibles::BalanceFor<Self> {
-        crate::Assets::balance(asset, who)
+impl_extensions! {
+    impl xcq_extension_core::ExtensionCore for ExtensionImpl {
+        type Config = ExtensionImpl;
+        fn has_extension(id: <Self::Config as xcq_extension_core::Config>::ExtensionId) -> bool {
+            matches!(id, xcq_extension_core::EXTENSION_ID | xcq_extension_fungibles::EXTENSION_ID)
+        }
     }
-    fn total_supply(asset: xcq_extension_fungibles::AssetIdFor<Self>) -> xcq_extension_fungibles::BalanceFor<Self> {
-        crate::Assets::total_supply(asset)
+
+    impl xcq_extension_fungibles::ExtensionFungibles for ExtensionImpl {
+        type Config = ExtensionImpl;
+        fn balance(
+            asset: <Self::Config as xcq_extension_fungibles::Config>::AssetId,
+            who: <Self::Config as xcq_extension_fungibles::Config>::AccountId,
+        ) -> <Self::Config as xcq_extension_fungibles::Config>::Balance {
+            crate::Assets::balance(asset, crate::interface::AccountId::from(who))
+        }
+        fn total_supply(asset: <Self::Config as xcq_extension_fungibles::Config>::AssetId) -> <Self::Config as xcq_extension_fungibles::Config>::Balance {
+            crate::Assets::total_supply(asset)
+        }
     }
 }
-
-type Extensions = (
-    xcq_extension_core::Call<ExtensionImpl>,
-    xcq_extension_fungibles::Call<ExtensionImpl>,
-);
 
 // guest impls
 pub struct GuestImpl {
@@ -87,6 +85,10 @@ pub fn execute_query(query: Vec<u8>, input: Vec<u8>) -> XcqResult {
     executor.execute_method(guest, input)
 }
 
+pub fn metadata() -> Metadata {
+    ExtensionImpl::runtime_metadata().into()
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -97,8 +99,8 @@ mod tests {
 
     #[derive(Encode, Decode, Clone, PartialEq, Eq, Debug)]
     enum FungiblesMethod {
-        Balance { asset: AssetId, who: AccountId },
         TotalSupply { asset: AssetId },
+        Balance { asset: AssetId, who: AccountId },
     }
 
     #[derive(Encode, Decode, Clone, PartialEq, Eq, Debug)]
@@ -109,7 +111,7 @@ mod tests {
     fn call_transparent_data_hex() {
         let raw_blob = include_bytes!("../../../output/poc-guest-transparent-call.polkavm");
         // call fungible extension
-        let mut data = 1u64.encode();
+        let mut data = xcq_extension_fungibles::EXTENSION_ID.encode();
         let method = FungiblesMethod::TotalSupply { asset: 21 };
         data.extend_from_slice(&method.encode());
         dbg!(hex::encode((raw_blob.to_vec(), data).encode()));
@@ -123,14 +125,15 @@ mod tests {
             .public();
         let alice_account = AccountId::from(alice_public);
         // query num
-        let mut data = vec![2u8];
+        let mut data = xcq_extension_fungibles::EXTENSION_ID.encode();
+        data.extend_from_slice(&vec![2u8]);
         let method1 = FungiblesMethod::Balance {
             asset: 21,
-            who: alice_account.clone(),
+            who: alice_account.clone().into(),
         };
         let method2 = FungiblesMethod::Balance {
             asset: 1984,
-            who: alice_account,
+            who: alice_account.into(),
         };
         data.extend_from_slice(&method1.encode());
         data.extend_from_slice(&method2.encode());
