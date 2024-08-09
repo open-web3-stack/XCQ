@@ -1,17 +1,15 @@
 // #[xcq::program]
-// mod query_fungibles {
-//     #[xcq::call_def(extern_types = [AssetId, AccountId, Balance])]
-//     fn balance(asset: AssetId, who: AccountId) -> Balance;
-//     #[xcq::call_def(extern_types = [AssetId, Balance])]
-//     fn total_supply(asset: AssetId) -> Balance;
+// mod average_price {
+//     #[xcq::call_def]
+//     fn query_asset_price(asset: u64) -> u64;
 
 //     #[xcq::entrypoint]
-//     fn sum_balance([multi]call: BalanceCall) -> u64 {
-//         let mut sum = 0;
+//     fn average_price(calls: Vec<QueryAssetPriceCall>) -> u64 {
+//         let mut sum;
 //         for call in calls {
-//             sum += call.call();
+//             sum+=call.call();
 //         }
-//         total_supply_call.call() - sum
+//         sum/calls.len()
 //     }
 // }
 

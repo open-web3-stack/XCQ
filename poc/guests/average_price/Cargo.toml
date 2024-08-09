@@ -1,0 +1,8 @@
+[package]
+name = "poc-guest-average-price"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+polkavm-derive = { workspace = true }
