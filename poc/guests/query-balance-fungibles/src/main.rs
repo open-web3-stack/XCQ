@@ -1,3 +1,19 @@
+// #[xcq::program]
+// mod query_fungibles {
+//     #[xcq::call_def(extern_types = [AssetId, AccountId, Balance])]
+//     fn balance(asset: AssetId, who: AccountId) -> Balance;
+//     #[xcq::call_def(extern_types = [AssetId, Balance])]
+//     fn total_supply(asset: AssetId) -> Balance;
+
+//     #[xcq::entrypoint]
+//     fn sum_balance([multi]call: BalanceCall) -> u64 {
+//         let mut sum = 0;
+//         for call in calls {
+//             sum += call.call();
+//         }
+//     }
+// }
+
 #![no_std]
 #![no_main]
 
