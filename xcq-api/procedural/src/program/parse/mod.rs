@@ -11,14 +11,14 @@ pub struct Def {
 }
 
 impl Def {
-    pub fn try_from(mut item: ItemMod) -> Result<Self> {
-        let item_span = item.span();
-        let items = &mut item
+    pub fn try_from(mut item_mod: ItemMod) -> Result<Self> {
+        let mod_span = item_mod.span();
+        let items = &mut item_mod
             .content
             .as_mut()
             .ok_or_else(|| {
                 let msg = "Invalid pallet definition, expected mod to be inlined.";
-                syn::Error::new(item_span, msg)
+                syn::Error::new(mod_span, msg)
             })?
             .1;
 
@@ -40,14 +40,17 @@ impl Def {
                     entrypoint = Some(e);
                 }
                 None => {
-                    eprintln!("an item without xcq attr: {:?}", item);
+                    return Err(Error::new(
+                        item.span(),
+                        "Invalid attribute, expected `#[xcq::call_def]` or `#[xcq::entrypoint]`",
+                    ));
                 }
             }
         }
         let entrypoint = match entrypoint {
             Some(entrypoint) => entrypoint,
             None => {
-                return Err(Error::new(item_span, "No entrypoint function found"));
+                return Err(Error::new(mod_span, "No entrypoint function found"));
             }
         };
         let def = Def { calls, entrypoint };
@@ -66,15 +69,6 @@ mod keyword {
 enum XcqAttr {
     CallDef(proc_macro2::Span, Option<ExternTypesAttr>),
     Entrypoint(proc_macro2::Span),
-}
-
-impl XcqAttr {
-    fn span(&self) -> proc_macro2::Span {
-        match self {
-            Self::CallDef(span, _) => *span,
-            Self::Entrypoint(span) => *span,
-        }
-    }
 }
 
 // Custom parsing for xcq attribute

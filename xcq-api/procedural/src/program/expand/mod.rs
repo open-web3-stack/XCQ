@@ -33,9 +33,9 @@ fn generate_call(item: &ItemFn) -> TokenStream2 {
             pub size: u32,
         }
         impl #call_name {
-            pub fn call(&self) {
+            pub fn call(&self) -> u64 {
                 unsafe {
-                    call(self.extension_id, self.call_ptr, self.size);
+                    call(self.extension_id, self.call_ptr, self.size)
                 }
             }
         }
@@ -45,7 +45,7 @@ fn pass_byte_to_host() -> TokenStream2 {
     // TODO check res type to determine the appropriate serializing method
     quote! {
         let res_bytes = res.to_le_bytes();
-        let ptr = polkavm_derive::sbrk(res);
+        let ptr = polkavm_derive::sbrk(res_bytes.len());
         if ptr.is_null(){
             return 0;
         }
@@ -78,9 +78,9 @@ fn generate_main(entrypoint: &EntrypointDef) -> Result<TokenStream2> {
                     for i in 0..num {
                         #calls_ident.push(#ty {
                             extension_id: extension_id,
-                            call_ptr: ptr+10+i*size,
-                            size: size
-                        })
+                            call_ptr: ptr+10+(i as u32)*(size as u32),
+                            size: size as u32
+                        });
                     }
                 }
                 .into_iter()
@@ -93,7 +93,7 @@ fn generate_main(entrypoint: &EntrypointDef) -> Result<TokenStream2> {
                     let #calls_ident = #ty {
                         extension_id: extension_id,
                         call_ptr: ptr+9,
-                        size:size
+                        size:size as u32,
                     }
                 }
                 .into_iter()
@@ -127,9 +127,9 @@ fn generate_main(entrypoint: &EntrypointDef) -> Result<TokenStream2> {
 }
 
 fn generate_preludes() -> TokenStream2 {
-    // let extern_crate = quote! {
-    //     extern crate alloc;
-    // };
+    let extern_crate = quote! {
+        extern crate alloc;
+    };
     let panic_fn = quote! {
         #[panic_handler]
         fn panic(_info: &core::panic::PanicInfo) -> ! {
@@ -147,6 +147,8 @@ fn generate_preludes() -> TokenStream2 {
     };
 
     quote! {
+
+        #extern_crate
 
         #panic_fn
 

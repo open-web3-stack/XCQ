@@ -118,7 +118,7 @@ mod tests {
 
     #[test]
     fn call_fungibles_hex() {
-        let raw_blob = include_bytes!("../../../output/poc-guest-query-balance-fungibles.polkavm");
+        let raw_blob = include_bytes!("../../../output/poc-guest-test-xcq-api.polkavm");
         let alice_public = sr25519::Pair::from_string("//Alice", None)
             .expect("static values are valid; qed")
             .public();

@@ -77,6 +77,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "poc-guest-test-xcq-api"
+version = "0.1.0"
+dependencies = [
+ "polkavm-derive",
+ "xcq-api",
+]
+
+[[package]]
 name = "poc-guest-transparent-call"
 version = "0.1.0"
 dependencies = [
@@ -177,14 +185,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
-]
-
-[[package]]
-name = "test-xcq-api"
-version = "0.1.0"
-dependencies = [
- "polkavm-derive",
- "xcq-api",
 ]
 
 [[package]]
