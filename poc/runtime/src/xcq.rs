@@ -130,12 +130,15 @@ mod tests {
             asset: 21,
             who: alice_account.clone().into(),
         };
+        let method1_encoded = method1.encode();
+        data.extend_from_slice(&vec![method1_encoded.len() as u8]);
         let method2 = FungiblesMethod::Balance {
             asset: 1984,
             who: alice_account.into(),
         };
-        data.extend_from_slice(&method1.encode());
-        data.extend_from_slice(&method2.encode());
+        let method2_encoded = method2.encode();
+        data.extend_from_slice(&method1_encoded);
+        data.extend_from_slice(&method2_encoded);
         dbg!(hex::encode((raw_blob.to_vec(), data).encode()));
     }
 

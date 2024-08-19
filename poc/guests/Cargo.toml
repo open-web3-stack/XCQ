@@ -1,5 +1,5 @@
 [workspace]
-members = ["query-balance", "query-balance-fungibles", "transparent-call"]
+members = ["sum-balance", "total-supply", "transparent-call"]
 resolver = "2"
 
 

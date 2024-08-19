@@ -1,8 +1,0 @@
-[package]
-name = "poc-guest-query-balance-fungibles"
-version = "0.1.0"
-edition = "2021"
-publish = false
-
-[dependencies]
-polkavm-derive = { workspace = true }

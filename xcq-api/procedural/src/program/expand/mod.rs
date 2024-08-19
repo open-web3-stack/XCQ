@@ -10,7 +10,7 @@ pub fn expand(def: Def) -> Result<TokenStream2> {
         .calls
         .iter()
         .map(|call_def| generate_call(&call_def.item_fn))
-        .collect::<Vec<_>>();
+        .collect::<Result<Vec<_>>>()?;
     let entrypoint_def = &def.entrypoint.item_fn;
     let main_fn = generate_main(&def.entrypoint)?;
     Ok(quote! {
@@ -23,23 +23,40 @@ pub fn expand(def: Def) -> Result<TokenStream2> {
 
 // At guest side, we only need call_ptr and size to perform call,
 // the actual function signature is used at host side to construct the call data
-fn generate_call(item: &ItemFn) -> TokenStream2 {
+fn generate_call(item: &ItemFn) -> Result<TokenStream2> {
     let camel_case_ident = syn::Ident::new(&item.sig.ident.to_string().to_pascal_case(), item.sig.ident.span());
     let call_name = format_ident!("{}Call", camel_case_ident);
-    quote! {
+    let return_ty = match &item.sig.output {
+        syn::ReturnType::Type(_, return_ty) => return_ty,
+        _ => {
+            return Err(syn::Error::new_spanned(
+                item.sig.fn_token,
+                "expected function to have a return type",
+            ))
+        }
+    };
+    let expand = quote! {
         struct #call_name {
             pub extension_id: u64,
             pub call_ptr: u32,
             pub size: u32,
         }
         impl #call_name {
-            pub fn call(&self) -> u64 {
-                unsafe {
+            pub fn call(&self) -> #return_ty {
+                let res = unsafe {
                     call(self.extension_id, self.call_ptr, self.size)
-                }
+                };
+                let res_len = (res >> 32) as u32;
+                let res_ptr = (res & 0xffffffff) as *const u8;
+                let res_bytes = unsafe {
+                    core::slice::from_raw_parts(res_ptr, res_len as usize)
+                };
+                let (int_bytes, _) = res_bytes.split_at(core::mem::size_of::<#return_ty>());
+                #return_ty::from_le_bytes(int_bytes.try_into().unwrap())
             }
         }
-    }
+    };
+    Ok(expand)
 }
 fn pass_byte_to_host() -> TokenStream2 {
     // TODO check res type to determine the appropriate serializing method
@@ -52,7 +69,7 @@ fn pass_byte_to_host() -> TokenStream2 {
         unsafe {
             core::ptr::copy_nonoverlapping(res_bytes.as_ptr(),ptr,res_bytes.len());
         }
-        (res_bytes.len() as u64)<<32 | (ptr as u64)
+        (res_bytes.len() as u64) << 32 | (ptr as u64)
     }
 }
 
@@ -93,8 +110,8 @@ fn generate_main(entrypoint: &EntrypointDef) -> Result<TokenStream2> {
                     let #calls_ident = #ty {
                         extension_id: extension_id,
                         call_ptr: ptr+9,
-                        size:size as u32,
-                    }
+                        size:size as u32
+                    };
                 }
                 .into_iter()
             })
@@ -116,14 +133,15 @@ fn generate_main(entrypoint: &EntrypointDef) -> Result<TokenStream2> {
     // pass bytes back to host
     let pass_bytes_back = pass_byte_to_host();
 
-    Ok(quote! {
+    let main = quote! {
         #[polkavm_derive::polkavm_export]
         extern "C" fn main(ptr: u32, size:u32) -> u64 {
             #get_call_data
             #call_entrypoint
             #pass_bytes_back
         }
-    })
+    };
+    Ok(main)
 }
 
 fn generate_preludes() -> TokenStream2 {
