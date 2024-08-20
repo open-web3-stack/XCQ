@@ -25,23 +25,29 @@ fn main() {
 
     let cli = Cli::parse();
 
-    let raw_blob = std::fs::read(cli.program).expect("Failed to read program");
-
+    let blob = std::fs::read(cli.program).expect("Failed to read program");
     let mut executor = ExtensionsExecutor::<Extensions, ()>::new(InvokeSource::RuntimeAPI);
-
-    let guest = GuestImpl {
-        program: raw_blob.to_vec(),
+    let guest = GuestImpl { program: blob.to_vec() };
+    let mut input_data = xcq_extension_fungibles::EXTENSION_ID.encode();
+    input_data.extend_from_slice(&vec![2u8]);
+    let method1 = FungiblesMethod::Balance {
+        asset: 1,
+        who: [0u8; 32],
     };
-    let method = CoreMethod::HasExtension { id: 0 };
-    let mut input_data =
-        <xcq_extension_core::decl_extension_for_extension_core::Call<ExtensionImpl> as ExtensionId>::EXTENSION_ID
-            .encode();
-    input_data.extend_from_slice(&method.encode());
+    let method1_encoded = method1.encode();
+    input_data.extend_from_slice(&vec![method1_encoded.len() as u8]);
+    let method2 = FungiblesMethod::Balance {
+        asset: 2,
+        who: [0u8; 32],
+    };
+    input_data.extend_from_slice(&method1_encoded);
+    input_data.extend_from_slice(&method2.encode());
     let input = InputImpl {
         method: "main".to_string(),
         args: input_data,
     };
     let res = executor.execute_method(guest, input).unwrap();
+
     tracing::info!("Result: {:?}", res);
 }
 
