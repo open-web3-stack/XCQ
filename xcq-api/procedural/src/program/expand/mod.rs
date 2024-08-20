@@ -44,7 +44,7 @@ fn generate_call(item: &ItemFn) -> Result<TokenStream2> {
         impl #call_name {
             pub fn call(&self) -> #return_ty {
                 let res = unsafe {
-                    call(self.extension_id, self.call_ptr, self.size)
+                    host_call(self.extension_id, self.call_ptr, self.size)
                 };
                 let res_len = (res >> 32) as u32;
                 let res_ptr = (res & 0xffffffff) as *const u8;
@@ -160,7 +160,7 @@ fn generate_preludes() -> TokenStream2 {
     let host_call_fn = quote! {
         #[polkavm_derive::polkavm_import]
         extern "C" {
-            fn call(extension_id:u64, call_ptr:u32, call_len: u32) -> u64;
+            fn host_call(extension_id:u64, call_ptr:u32, call_len: u32) -> u64;
         }
     };
 

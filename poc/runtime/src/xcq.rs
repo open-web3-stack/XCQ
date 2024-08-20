@@ -113,6 +113,7 @@ mod tests {
         // call fungible extension
         let mut data = xcq_extension_fungibles::EXTENSION_ID.encode();
         let method = FungiblesMethod::TotalSupply { asset: 21 };
+        data.extend_from_slice(&method.encode());
         dbg!(hex::encode((raw_blob.to_vec(), data).encode()));
     }
 

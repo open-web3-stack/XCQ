@@ -1,7 +1,7 @@
 use clap::Parser;
 use parity_scale_codec::{Decode, Encode};
 use tracing_subscriber::prelude::*;
-use xcq_extension::{impl_extensions, ExtensionId, ExtensionsExecutor, Guest, Input, InvokeSource, Method};
+use xcq_extension::{impl_extensions, ExtensionsExecutor, Guest, Input, InvokeSource, Method};
 
 #[derive(Parser, Debug)]
 #[command(version, about)]
@@ -29,19 +29,20 @@ fn main() {
     let mut executor = ExtensionsExecutor::<Extensions, ()>::new(InvokeSource::RuntimeAPI);
     let guest = GuestImpl { program: blob.to_vec() };
     let mut input_data = xcq_extension_fungibles::EXTENSION_ID.encode();
-    input_data.extend_from_slice(&vec![2u8]);
+    input_data.extend_from_slice(&[2u8]);
     let method1 = FungiblesMethod::Balance {
         asset: 1,
         who: [0u8; 32],
     };
     let method1_encoded = method1.encode();
-    input_data.extend_from_slice(&vec![method1_encoded.len() as u8]);
+    input_data.extend_from_slice(&[method1_encoded.len() as u8]);
     let method2 = FungiblesMethod::Balance {
         asset: 2,
         who: [0u8; 32],
     };
     input_data.extend_from_slice(&method1_encoded);
     input_data.extend_from_slice(&method2.encode());
+    tracing::info!("Input data: {:?}", input_data);
     let input = InputImpl {
         method: "main".to_string(),
         args: input_data,
