@@ -51,6 +51,11 @@ extern "C" fn main(ptr: u32, size: u32) -> u64 {
     let extension_id = unsafe { core::ptr::read_volatile((ptr) as *const u64) };
     let num = unsafe { core::ptr::read_volatile((ptr + 8) as *const u8) };
     let size = unsafe { core::ptr::read_volatile((ptr + 9) as *const u8) };
+    let mut res = 0u64;
+    unsafe {
+        host_call(extension_id, ptr + 10, size as u32);
+        host_call(extension_id, ptr + 10 + (size as u32), size as u32);
+    }
     for i in 0..num {
         calls_0.push(BalanceCall {
             extension_id: extension_id,
