@@ -47,19 +47,21 @@ impl TotalSupplyCall {
 }
 #[polkavm_derive::polkavm_export]
 extern "C" fn main(ptr: u32, size: u32) -> u64 {
+    let arg_bytes = unsafe { core::slice::from_raw_parts(ptr as *const u8, size as usize) };
+    let arg_ptr = arg_bytes.as_ptr() as u32;
     let mut calls_0: alloc::vec::Vec<BalanceCall> = alloc::vec::Vec::new();
-    let extension_id = unsafe { core::ptr::read_volatile((ptr) as *const u64) };
-    let num = unsafe { core::ptr::read_volatile((ptr + 8) as *const u8) };
-    let size = unsafe { core::ptr::read_volatile((ptr + 9) as *const u8) };
+    let extension_id = unsafe { core::ptr::read_volatile(arg_ptr as *const u64) };
+    let num = unsafe { core::ptr::read_volatile((arg_ptr + 8) as *const u8) };
+    let size = unsafe { core::ptr::read_volatile((arg_ptr + 9) as *const u8) };
     let mut res = 0u64;
     unsafe {
-        host_call(extension_id, ptr + 10, size as u32);
-        host_call(extension_id, ptr + 10 + (size as u32), size as u32);
+        host_call(extension_id, arg_ptr + 10, size as u32);
+        host_call(extension_id, arg_ptr + 10 + size as u32, size as u32);
     }
     for i in 0..num {
         calls_0.push(BalanceCall {
             extension_id: extension_id,
-            call_ptr: ptr + 10 + (i as u32) * (size as u32),
+            call_ptr: arg_ptr + 10 + (i as u32) * (size as u32),
             size: size as u32,
         });
     }
