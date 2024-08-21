@@ -8,10 +8,7 @@ version = "0.1.0"
 [workspace]
 resolver = "2"
 members = [
-    "poc/hosts/*",
     "poc/runtime",
-    "poc/executor",
-    "poc/extensions",
 
     "xcq-api",
     "xcq-executor",
