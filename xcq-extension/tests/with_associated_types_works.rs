@@ -123,7 +123,7 @@ fn call_core_works() {
 
 #[test]
 fn multi_calls_works() {
-    let blob = include_bytes!("../../output/poc-guest-sum-balance-raw.polkavm");
+    let blob = include_bytes!("../../output/poc-guest-sum-balance.polkavm");
     let mut executor = ExtensionsExecutor::<Extensions, ()>::new(InvokeSource::RuntimeAPI);
     let guest = GuestImpl { program: blob.to_vec() };
     let mut input_data = extension_fungibles::EXTENSION_ID.encode();

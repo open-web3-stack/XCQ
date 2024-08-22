@@ -1,9 +1,0 @@
-[package]
-name = "poc-guest-sum-balance-raw"
-version = "0.1.0"
-edition = "2021"
-publish = false
-
-[dependencies]
-polkavm-derive = { workspace = true }
-xcq-api = { workspace = true }

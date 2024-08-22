@@ -74,6 +74,11 @@ fn pass_byte_to_host() -> TokenStream2 {
 }
 
 fn generate_main(entrypoint: &EntrypointDef) -> Result<TokenStream2> {
+    let move_to_stack = quote! {
+        let arg_bytes = unsafe {core::slice::from_raw_parts(ptr as *const u8, size as usize)};
+        let arg_bytes = arg_bytes.to_vec();
+        let arg_ptr = arg_bytes.as_ptr() as u32;
+    };
     // Construct call_data
     let mut get_call_data = TokenStream2::new();
     for (arg_type_index, arg_type) in entrypoint.arg_types.iter().enumerate() {
@@ -88,14 +93,14 @@ fn generate_main(entrypoint: &EntrypointDef) -> Result<TokenStream2> {
             );
             get_call_data.extend({
                 quote! {
-                    let extension_id = unsafe {core::ptr::read_volatile((ptr) as *const u64)};
+                    let extension_id = unsafe {core::ptr::read_volatile((arg_ptr) as *const u64)};
                     // for multi calls, we assume the number of calls are given in the call data
-                    let num = unsafe {core::ptr::read_volatile((ptr+8) as *const u8)};
-                    let size = unsafe {core::ptr::read_volatile((ptr+9) as *const u8)};
+                    let num = unsafe {core::ptr::read_volatile((arg_ptr+8) as *const u8)};
+                    let size = unsafe {core::ptr::read_volatile((arg_ptr+9) as *const u8)};
                     for i in 0..num {
                         #calls_ident.push(#ty {
                             extension_id: extension_id,
-                            call_ptr: ptr+10+(i as u32)*(size as u32),
+                            call_ptr: arg_ptr+10+(i as u32)*(size as u32),
                             size: size as u32
                         });
                     }
@@ -105,11 +110,11 @@ fn generate_main(entrypoint: &EntrypointDef) -> Result<TokenStream2> {
         } else {
             get_call_data.extend({
                 quote! {
-                    let extension_id = unsafe{core::ptr::read_volatile((ptr) as *const u64)};
-                    let size = unsafe {core::ptr::read_volatile((ptr+8) as *const u8)};
+                    let extension_id = unsafe{core::ptr::read_volatile((arg_ptr) as *const u64)};
+                    let size = unsafe {core::ptr::read_volatile((arg_ptr+8) as *const u8)};
                     let #calls_ident = #ty {
                         extension_id: extension_id,
-                        call_ptr: ptr+9,
+                        call_ptr: arg_ptr+9,
                         size:size as u32
                     };
                 }
@@ -136,6 +141,7 @@ fn generate_main(entrypoint: &EntrypointDef) -> Result<TokenStream2> {
     let main = quote! {
         #[polkavm_derive::polkavm_export]
         extern "C" fn main(ptr: u32, size:u32) -> u64 {
+            #move_to_stack
             #get_call_data
             #call_entrypoint
             #pass_bytes_back
