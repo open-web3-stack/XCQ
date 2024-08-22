@@ -5,7 +5,7 @@ run: chainspec
 
 poc-guests: poc-guest-sum-balance poc-guest-sum-balance-percent poc-guest-total-supply poc-guest-transparent-call
 
-dummy-poc-guests: dummy-poc-guest-sum-balance dummy-guest-sum-balance-percent dummy-poc-guest-total-supply dummy-poc-guest-transparent-call
+dummy-poc-guests: dummy-poc-guest-sum-balance dummy-poc-guest-sum-balance-percent dummy-poc-guest-total-supply dummy-poc-guest-transparent-call
 
 poc-guest-%:
 	cd poc/guests; RUSTFLAGS=$(GUEST_RUST_FLAGS) cargo build -q --release --bin poc-guest-$* -p poc-guest-$*
