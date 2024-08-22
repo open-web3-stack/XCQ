@@ -39,12 +39,12 @@ fn generate_call(item: &ItemFn) -> Result<TokenStream2> {
         struct #call_name {
             pub extension_id: u64,
             pub call_ptr: u32,
-            pub size: u32,
+            pub call_size: u32,
         }
         impl #call_name {
             pub fn call(&self) -> #return_ty {
                 let res = unsafe {
-                    host_call(self.extension_id, self.call_ptr, self.size)
+                    host_call(self.extension_id, self.call_ptr, self.call_size)
                 };
                 let res_len = (res >> 32) as u32;
                 let res_ptr = (res & 0xffffffff) as *const u8;
@@ -77,7 +77,7 @@ fn generate_main(entrypoint: &EntrypointDef) -> Result<TokenStream2> {
     let move_to_stack = quote! {
         let arg_bytes = unsafe {core::slice::from_raw_parts(ptr as *const u8, size as usize)};
         let arg_bytes = arg_bytes.to_vec();
-        let arg_ptr = arg_bytes.as_ptr() as u32;
+        let mut arg_ptr = arg_bytes.as_ptr() as u32;
     };
     // Construct call_data
     let mut get_call_data = TokenStream2::new();
@@ -95,28 +95,30 @@ fn generate_main(entrypoint: &EntrypointDef) -> Result<TokenStream2> {
                 quote! {
                     let extension_id = unsafe {core::ptr::read_volatile((arg_ptr) as *const u64)};
                     // for multi calls, we assume the number of calls are given in the call data
-                    let num = unsafe {core::ptr::read_volatile((arg_ptr+8) as *const u8)};
-                    let size = unsafe {core::ptr::read_volatile((arg_ptr+9) as *const u8)};
-                    for i in 0..num {
+                    let call_num = unsafe {core::ptr::read_volatile((arg_ptr+8) as *const u8)};
+                    let call_size = unsafe {core::ptr::read_volatile((arg_ptr+9) as *const u8)};
+                    for i in 0..call_num {
                         #calls_ident.push(#ty {
                             extension_id: extension_id,
-                            call_ptr: arg_ptr+10+(i as u32)*(size as u32),
-                            size: size as u32
+                            call_ptr: arg_ptr+10+(i as u32)*(call_size as u32),
+                            call_size: call_size as u32
                         });
                     }
+                    arg_ptr += 10 + (call_num as u32)*(call_size as u32);
                 }
                 .into_iter()
             })
         } else {
             get_call_data.extend({
                 quote! {
-                    let extension_id = unsafe{core::ptr::read_volatile((arg_ptr) as *const u64)};
-                    let size = unsafe {core::ptr::read_volatile((arg_ptr+8) as *const u8)};
+                    let extension_id = unsafe {core::ptr::read_volatile((arg_ptr) as *const u64)};
+                    let call_size = unsafe {core::ptr::read_volatile((arg_ptr+8) as *const u8)};
                     let #calls_ident = #ty {
                         extension_id: extension_id,
                         call_ptr: arg_ptr+9,
-                        size:size as u32
+                        call_size: call_size as u32
                     };
+                    arg_ptr += 9 + call_size as u32;
                 }
                 .into_iter()
             })

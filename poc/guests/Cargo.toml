@@ -1,5 +1,10 @@
 [workspace]
-members = ["sum-balance", "total-supply", "transparent-call"]
+members = [
+    "sum-balance",
+    "sum-balance-percent",
+    "total-supply",
+    "transparent-call",
+]
 resolver = "2"
 
 
