@@ -75,8 +75,7 @@ fn pass_byte_to_host() -> TokenStream2 {
 
 fn generate_main(entrypoint: &EntrypointDef) -> Result<TokenStream2> {
     let move_to_stack = quote! {
-        let arg_bytes = unsafe {core::slice::from_raw_parts(ptr as *const u8, size as usize)};
-        let arg_bytes = arg_bytes.to_vec();
+        let arg_bytes = unsafe {alloc::vec::Vec::from_raw_parts(ptr as *mut u8, size as usize, size as usize)};
         let mut arg_ptr = arg_bytes.as_ptr() as u32;
     };
     // Construct call_data
