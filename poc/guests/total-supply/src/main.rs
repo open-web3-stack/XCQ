@@ -2,7 +2,6 @@
 #![no_main]
 #[global_allocator]
 static GLOBAL: polkavm_derive::LeakingAllocator = polkavm_derive::LeakingAllocator;
-use alloc::vec::Vec;
 #[xcq_api::program]
 mod query_total_supply {
 

@@ -64,14 +64,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "poc-guest-sum-balance-raw"
-version = "0.1.0"
-dependencies = [
- "polkavm-derive",
- "xcq-api",
-]
-
-[[package]]
 name = "poc-guest-total-supply"
 version = "0.1.0"
 dependencies = [
