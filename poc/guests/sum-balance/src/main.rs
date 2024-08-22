@@ -7,8 +7,6 @@ use alloc::vec::Vec;
 mod sum_balance {
     #[xcq::call_def]
     fn balance(asset: u32, who: [u8; 32]) -> u64 {}
-    #[xcq::call_def]
-    fn total_supply(asset: u32) -> u64 {}
 
     #[xcq::entrypoint]
     fn sum_balance(calls: Vec<BalanceCall>) -> u64 {
