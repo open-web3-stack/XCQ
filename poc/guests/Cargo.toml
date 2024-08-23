@@ -1,7 +1,13 @@
 [workspace]
-members = ["query-balance", "query-balance-fungibles", "transparent-call"]
+members = [
+    "sum-balance",
+    "sum-balance-percent",
+    "total-supply",
+    "transparent-call",
+]
 resolver = "2"
 
 
 [workspace.dependencies]
 polkavm-derive = { path = "../../vendor/polkavm/crates/polkavm-derive" }
+xcq-api = { path = "../../xcq-api", default-features = false }

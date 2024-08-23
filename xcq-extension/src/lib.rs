@@ -53,14 +53,15 @@ impl<E: ExtensionTuple, P: PermController> XcqExecutorContext for Context<E, P> 
         let invoke_source = self.invoke_source;
         linker
             .func_wrap(
-                "call",
+                "host_call",
                 move |mut caller: Caller<_>, extension_id: u64, call_ptr: u32, call_len: u32| -> u64 {
                     // useful closure to handle early return
                     let mut func_with_result = || -> Result<u64, ExtensionError> {
                         let call_bytes = caller
                             .read_memory_into_vec(call_ptr, call_len)
                             .map_err(|_| ExtensionError::PolkavmError)?;
-                        tracing::trace!(
+                        tracing::info!("(host call): call_ptr: {}, call_len: {:?}", call_ptr, call_len);
+                        tracing::info!(
                             "(host call): extension_id: {}, call_bytes: {:?}",
                             extension_id,
                             call_bytes
@@ -69,7 +70,7 @@ impl<E: ExtensionTuple, P: PermController> XcqExecutorContext for Context<E, P> 
                             return Err(ExtensionError::PermissionError);
                         }
                         let res_bytes = E::dispatch(extension_id, &call_bytes)?;
-                        tracing::trace!("(host call): res_bytes: {:?}", res_bytes);
+                        tracing::debug!("(host call): res_bytes: {:?}", res_bytes);
                         let res_bytes_len = res_bytes.len();
                         let res_ptr = caller.sbrk(res_bytes_len as u32).ok_or(ExtensionError::PolkavmError)?;
                         caller

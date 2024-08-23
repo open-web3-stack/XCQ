@@ -75,6 +75,7 @@ impl<Ctx: XcqExecutorContext> XcqExecutor<Ctx> {
         } else {
             0
         };
+        tracing::info!("(passing args): input_ptr: {}, input_len: {:?}", input_ptr, input.len());
 
         let res = instance.call_typed::<(u32, u32), u64>(&mut self.context, method, (input_ptr, input.len() as u32))?;
         let res_size = (res >> 32) as u32;

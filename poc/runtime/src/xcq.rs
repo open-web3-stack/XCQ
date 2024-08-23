@@ -119,7 +119,7 @@ mod tests {
 
     #[test]
     fn call_fungibles_hex() {
-        let raw_blob = include_bytes!("../../../output/poc-guest-query-balance-fungibles.polkavm");
+        let raw_blob = include_bytes!("../../../output/poc-guest-test-xcq-api.polkavm");
         let alice_public = sr25519::Pair::from_string("//Alice", None)
             .expect("static values are valid; qed")
             .public();
@@ -131,12 +131,15 @@ mod tests {
             asset: 21,
             who: alice_account.clone().into(),
         };
+        let method1_encoded = method1.encode();
+        data.extend_from_slice(&vec![method1_encoded.len() as u8]);
         let method2 = FungiblesMethod::Balance {
             asset: 1984,
             who: alice_account.into(),
         };
-        data.extend_from_slice(&method1.encode());
-        data.extend_from_slice(&method2.encode());
+        let method2_encoded = method2.encode();
+        data.extend_from_slice(&method1_encoded);
+        data.extend_from_slice(&method2_encoded);
         dbg!(hex::encode((raw_blob.to_vec(), data).encode()));
     }
 

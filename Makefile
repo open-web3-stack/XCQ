@@ -3,12 +3,9 @@ GUEST_RUST_FLAGS="-C relocation-model=pie -C link-arg=--emit-relocs -C link-arg=
 run: chainspec
 	bunx @acala-network/chopsticks@latest --config poc/runtime/chopsticks.yml --genesis output/chainspec.json
 
-poc-host-%: poc-guest-%
-	RUST_LOG=trace cargo run -p poc-host-$*
+poc-guests: poc-guest-sum-balance poc-guest-sum-balance-percent poc-guest-total-supply poc-guest-transparent-call
 
-poc-guests: poc-guest-query-balance poc-guest-query-balance-fungibles poc-guest-transparent-call
-
-dummy-poc-guests: dummy-poc-guest-query-balance dummy-poc-guest-query-balance-fungibles dummy-poc-guest-transparent-call
+dummy-poc-guests: dummy-poc-guest-sum-balance dummy-poc-guest-sum-balance-percent dummy-poc-guest-total-supply dummy-poc-guest-transparent-call
 
 poc-guest-%:
 	cd poc/guests; RUSTFLAGS=$(GUEST_RUST_FLAGS) cargo build -q --release --bin poc-guest-$* -p poc-guest-$*

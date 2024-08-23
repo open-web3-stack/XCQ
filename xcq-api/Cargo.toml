@@ -8,6 +8,7 @@ repository.workspace = true
 version.workspace = true
 
 [dependencies]
+xcq-api-procedural = { path = "procedural" }
 
 [features]
 default = ["std"]
