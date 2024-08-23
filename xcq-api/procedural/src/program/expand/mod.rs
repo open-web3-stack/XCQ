@@ -62,22 +62,19 @@ fn pass_byte_to_host() -> TokenStream2 {
     // TODO check res type to determine the appropriate serializing method
     quote! {
         let res_bytes = res.to_le_bytes();
-        let ptr = polkavm_derive::sbrk(res_bytes.len());
-        if ptr.is_null(){
+        let res_ptr = polkavm_derive::sbrk(0);
+        let end_ptr = polkavm_derive::sbrk(res_bytes.len());
+        if end_ptr.is_null(){
             return 0;
         }
         unsafe {
-            core::ptr::copy_nonoverlapping(res_bytes.as_ptr(),ptr,res_bytes.len());
+            core::ptr::copy_nonoverlapping(res_bytes.as_ptr(),res_ptr,res_bytes.len());
         }
-        (res_bytes.len() as u64) << 32 | (ptr as u64)
+        (res_bytes.len() as u64) << 32 | (res_ptr as u64)
     }
 }
 
 fn generate_main(entrypoint: &EntrypointDef) -> Result<TokenStream2> {
-    let move_to_stack = quote! {
-        let arg_bytes = unsafe {alloc::vec::Vec::from_raw_parts(ptr as *mut u8, size as usize, size as usize)};
-        let mut arg_ptr = arg_bytes.as_ptr() as u32;
-    };
     // Construct call_data
     let mut get_call_data = TokenStream2::new();
     for (arg_type_index, arg_type) in entrypoint.arg_types.iter().enumerate() {
@@ -141,8 +138,7 @@ fn generate_main(entrypoint: &EntrypointDef) -> Result<TokenStream2> {
 
     let main = quote! {
         #[polkavm_derive::polkavm_export]
-        extern "C" fn main(ptr: u32, size:u32) -> u64 {
-            #move_to_stack
+        extern "C" fn main(mut arg_ptr: u32, size:u32) -> u64 {
             #get_call_data
             #call_entrypoint
             #pass_bytes_back
