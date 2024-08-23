@@ -72,7 +72,10 @@ impl<E: ExtensionTuple, P: PermController> XcqExecutorContext for Context<E, P> 
                         let res_bytes = E::dispatch(extension_id, &call_bytes)?;
                         tracing::debug!("(host call): res_bytes: {:?}", res_bytes);
                         let res_bytes_len = res_bytes.len();
-                        let res_ptr = caller.sbrk(res_bytes_len as u32).ok_or(ExtensionError::PolkavmError)?;
+                        let res_ptr = caller.sbrk(0).ok_or(ExtensionError::PolkavmError)?;
+                        if caller.sbrk(res_bytes_len as u32).is_none() {
+                            return Err(ExtensionError::PolkavmError);
+                        }
                         caller
                             .write_memory(res_ptr, &res_bytes)
                             .map_err(|_| ExtensionError::PolkavmError)?;

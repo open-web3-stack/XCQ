@@ -42,11 +42,11 @@ fn main() {
     };
     input_data.extend_from_slice(&method1_encoded);
     input_data.extend_from_slice(&method2.encode());
-    input_data.extend_from_slice(&xcq_extension_fungibles::EXTENSION_ID.encode());
-    let method3 = FungiblesMethod::TotalSupply { asset: 1 };
-    let method3_encoded = method3.encode();
-    input_data.extend_from_slice(&[method3_encoded.len() as u8]);
-    input_data.extend_from_slice(&method3_encoded);
+    // input_data.extend_from_slice(&xcq_extension_fungibles::EXTENSION_ID.encode());
+    // let method3 = FungiblesMethod::TotalSupply { asset: 1 };
+    // let method3_encoded = method3.encode();
+    // input_data.extend_from_slice(&[method3_encoded.len() as u8]);
+    // input_data.extend_from_slice(&method3_encoded);
     tracing::info!("Input data: {:?}", input_data);
     let input = InputImpl {
         method: "main".to_string(),
