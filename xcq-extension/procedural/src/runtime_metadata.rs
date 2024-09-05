@@ -172,19 +172,6 @@ pub fn generate_impl_metadata(impls: &[ItemImpl]) -> Result<TokenStream2> {
             where_clause: None,
         };
 
-        // Extract the generics from the trait to pass to the `runtime_metadata` given by `generate_decl_metadata`
-        // let generics = trait_
-        //     .segments
-        //     .iter()
-        //     .find_map(|segment| {
-        //         if let syn::PathArguments::AngleBracketed(generics) = &segment.arguments {
-        //             Some(generics.clone())
-        //         } else {
-        //             None
-        //         }
-        //     })
-        //     .expect("Trait path should always contain at least one generic parameter; qed");
-
         let mod_name = generate_mod_name_for_trait(trait_name_ident);
         // Get absolute path to the `runtime_decl_for_` module by replacing the last segment.
         if let Some(segment) = trait_.segments.last_mut() {
