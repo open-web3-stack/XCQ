@@ -14,8 +14,6 @@ xcq-executor = { workspace = true }
 impl-trait-for-tuples = { workspace = true }
 tracing = { workspace = true }
 xcq-extension-procedural = { path = "procedural" }
-
-[dev-dependencies]
 xcq-primitives = { workspace = true }
 
 [features]

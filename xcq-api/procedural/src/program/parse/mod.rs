@@ -1,6 +1,7 @@
 use syn::spanned::Spanned;
 use syn::{Error, ItemMod, LitInt, Result};
 mod call;
+pub use call::CallDef;
 mod entrypoint;
 pub use entrypoint::EntrypointDef;
 mod helper;
@@ -33,10 +34,14 @@ impl Def {
                     if last_segment.ident == "call_def" {
                         let mut extern_types = None;
                         let mut extension_id = None;
+                        let mut call_index = None;
                         attr.parse_nested_meta(|meta| {
                             if meta.path.is_ident("extension_id") {
                                 let value = meta.value()?;
                                 extension_id = Some(value.parse::<LitInt>()?.base10_parse::<u64>()?);
+                            } else if meta.path.is_ident("call_index") {
+                                let value = meta.value()?;
+                                call_index = Some(value.parse::<LitInt>()?.base10_parse::<u32>()?);
                             } else if meta.path.is_ident("extern_types") {
                                 let value = meta.value()?;
                                 extern_types = Some(value.parse::<ExternTypesAttr>()?);
@@ -45,7 +50,8 @@ impl Def {
                             }
                             Ok(())
                         })?;
-                        let call = call::CallDef::try_from(attr.span(), index, item, extension_id, extern_types)?;
+                        let call =
+                            call::CallDef::try_from(attr.span(), index, item, extension_id, call_index, extern_types)?;
                         calls.push(call);
                     } else if last_segment.ident == "entrypoint" {
                         if entrypoint.is_some() {

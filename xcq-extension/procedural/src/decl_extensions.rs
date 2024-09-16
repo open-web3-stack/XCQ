@@ -138,10 +138,11 @@ fn extension_id_impl(trait_ident: &Ident, trait_items: &[TraitItem]) -> Result<T
     let xcq_extension = generate_crate_access("xcq-extension")?;
     let extension_id = calculate_hash(trait_ident, trait_items);
     Ok(quote! {
-        // TODO: check if we need a extension_id trait
+        // Defining an trait for extension_id is useful for generic usage
         impl<Impl: #trait_ident> #xcq_extension::ExtensionId for Call<Impl> {
             const EXTENSION_ID: #xcq_extension::ExtensionIdTy = #extension_id;
         }
+        // This one is for easier access, since impl doesn't contribute to the extension_id calculation
         pub const EXTENSION_ID: #xcq_extension::ExtensionIdTy = #extension_id;
     })
 }

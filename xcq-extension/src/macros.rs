@@ -18,4 +18,14 @@ impl ExtensionTuple for Tuple {
         );
         Err(ExtensionError::UnsupportedExtension)
     }
+    fn return_ty(extension_id: ExtensionIdTy, call_index: u32) -> Result<Vec<u8>, ExtensionError> {
+        for_tuples!(
+            #(
+                if extension_id == Tuple::EXTENSION_ID {
+                    return Ok(Tuple::metadata().methods[call_index as usize].output.type_id().encode());
+                }
+            )*
+        );
+        Err(ExtensionError::UnsupportedExtension)
+    }
 }

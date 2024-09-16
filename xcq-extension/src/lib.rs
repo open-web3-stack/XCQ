@@ -13,6 +13,8 @@ pub type XcqResult = Result<XcqResponse, XcqError>;
 
 mod dispatchable;
 pub use dispatchable::{DispatchError, Dispatchable};
+mod metadata;
+pub use metadata::ExtensionMetadata;
 mod extension_id;
 pub use extension_id::{ExtensionId, ExtensionIdTy};
 mod error;
@@ -27,11 +29,13 @@ mod guest;
 pub use guest::{Guest, Input, Method};
 
 // alias trait
-pub trait Extension: Dispatchable + ExtensionId + Decode {}
-impl<T> Extension for T where T: Dispatchable + ExtensionId + Decode {}
+pub trait Extension: Dispatchable + ExtensionMetadata + ExtensionId + Decode {}
+impl<T> Extension for T where T: Dispatchable + ExtensionMetadata + ExtensionId + Decode {}
 
 pub trait ExtensionTuple {
     fn dispatch(extension_id: ExtensionIdTy, data: &[u8]) -> Result<Vec<u8>, ExtensionError>;
+    // TODO: check if use metadata api
+    fn return_ty(extension_id: ExtensionIdTy, call_index: u32) -> Result<Vec<u8>, ExtensionError>;
 }
 
 struct Context<E: ExtensionTuple, P: PermController> {
@@ -70,6 +74,29 @@ impl<E: ExtensionTuple, P: PermController> XcqExecutorContext for Context<E, P> 
                             return Err(ExtensionError::PermissionError);
                         }
                         let res_bytes = E::dispatch(extension_id, &call_bytes)?;
+                        tracing::debug!("(host call): res_bytes: {:?}", res_bytes);
+                        let res_bytes_len = res_bytes.len();
+                        let res_ptr = caller.sbrk(0).ok_or(ExtensionError::PolkavmError)?;
+                        if caller.sbrk(res_bytes_len as u32).is_none() {
+                            return Err(ExtensionError::PolkavmError);
+                        }
+                        caller
+                            .write_memory(res_ptr, &res_bytes)
+                            .map_err(|_| ExtensionError::PolkavmError)?;
+                        Ok(((res_bytes_len as u64) << 32) | (res_ptr as u64))
+                    };
+                    let result = func_with_result();
+                    tracing::trace!("(host call): result: {:?}", result);
+                    result.unwrap_or(0)
+                },
+            )
+            .unwrap();
+        linker
+            .func_wrap(
+                "return_ty",
+                move |mut caller: Caller<_>, extension_id: u64, call_index: u32| -> u64 {
+                    let mut func_with_result = || -> Result<u64, ExtensionError> {
+                        let res_bytes = E::return_ty(extension_id, call_index)?;
                         tracing::debug!("(host call): res_bytes: {:?}", res_bytes);
                         let res_bytes_len = res_bytes.len();
                         let res_ptr = caller.sbrk(0).ok_or(ExtensionError::PolkavmError)?;
