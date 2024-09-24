@@ -138,6 +138,8 @@ pub fn generate_impl_metadata(impls: &[ItemImpl]) -> Result<TokenStream2> {
 
     let xcq_primitives = generate_crate_access("xcq-primitives")?;
 
+    let xcq_extension = generate_crate_access("xcq-extension")?;
+
     // Get the name of the runtime for which the traits are implemented.
     let extension_impl_name = &impls
         .first()
@@ -145,18 +147,20 @@ pub fn generate_impl_metadata(impls: &[ItemImpl]) -> Result<TokenStream2> {
         .self_ty;
 
     let mut metadata = Vec::new();
+    let mut extension_ids = Vec::new();
 
     for impl_ in impls {
         let mut trait_ = extract_impl_trait(impl_, RequireQualifiedTraitPath::Yes)?.clone();
 
-        // Implementation traits are always references with a path `impl client::Core<generics> ...`
+        // Implementation traits are always references with a path `impl xcq_extension::ExtensionCore<generics> ...`
         // The trait name is the last segment of this path.
-        let trait_name_ident = &trait_
+        let trait_name_ident = trait_
             .segments
             .last()
             .as_ref()
             .expect("Trait path should always contain at least one item; qed")
-            .ident;
+            .ident
+            .clone();
 
         // Convert associated types to generics
         let mut generic_params = HashSet::<GenericParam>::new();
@@ -173,8 +177,12 @@ pub fn generate_impl_metadata(impls: &[ItemImpl]) -> Result<TokenStream2> {
             where_clause: None,
         };
 
-        let mod_name = generate_mod_name_for_trait(trait_name_ident);
+        let mod_name = generate_mod_name_for_trait(&trait_name_ident);
         // Get absolute path to the `runtime_decl_for_` module by replacing the last segment.
+        let mut extension_trait_full_path = trait_.clone();
+        if let Some(segment) = extension_trait_full_path.segments.last_mut() {
+            *segment = parse_quote!(EXTENSION_ID);
+        }
         if let Some(segment) = trait_.segments.last_mut() {
             *segment = parse_quote!(#mod_name);
         }
@@ -184,10 +192,22 @@ pub fn generate_impl_metadata(impls: &[ItemImpl]) -> Result<TokenStream2> {
             #( #attrs )*
             #trait_::runtime_metadata::#generics()
         ));
+        extension_ids.push(quote!(#extension_trait_full_path));
     }
 
-    // TODO: Impl ExtensionMetadata trait for every Call<Impl> (which violates orphan rule?)
+    let extension_metadata_impl = quote! {
+        impl #xcq_extension::ExtensionMetadata for #extension_impl_name {
+            fn extension_metadata(extension_id: #xcq_extension::ExtensionIdTy) -> #xcq_primitives::metadata_ir::ExtensionMetadataIR {
+                match extension_id {
+                    #(#extension_ids => #metadata,)*
+                    _ => panic!("Unknown extension id"),
+                }
+            }
+        }
+    };
+
     Ok(quote!(
+        #extension_metadata_impl
         impl #extension_impl_name {
             pub fn runtime_metadata() -> #xcq_primitives::metadata_ir::MetadataIR {
                 #xcq_primitives::metadata_ir::MetadataIR {

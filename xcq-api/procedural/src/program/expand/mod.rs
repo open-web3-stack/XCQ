@@ -1,5 +1,6 @@
 use super::{CallDef, Def, EntrypointDef};
 use inflector::Inflector;
+use parity_scale_codec::Encode;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::{format_ident, quote, ToTokens};
 use syn::{ItemFn, PathArguments, Result};
@@ -42,7 +43,6 @@ fn generate_call(item: &ItemFn) -> Result<TokenStream2> {
     let expand = quote! {
         struct #call_name {
             pub extension_id: u64,
-            pub call_index: u32,
             pub call_ptr: u32,
             pub call_size: u32,
         }
@@ -99,31 +99,42 @@ fn generate_return_ty_assertion(call_def: &CallDef) -> Result<TokenStream2> {
                     .last()
                     .ok_or_else(|| syn::Error::new_spanned(path, "expected function return type to be a path"))?;
                 if last_segment.ident == "u8" {
+                    let encoded_ty_bytes = xcq_types::XcqType::Primitive(xcq_types::PrimitiveType::U8).encode();
                     quote! {
-                        &[0u8]
+                        &[#(#encoded_ty_bytes),*]
                     }
                 } else if last_segment.ident == "u16" {
+                    let encoded_ty_bytes = xcq_types::XcqType::Primitive(xcq_types::PrimitiveType::U16).encode();
                     quote! {
-                        &[1u8]
+                        &[#(#encoded_ty_bytes),*]
                     }
                 } else if last_segment.ident == "u32" {
+                    let encoded_ty_bytes = xcq_types::XcqType::Primitive(xcq_types::PrimitiveType::U32).encode();
                     quote! {
-                        &[2u8]
+                        &[#(#encoded_ty_bytes),*]
                     }
                 } else if last_segment.ident == "u64" {
+                    let encoded_ty_bytes = xcq_types::XcqType::Primitive(xcq_types::PrimitiveType::U64).encode();
                     quote! {
-                        &[3u8]
+                        &[#(#encoded_ty_bytes),*]
                     }
                 } else if last_segment.ident == "u128" {
+                    let encoded_ty_bytes = xcq_types::XcqType::Primitive(xcq_types::PrimitiveType::U128).encode();
                     quote! {
-                        &[4u8]
+                        &[#(#encoded_ty_bytes),*]
                     }
                 } else if last_segment.ident == "Vec" {
                     if let PathArguments::AngleBracketed(generic_args) = &last_segment.arguments {
                         if generic_args.args.len() == 1 {
                             match generic_args.args.first() {
                                 Some(syn::GenericArgument::Type(syn::Type::Path(path))) if path.path.is_ident("u8") => {
-                                    quote! { &[5u8] }
+                                    let encoded_ty_bytes = xcq_types::XcqType::Sequence(Box::new(
+                                        xcq_types::XcqType::Primitive(xcq_types::PrimitiveType::U8),
+                                    ))
+                                    .encode();
+                                    quote! {
+                                        &[#(#encoded_ty_bytes),*]
+                                    }
                                 }
                                 _ => quote! { &[6u8] },
                             }
@@ -155,10 +166,10 @@ fn generate_return_ty_assertion(call_def: &CallDef) -> Result<TokenStream2> {
     };
     let extension_id = call_def.extension_id;
     let call_index = call_def.call_index;
-    let item_fn_ident = &call_def.item_fn.sig.ident;
+    let item_fn_ident_string = &call_def.item_fn.sig.ident.to_string();
     let expanded = quote! {
         if !assert_return_ty(#expected_ty_bytes, #extension_id, #call_index) {
-            panic!("function {} (extension {} call {}) return type mismatch", #item_fn_ident, #extension_id, #call_index);
+            panic!("function {} (extension {} call {}) return type mismatch", #item_fn_ident_string, #extension_id, #call_index);
         }
     };
     Ok(expanded)
@@ -186,6 +197,7 @@ fn generate_main(call_defs: &[CallDef], entrypoint: &EntrypointDef) -> Result<To
             );
             get_call_data.extend({
                 quote! {
+                    // TODO: extension_id can be eliminated since we have call_def indicating it
                     let extension_id = unsafe {core::ptr::read_volatile((arg_ptr) as *const u64)};
                     // for multi calls, we assume the number of calls are given in the call data
                     let call_num = unsafe {core::ptr::read_volatile((arg_ptr+8) as *const u8)};

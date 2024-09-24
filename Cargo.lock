@@ -4458,10 +4458,12 @@ name = "xcq-api-procedural"
 version = "0.1.0"
 dependencies = [
  "Inflector",
+ "parity-scale-codec",
  "proc-macro-crate",
  "proc-macro2",
  "quote",
  "syn 2.0.66",
+ "xcq-types",
 ]
 
 [[package]]
@@ -4478,7 +4480,7 @@ dependencies = [
 name = "xcq-extension"
 version = "0.1.0"
 dependencies = [
- "impl-trait-for-tuples",
+ "fortuples",
  "parity-scale-codec",
  "scale-info",
  "tracing",

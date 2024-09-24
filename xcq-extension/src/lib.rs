@@ -14,7 +14,7 @@ pub type XcqResult = Result<XcqResponse, XcqError>;
 mod dispatchable;
 pub use dispatchable::{DispatchError, Dispatchable};
 mod metadata;
-pub use metadata::ExtensionMetadata;
+pub use metadata::{CallMetadata, ExtensionMetadata};
 mod extension_id;
 pub use extension_id::{ExtensionId, ExtensionIdTy};
 mod error;
@@ -28,22 +28,22 @@ pub use perm_controller::{InvokeSource, PermController};
 mod guest;
 pub use guest::{Guest, Input, Method};
 
-// alias trait
-pub trait Extension: Dispatchable + ExtensionMetadata + ExtensionId + Decode {}
-impl<T> Extension for T where T: Dispatchable + ExtensionMetadata + ExtensionId + Decode {}
+// Call data
+pub trait CallData: Dispatchable + CallMetadata + ExtensionId + Decode {}
+impl<T> CallData for T where T: Dispatchable + CallMetadata + ExtensionId + Decode {}
 
-pub trait ExtensionTuple {
+pub trait CallDataTuple {
     fn dispatch(extension_id: ExtensionIdTy, data: &[u8]) -> Result<Vec<u8>, ExtensionError>;
     // TODO: check if use metadata api
     fn return_ty(extension_id: ExtensionIdTy, call_index: u32) -> Result<Vec<u8>, ExtensionError>;
 }
 
-struct Context<E: ExtensionTuple, P: PermController> {
+struct Context<C: CallDataTuple, P: PermController> {
     invoke_source: InvokeSource,
-    _marker: PhantomData<(E, P)>,
+    _marker: PhantomData<(C, P)>,
 }
 
-impl<E: ExtensionTuple, P: PermController> Context<E, P> {
+impl<C: CallDataTuple, P: PermController> Context<C, P> {
     pub fn new(invoke_source: InvokeSource) -> Self {
         Self {
             invoke_source,
@@ -52,7 +52,7 @@ impl<E: ExtensionTuple, P: PermController> Context<E, P> {
     }
 }
 
-impl<E: ExtensionTuple, P: PermController> XcqExecutorContext for Context<E, P> {
+impl<C: CallDataTuple, P: PermController> XcqExecutorContext for Context<C, P> {
     fn register_host_functions<T>(&mut self, linker: &mut Linker<T>) {
         let invoke_source = self.invoke_source;
         linker
@@ -73,7 +73,7 @@ impl<E: ExtensionTuple, P: PermController> XcqExecutorContext for Context<E, P> 
                         if !P::is_allowed(extension_id, &call_bytes, invoke_source) {
                             return Err(ExtensionError::PermissionError);
                         }
-                        let res_bytes = E::dispatch(extension_id, &call_bytes)?;
+                        let res_bytes = C::dispatch(extension_id, &call_bytes)?;
                         tracing::debug!("(host call): res_bytes: {:?}", res_bytes);
                         let res_bytes_len = res_bytes.len();
                         let res_ptr = caller.sbrk(0).ok_or(ExtensionError::PolkavmError)?;
@@ -96,7 +96,7 @@ impl<E: ExtensionTuple, P: PermController> XcqExecutorContext for Context<E, P> 
                 "return_ty",
                 move |mut caller: Caller<_>, extension_id: u64, call_index: u32| -> u64 {
                     let mut func_with_result = || -> Result<u64, ExtensionError> {
-                        let res_bytes = E::return_ty(extension_id, call_index)?;
+                        let res_bytes = C::return_ty(extension_id, call_index)?;
                         tracing::debug!("(host call): res_bytes: {:?}", res_bytes);
                         let res_bytes_len = res_bytes.len();
                         let res_ptr = caller.sbrk(0).ok_or(ExtensionError::PolkavmError)?;
@@ -117,13 +117,13 @@ impl<E: ExtensionTuple, P: PermController> XcqExecutorContext for Context<E, P> 
     }
 }
 
-pub struct ExtensionsExecutor<E: ExtensionTuple, P: PermController> {
-    executor: XcqExecutor<Context<E, P>>,
+pub struct ExtensionsExecutor<C: CallDataTuple, P: PermController> {
+    executor: XcqExecutor<Context<C, P>>,
 }
-impl<E: ExtensionTuple, P: PermController> ExtensionsExecutor<E, P> {
+impl<C: CallDataTuple, P: PermController> ExtensionsExecutor<C, P> {
     #[allow(dead_code)]
     pub fn new(source: InvokeSource) -> Self {
-        let context = Context::<E, P>::new(source);
+        let context = Context::<C, P>::new(source);
         let executor = XcqExecutor::new(Default::default(), context);
         Self { executor }
     }

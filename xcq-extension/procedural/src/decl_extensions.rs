@@ -17,20 +17,27 @@ pub fn decl_extensions_impl(input: TokenStream) -> TokenStream {
 }
 
 pub fn decl_extension_inner(item_trait: &ItemTrait) -> Result<TokenStream2> {
+    let mut item_trait = item_trait.clone();
+    // Generate a separate module for the extension
     let mod_name = generate_mod_name_for_trait(&item_trait.ident);
 
-    // Assume single config associated type.
+    // Add super trait ExtensionId and ExtensionMetadata to the trait's where clause
+    add_super_trait(&mut item_trait)?;
+
+    // TODO: If trait has associated type, we assume it has a single associated type called `Config`
     let has_config = item_trait
         .items
         .iter()
         .any(|item| matches!(item, syn::TraitItem::Type(_)));
+
+    // Extract methods from the trait
     let methods = methods(&item_trait.items)?;
 
     let call_enum_def = call_enum_def(&item_trait.ident, &methods)?;
-    let dispatchable_impl = dispatchable_impl(&item_trait.ident, &methods)?;
-    let extension_id_impl = extension_id_impl(&item_trait.ident, &item_trait.items)?;
-
-    let runtime_metadata = crate::runtime_metadata::generate_decl_metadata(item_trait, has_config)?;
+    let call_data_dispatchable_impl = impl_dispatchable(&item_trait.ident, &methods)?;
+    let call_data_extension_id_impl = impl_extension_id(&item_trait.ident, &item_trait.items)?;
+    let call_data_metadata_impl = impl_metadata(&item_trait.ident)?;
+    let extension_runtime_metadata = crate::runtime_metadata::generate_decl_metadata(&item_trait, has_config)?;
 
     let expanded = quote! {
         #item_trait
@@ -39,14 +46,25 @@ pub fn decl_extension_inner(item_trait: &ItemTrait) -> Result<TokenStream2> {
         pub mod #mod_name {
             pub use super::*;
             #call_enum_def
-            #dispatchable_impl
-            #extension_id_impl
-            #runtime_metadata
+            #call_data_dispatchable_impl
+            #call_data_extension_id_impl
+            #call_data_metadata_impl
+            #extension_runtime_metadata
         }
         pub use #mod_name::*;
     };
     Ok(expanded)
 }
+
+fn add_super_trait(item_trait: &mut ItemTrait) -> Result<()> {
+    let xcq_extension = generate_crate_access("xcq-extension")?;
+    // item_trait.supertraits.push(parse_quote!(#xcq_extension::ExtensionId));
+    item_trait
+        .supertraits
+        .push(parse_quote!(#xcq_extension::ExtensionMetadata));
+    Ok(())
+}
+
 #[derive(Clone)]
 struct Method {
     /// Function name
@@ -87,7 +105,7 @@ fn call_enum_def(trait_ident: &Ident, methods: &[Method]) -> Result<ItemEnum> {
     ))
 }
 
-fn dispatchable_impl(trait_ident: &Ident, methods: &[Method]) -> Result<ItemImpl> {
+fn impl_dispatchable(trait_ident: &Ident, methods: &[Method]) -> Result<ItemImpl> {
     let xcq_extension = generate_crate_access("xcq-extension")?;
     let xcq_primitives = generate_crate_access("xcq-primitives")?;
     let mut pats = Vec::<Pat>::new();
@@ -134,8 +152,9 @@ fn dispatchable_impl(trait_ident: &Ident, methods: &[Method]) -> Result<ItemImpl
     })
 }
 
-fn extension_id_impl(trait_ident: &Ident, trait_items: &[TraitItem]) -> Result<TokenStream2> {
+fn impl_extension_id(trait_ident: &Ident, trait_items: &[TraitItem]) -> Result<TokenStream2> {
     let xcq_extension = generate_crate_access("xcq-extension")?;
+
     let extension_id = calculate_hash(trait_ident, trait_items);
     Ok(quote! {
         // Defining an trait for extension_id is useful for generic usage
@@ -144,6 +163,19 @@ fn extension_id_impl(trait_ident: &Ident, trait_items: &[TraitItem]) -> Result<T
         }
         // This one is for easier access, since impl doesn't contribute to the extension_id calculation
         pub const EXTENSION_ID: #xcq_extension::ExtensionIdTy = #extension_id;
+    })
+}
+
+// Delegate the metadata generation to the trait implementation
+fn impl_metadata(trait_ident: &Ident) -> Result<ItemImpl> {
+    let xcq_extension = generate_crate_access("xcq-extension")?;
+    let xcq_primitives = generate_crate_access("xcq-primitives")?;
+    Ok(parse_quote! {
+        impl<Impl: #trait_ident> #xcq_extension::CallMetadata for Call<Impl> {
+            fn metadata() -> #xcq_primitives::metadata_ir::ExtensionMetadataIR {
+                Impl::extension_metadata(<Self as #xcq_extension::ExtensionId>::EXTENSION_ID)
+            }
+        }
     })
 }
 
