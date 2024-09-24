@@ -178,7 +178,7 @@ fn generate_return_ty_assertion(call_def: &CallDef) -> Result<TokenStream2> {
 fn generate_main(call_defs: &[CallDef], entrypoint: &EntrypointDef) -> Result<TokenStream2> {
     let assertions = call_defs
         .iter()
-        .map(|call_def| generate_return_ty_assertion(call_def))
+        .map(generate_return_ty_assertion)
         .collect::<Result<Vec<_>>>()?;
     let assert_program_types_match = quote! {
         #(#assertions)*

@@ -9,6 +9,8 @@ use parity_scale_codec::Encode;
 // Use the macro to implement ExtensionTuple for tuples of different lengths
 fortuples! {
     impl CallDataTuple for #Tuple where #(#Member: CallData),*{
+        #[allow(unused_variables)]
+        #[allow(unused_mut)]
         fn dispatch(extension_id: ExtensionIdTy, mut call: &[u8]) -> Result<Vec<u8>, ExtensionError> {
             #(
                 if extension_id == #Member::EXTENSION_ID {
@@ -17,6 +19,7 @@ fortuples! {
             )*
             Err(ExtensionError::UnsupportedExtension)
         }
+        #[allow(unused_variables)]
         fn return_ty(extension_id: ExtensionIdTy, call_index: u32) -> Result<Vec<u8>, ExtensionError> {
             #(
                 if extension_id == #Member::EXTENSION_ID {

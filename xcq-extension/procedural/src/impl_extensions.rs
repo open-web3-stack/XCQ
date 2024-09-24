@@ -1,4 +1,4 @@
-use crate::utils::{extract_impl_trait, generate_crate_access, generate_mod_name_for_trait, RequireQualifiedTraitPath};
+use crate::utils::{extract_impl_trait, generate_mod_name_for_trait, RequireQualifiedTraitPath};
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;

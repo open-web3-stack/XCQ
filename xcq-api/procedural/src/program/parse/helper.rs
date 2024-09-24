@@ -1,4 +1,3 @@
-use quote::ToTokens;
 pub trait MutItemAttrs {
     fn mut_item_attrs(&mut self) -> Option<&mut Vec<syn::Attribute>>;
 }
