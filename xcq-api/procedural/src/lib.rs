@@ -1,4 +1,5 @@
 /// Declare the calls used in XCQ program
+/// ```ignore
 /// #[xcq::program]
 /// mod query_fungibles {
 ///     #[xcq::call_def(extension_id = 123456, extern_types = [AssetId, AccountId, Balance])]
@@ -14,6 +15,7 @@
 ///         sum
 ///     }
 /// }
+/// ```
 ///
 mod program;
 use proc_macro::TokenStream;

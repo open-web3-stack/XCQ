@@ -98,56 +98,62 @@ fn generate_return_ty_assertion(call_def: &CallDef) -> Result<TokenStream2> {
                     .segments
                     .last()
                     .ok_or_else(|| syn::Error::new_spanned(path, "expected function return type to be a path"))?;
-                if last_segment.ident == "u8" {
-                    let encoded_ty_bytes = xcq_types::XcqType::Primitive(xcq_types::PrimitiveType::U8).encode();
-                    quote! {
-                        &[#(#encoded_ty_bytes),*]
+                match last_segment.ident.to_string().as_str() {
+                    "u8" => {
+                        let encoded_ty_bytes = xcq_types::XcqType::Primitive(xcq_types::PrimitiveType::U8).encode();
+                        quote! {
+                            &[#(#encoded_ty_bytes),*]
+                        }
                     }
-                } else if last_segment.ident == "u16" {
-                    let encoded_ty_bytes = xcq_types::XcqType::Primitive(xcq_types::PrimitiveType::U16).encode();
-                    quote! {
-                        &[#(#encoded_ty_bytes),*]
+                    "u16" => {
+                        let encoded_ty_bytes = xcq_types::XcqType::Primitive(xcq_types::PrimitiveType::U16).encode();
+                        quote! {
+                            &[#(#encoded_ty_bytes),*]
+                        }
                     }
-                } else if last_segment.ident == "u32" {
-                    let encoded_ty_bytes = xcq_types::XcqType::Primitive(xcq_types::PrimitiveType::U32).encode();
-                    quote! {
-                        &[#(#encoded_ty_bytes),*]
+                    "u32" => {
+                        let encoded_ty_bytes = xcq_types::XcqType::Primitive(xcq_types::PrimitiveType::U32).encode();
+                        quote! {
+                            &[#(#encoded_ty_bytes),*]
+                        }
                     }
-                } else if last_segment.ident == "u64" {
-                    let encoded_ty_bytes = xcq_types::XcqType::Primitive(xcq_types::PrimitiveType::U64).encode();
-                    quote! {
-                        &[#(#encoded_ty_bytes),*]
+                    "u64" => {
+                        let encoded_ty_bytes = xcq_types::XcqType::Primitive(xcq_types::PrimitiveType::U64).encode();
+                        quote! {
+                            &[#(#encoded_ty_bytes),*]
+                        }
                     }
-                } else if last_segment.ident == "u128" {
-                    let encoded_ty_bytes = xcq_types::XcqType::Primitive(xcq_types::PrimitiveType::U128).encode();
-                    quote! {
-                        &[#(#encoded_ty_bytes),*]
+                    "u128" => {
+                        let encoded_ty_bytes = xcq_types::XcqType::Primitive(xcq_types::PrimitiveType::U128).encode();
+                        quote! {
+                            &[#(#encoded_ty_bytes),*]
+                        }
                     }
-                } else if last_segment.ident == "Vec" {
-                    if let PathArguments::AngleBracketed(generic_args) = &last_segment.arguments {
-                        if generic_args.args.len() == 1 {
-                            match generic_args.args.first() {
-                                Some(syn::GenericArgument::Type(syn::Type::Path(path))) if path.path.is_ident("u8") => {
-                                    let encoded_ty_bytes = xcq_types::XcqType::Sequence(Box::new(
-                                        xcq_types::XcqType::Primitive(xcq_types::PrimitiveType::U8),
-                                    ))
-                                    .encode();
-                                    quote! {
-                                        &[#(#encoded_ty_bytes),*]
+                    "Vec" => {
+                        if let PathArguments::AngleBracketed(generic_args) = &last_segment.arguments {
+                            if generic_args.args.len() == 1 {
+                                match generic_args.args.first() {
+                                    Some(syn::GenericArgument::Type(syn::Type::Path(path)))
+                                        if path.path.is_ident("u8") =>
+                                    {
+                                        let encoded_ty_bytes = xcq_types::XcqType::Sequence(Box::new(
+                                            xcq_types::XcqType::Primitive(xcq_types::PrimitiveType::U8),
+                                        ))
+                                        .encode();
+                                        quote! {
+                                            &[#(#encoded_ty_bytes),*]
+                                        }
                                     }
+                                    _ => quote! { &[0u8] },
                                 }
-                                _ => quote! { &[6u8] },
+                            } else {
+                                quote! { &[0u8] }
                             }
                         } else {
-                            quote! { &[6u8] }
+                            quote! {&[0u8]}
                         }
-                    } else {
-                        quote! { &[6u8] }
                     }
-                } else {
-                    quote! {
-                        &[6u8]
-                    }
+                    _ => quote! { &[0u8] },
                 }
             }
             _ => {
