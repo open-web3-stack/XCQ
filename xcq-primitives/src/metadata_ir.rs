@@ -30,3 +30,7 @@ pub struct ExtensionMetadataIR {
 pub struct MetadataIR {
     pub extensions: Vec<ExtensionMetadataIR>,
 }
+
+pub trait RuntimeMetadata {
+    fn runtime_metadata() -> MetadataIR;
+}

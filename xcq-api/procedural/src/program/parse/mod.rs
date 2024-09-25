@@ -1,6 +1,7 @@
 use syn::spanned::Spanned;
-use syn::{Error, ItemMod, Result};
+use syn::{Error, ItemMod, LitInt, Result};
 mod call;
+pub use call::CallDef;
 mod entrypoint;
 pub use entrypoint::EntrypointDef;
 mod helper;
@@ -17,7 +18,7 @@ impl Def {
             .content
             .as_mut()
             .ok_or_else(|| {
-                let msg = "Invalid pallet definition, expected mod to be inlined.";
+                let msg = "No content inside the XCQ program definition";
                 syn::Error::new(mod_span, msg)
             })?
             .1;
@@ -26,33 +27,48 @@ impl Def {
         let mut entrypoint = None;
 
         for (index, item) in items.iter_mut().enumerate() {
-            let xcq_attr: Option<XcqAttr> = helper::take_first_item_xcq_attr(item)?;
+            let xcq_attr = helper::take_first_xcq_attr(item)?;
 
-            match xcq_attr {
-                Some(XcqAttr::CallDef(span, extern_types)) => {
-                    calls.push(call::CallDef::try_from(span, index, item, extern_types)?);
-                }
-                Some(XcqAttr::Entrypoint(span)) => {
-                    if entrypoint.is_some() {
-                        return Err(Error::new(span, "Only one entrypoint function is allowed"));
+            if let Some(attr) = xcq_attr {
+                if let Some(last_segment) = attr.path().segments.last() {
+                    if last_segment.ident == "call_def" {
+                        let mut extern_types = None;
+                        let mut extension_id = None;
+                        let mut call_index = None;
+                        attr.parse_nested_meta(|meta| {
+                            if meta.path.is_ident("extension_id") {
+                                let value = meta.value()?;
+                                extension_id = Some(value.parse::<LitInt>()?.base10_parse::<u64>()?);
+                            } else if meta.path.is_ident("call_index") {
+                                let value = meta.value()?;
+                                call_index = Some(value.parse::<LitInt>()?.base10_parse::<u32>()?);
+                            } else if meta.path.is_ident("extern_types") {
+                                let value = meta.value()?;
+                                extern_types = Some(value.parse::<ExternTypesAttr>()?);
+                            } else {
+                                return Err(Error::new(meta.path.span(), "Invalid attribute for `call_def`"));
+                            }
+                            Ok(())
+                        })?;
+                        let call =
+                            call::CallDef::try_from(attr.span(), index, item, extension_id, call_index, extern_types)?;
+                        calls.push(call);
+                    } else if last_segment.ident == "entrypoint" {
+                        if entrypoint.is_some() {
+                            return Err(Error::new(attr.span(), "Only one entrypoint function is allowed"));
+                        }
+                        entrypoint = Some(entrypoint::EntrypointDef::try_from(attr.span(), index, item)?);
+                    } else {
+                        return Err(Error::new(
+                            item.span(),
+                            "Invalid attribute, expected `#[xcq::call_def]` or `#[xcq::entrypoint]`",
+                        ));
                     }
-                    let e = entrypoint::EntrypointDef::try_from(span, index, item)?;
-                    entrypoint = Some(e);
-                }
-                None => {
-                    return Err(Error::new(
-                        item.span(),
-                        "Invalid attribute, expected `#[xcq::call_def]` or `#[xcq::entrypoint]`",
-                    ));
                 }
             }
         }
-        let entrypoint = match entrypoint {
-            Some(entrypoint) => entrypoint,
-            None => {
-                return Err(Error::new(mod_span, "No entrypoint function found"));
-            }
-        };
+
+        let entrypoint = entrypoint.ok_or_else(|| Error::new(mod_span, "No entrypoint function found"))?;
         let def = Def { calls, entrypoint };
 
         Ok(def)
@@ -63,39 +79,10 @@ impl Def {
 mod keyword {
     syn::custom_keyword!(xcq);
     syn::custom_keyword!(call_def);
+    syn::custom_keyword!(extension_id);
     syn::custom_keyword!(extern_types);
     syn::custom_keyword!(entrypoint);
 }
-enum XcqAttr {
-    CallDef(proc_macro2::Span, Option<ExternTypesAttr>),
-    Entrypoint(proc_macro2::Span),
-}
-
-// Custom parsing for xcq attribute
-impl syn::parse::Parse for XcqAttr {
-    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
-        input.parse::<syn::Token![#]>()?;
-        let content;
-        syn::bracketed!(content in input);
-        content.parse::<keyword::xcq>()?;
-        content.parse::<syn::Token![::]>()?;
-
-        let lookahead = content.lookahead1();
-        if lookahead.peek(keyword::call_def) {
-            let span = content.parse::<keyword::call_def>().expect("peeked").span();
-            let extern_types = match content.is_empty() {
-                true => None,
-                false => Some(ExternTypesAttr::parse(&content)?),
-            };
-            Ok(XcqAttr::CallDef(span, extern_types))
-        } else if lookahead.peek(keyword::entrypoint) {
-            Ok(XcqAttr::Entrypoint(content.parse::<keyword::entrypoint>()?.span()))
-        } else {
-            Err(lookahead.error())
-        }
-    }
-}
-
 #[derive(Debug, Clone)]
 pub struct ExternTypesAttr {
     pub types: Vec<syn::Type>,
@@ -105,21 +92,11 @@ pub struct ExternTypesAttr {
 impl syn::parse::Parse for ExternTypesAttr {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
         let content;
-        syn::parenthesized!(content in input);
-
-        let lookahead = content.lookahead1();
-        if lookahead.peek(keyword::extern_types) {
-            let span = content.parse::<keyword::extern_types>().expect("peeked").span();
-            content.parse::<syn::Token![=]>().expect("peeked");
-            let list;
-            syn::bracketed!(list in content);
-            let types = list.parse_terminated(syn::Type::parse, syn::Token![,])?;
-            Ok(ExternTypesAttr {
-                types: types.into_iter().collect(),
-                span,
-            })
-        } else {
-            Err(lookahead.error())
-        }
+        syn::bracketed!(content in input);
+        let extern_types = content.parse_terminated(syn::Type::parse, syn::Token![,])?;
+        Ok(ExternTypesAttr {
+            types: extern_types.into_iter().collect(),
+            span: content.span(),
+        })
     }
 }

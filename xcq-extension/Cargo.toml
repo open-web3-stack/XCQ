@@ -11,11 +11,9 @@ version.workspace = true
 parity-scale-codec = { workspace = true }
 scale-info = { workspace = true }
 xcq-executor = { workspace = true }
-impl-trait-for-tuples = { workspace = true }
+fortuples = { workspace = true }
 tracing = { workspace = true }
 xcq-extension-procedural = { path = "procedural" }
-
-[dev-dependencies]
 xcq-primitives = { workspace = true }
 
 [features]

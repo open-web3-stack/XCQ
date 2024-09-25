@@ -2,7 +2,7 @@ use proc_macro::TokenStream;
 use syn::{parse_macro_input, ItemMod};
 mod expand;
 mod parse;
-pub use parse::{Def, EntrypointDef};
+pub use parse::{CallDef, Def, EntrypointDef};
 
 pub fn program(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let item = parse_macro_input!(item as ItemMod);

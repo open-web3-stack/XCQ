@@ -1,12 +1,8 @@
-use quote::ToTokens;
 pub trait MutItemAttrs {
     fn mut_item_attrs(&mut self) -> Option<&mut Vec<syn::Attribute>>;
 }
-/// Take the first pallet attribute (e.g. attribute like `#[xcq..]`) and decode it to `Attr`
-pub(crate) fn take_first_item_xcq_attr<Attr>(item: &mut impl MutItemAttrs) -> syn::Result<Option<Attr>>
-where
-    Attr: syn::parse::Parse,
-{
+/// Take the first item attribute (e.g. attribute like `#[xcq..]`) and decode it to `Attr`
+pub(crate) fn take_first_xcq_attr(item: &mut impl MutItemAttrs) -> syn::Result<Option<syn::Attribute>> {
     let Some(attrs) = item.mut_item_attrs() else {
         return Ok(None);
     };
@@ -21,7 +17,7 @@ where
     };
 
     let xcq_attr = attrs.remove(index);
-    Ok(Some(syn::parse2(xcq_attr.into_token_stream())?))
+    Ok(Some(xcq_attr))
 }
 impl MutItemAttrs for syn::Item {
     fn mut_item_attrs(&mut self) -> Option<&mut Vec<syn::Attribute>> {
