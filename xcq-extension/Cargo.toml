@@ -9,6 +9,7 @@ version.workspace = true
 
 [dependencies]
 parity-scale-codec = { workspace = true }
+polkavm = { workspace = true }
 scale-info = { workspace = true }
 xcq-executor = { workspace = true }
 fortuples = { workspace = true }
