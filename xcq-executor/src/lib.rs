@@ -22,8 +22,8 @@ pub struct XcqExecutor<Ctx: XcqExecutorContext> {
 pub enum XcqExecutorError<UserError> {
     MemoryAllocationError,
     MemoryAccessError(polkavm::MemoryAccessError),
-    PolkavmError(polkavm::Error),
     CallError(polkavm::CallError<UserError>),
+    OtherPVMError(polkavm::Error),
 }
 
 impl<UserError> From<polkavm::MemoryAccessError> for XcqExecutorError<UserError> {
@@ -34,7 +34,7 @@ impl<UserError> From<polkavm::MemoryAccessError> for XcqExecutorError<UserError>
 
 impl<UserError> From<polkavm::Error> for XcqExecutorError<UserError> {
     fn from(err: polkavm::Error) -> Self {
-        Self::PolkavmError(err)
+        Self::OtherPVMError(err)
     }
 }
 
