@@ -40,6 +40,7 @@ pub trait CallDataTuple {
 
 struct Context<C: CallDataTuple, P: PermController> {
     invoke_source: InvokeSource,
+    user_data: (),
     _marker: PhantomData<(C, P)>,
 }
 
@@ -47,70 +48,76 @@ impl<C: CallDataTuple, P: PermController> Context<C, P> {
     pub fn new(invoke_source: InvokeSource) -> Self {
         Self {
             invoke_source,
+            user_data: (),
             _marker: PhantomData,
         }
     }
 }
 
 impl<C: CallDataTuple, P: PermController> XcqExecutorContext for Context<C, P> {
-    fn register_host_functions<T>(&mut self, linker: &mut Linker<T>) {
+    type UserData = ();
+    type UserError = ExtensionError;
+    fn data(&mut self) -> &mut Self::UserData {
+        &mut self.user_data
+    }
+    fn register_host_functions(&mut self, linker: &mut Linker<Self::UserData, Self::UserError>) {
         let invoke_source = self.invoke_source;
         linker
-            .func_wrap(
+            .define_typed(
                 "host_call",
-                move |mut caller: Caller<_>, extension_id: u64, call_ptr: u32, call_len: u32| -> u64 {
+                move |caller: Caller<'_, Self::UserData>,
+                      extension_id: u64,
+                      call_ptr: u32,
+                      call_len: u32|
+                      -> Result<u64, ExtensionError> {
                     // useful closure to handle early return
-                    let mut func_with_result = || -> Result<u64, ExtensionError> {
-                        let call_bytes = caller
-                            .read_memory_into_vec(call_ptr, call_len)
-                            .map_err(|_| ExtensionError::PolkavmError)?;
-                        tracing::info!("(host call): call_ptr: {}, call_len: {:?}", call_ptr, call_len);
-                        tracing::info!(
-                            "(host call): extension_id: {}, call_bytes: {:?}",
-                            extension_id,
-                            call_bytes
-                        );
-                        if !P::is_allowed(extension_id, &call_bytes, invoke_source) {
-                            return Err(ExtensionError::PermissionError);
-                        }
-                        let res_bytes = C::dispatch(extension_id, &call_bytes)?;
-                        tracing::debug!("(host call): res_bytes: {:?}", res_bytes);
-                        let res_bytes_len = res_bytes.len();
-                        let res_ptr = caller.sbrk(0).ok_or(ExtensionError::PolkavmError)?;
-                        if caller.sbrk(res_bytes_len as u32).is_none() {
-                            return Err(ExtensionError::PolkavmError);
-                        }
-                        caller
-                            .write_memory(res_ptr, &res_bytes)
-                            .map_err(|_| ExtensionError::PolkavmError)?;
-                        Ok(((res_bytes_len as u64) << 32) | (res_ptr as u64))
-                    };
-                    let result = func_with_result();
-                    tracing::trace!("(host call): result: {:?}", result);
-                    result.unwrap_or(0)
+                    let call_bytes = caller.instance.read_memory(call_ptr, call_len)?;
+                    tracing::info!("(host call): call_ptr: {}, call_len: {:?}", call_ptr, call_len);
+                    tracing::info!(
+                        "(host call): extension_id: {}, call_bytes: {:?}",
+                        extension_id,
+                        call_bytes
+                    );
+                    if !P::is_allowed(extension_id, &call_bytes, invoke_source) {
+                        return Err(ExtensionError::PermissionError);
+                    }
+                    let res_bytes = C::dispatch(extension_id, &call_bytes)?;
+                    tracing::debug!("(host call): res_bytes: {:?}", res_bytes);
+                    let res_bytes_len = res_bytes.len();
+                    let res_ptr = caller
+                        .instance
+                        .sbrk(0)
+                        .map_err(|_| ExtensionError::MemoryAllocationError)?
+                        .ok_or(ExtensionError::MemoryAllocationError)?;
+                    caller
+                        .instance
+                        .sbrk(res_bytes_len as u32)
+                        .map_err(|_| ExtensionError::MemoryAllocationError)?
+                        .ok_or(ExtensionError::MemoryAllocationError)?;
+                    caller.instance.write_memory(res_ptr, &res_bytes)?;
+                    Ok(((res_bytes_len as u64) << 32) | (res_ptr as u64))
                 },
             )
             .unwrap();
         linker
-            .func_wrap(
+            .define_typed(
                 "return_ty",
-                move |mut caller: Caller<_>, extension_id: u64, call_index: u32| -> u64 {
-                    let mut func_with_result = || -> Result<u64, ExtensionError> {
-                        let res_bytes = C::return_ty(extension_id, call_index)?;
-                        tracing::debug!("(host call): res_bytes: {:?}", res_bytes);
-                        let res_bytes_len = res_bytes.len();
-                        let res_ptr = caller.sbrk(0).ok_or(ExtensionError::PolkavmError)?;
-                        if caller.sbrk(res_bytes_len as u32).is_none() {
-                            return Err(ExtensionError::PolkavmError);
-                        }
-                        caller
-                            .write_memory(res_ptr, &res_bytes)
-                            .map_err(|_| ExtensionError::PolkavmError)?;
-                        Ok(((res_bytes_len as u64) << 32) | (res_ptr as u64))
-                    };
-                    let result = func_with_result();
-                    tracing::trace!("(host call): result: {:?}", result);
-                    result.unwrap_or(0)
+                move |caller: Caller<_>, extension_id: u64, call_index: u32| -> Result<u64, ExtensionError> {
+                    let res_bytes = C::return_ty(extension_id, call_index)?;
+                    tracing::debug!("(host call): res_bytes: {:?}", res_bytes);
+                    let res_bytes_len = res_bytes.len();
+                    let res_ptr = caller
+                        .instance
+                        .sbrk(0)
+                        .map_err(|_| ExtensionError::MemoryAllocationError)?
+                        .ok_or(ExtensionError::MemoryAllocationError)?;
+                    caller
+                        .instance
+                        .sbrk(res_bytes_len as u32)
+                        .map_err(|_| ExtensionError::MemoryAllocationError)?
+                        .ok_or(ExtensionError::MemoryAllocationError)?;
+                    caller.instance.write_memory(res_ptr, &res_bytes)?;
+                    Ok(((res_bytes_len as u64) << 32) | (res_ptr as u64))
                 },
             )
             .unwrap();
@@ -131,7 +138,7 @@ impl<C: CallDataTuple, P: PermController> ExtensionsExecutor<C, P> {
     #[allow(dead_code)]
     pub fn execute_method<G: Guest, I: Input>(&mut self, guest: G, input: I) -> XcqResult {
         self.executor
-            .execute(guest.program(), input.method(), input.args())
+            .execute(guest.program(), &input.method(), input.args())
             .map_err(|e| format!("{:?}", e))
     }
 }
