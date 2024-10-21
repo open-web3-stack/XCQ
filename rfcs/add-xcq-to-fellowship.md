@@ -13,10 +13,10 @@
 > Longer motivation behind the content of the RFC, presented as a combination of both problems and requirements for the solution.
 
 XCM enables mutable interactions across different consensus systems.
-But we still need another subsystem to query information across different consensus systems, which abstract away the concrete implementations in these systems.
+But we still need another subsystem to query information across different consensus systems, which abstracts away the concrete implementations in these systems.
 
 Such a subsystem will benefit the tools and UI developers.
-For example, for a substrate-based chain, an account can have different value-bearing assets in different pallets (i.e. balances pallet, DEX pallet, liquid staking pallet). Conventionally, wallet developers has no easy way but examine all the pallets to scrape all the information they need. Some operations require reading storage directly, which is also subject to breaking changes.
+For example, for a substrate-based chain, an account can have different value-bearing assets in different pallets (i.e. balances pallet, DEX pallet, liquid staking pallet). Conventionally, wallet developers have no easy way but examine all the pallets to scrape all the information they need. Some operations require reading storage directly, which is also subject to breaking changes.
 
 The proposal of XCQ will serve as a layer between specific chain implementations and tools/UI developers.
 
@@ -43,8 +43,7 @@ There are some use cases collected:
 ## Explanation
 
 > Detail-heavy explanation of the RFC, suitable for explanation to an implementer of the changeset. This should address corner cases in detail and provide justification behind decisions, and provide rationale for how the design meets the solution requirements.
-
-The overall query pattern of the XCQ are three folds:
+is overall query pattern of the XCQ is three folds:
 
 - Runtime: view-functions across different pallets are amalgamated through an extension-based system
 - XCQ query: custom computations over the view-function results can be encapsulated via compiling them as a PolkaVM program.
@@ -142,7 +141,7 @@ Note: `ty` is represented by a meta-type system called `xcq-types`
 
 - More extensible and flexible
 - New functionalities can be added in a permission-less manner without upgrading the core part of the XCQ.
-- Ensure the core part in a minimal scope.
+- Ensure the core part is in a minimal scope.
 
 We don't adopt a versioned design. Instead, every extension is identified via an extension id, which is a hash based on the extension name and method sets. An update of an extension is viewed as a brand-new extension.
 
@@ -207,8 +206,8 @@ impl_extensions! {
 
 ### XCQ Program API
 
-Since the PolkaVM program API only supports several numeric types when crossing the guest/host boundaries, we need to pass pointers to support custom data types. However, pointer operations like moving and reading the correct size of bytes are error-prone. Therefore, we provide some macros to allow the developers define their custom data types.
-Additionally, we also cover some boilerplates in the macro such as defining panic handlers, checking the call definition in query program matches the definition of the extensions expose.
+Since the PolkaVM program API only supports several numeric types when crossing the guest/host boundaries, we need to pass pointers to support custom data types. However, pointer operations like moving and reading the correct size of bytes are error-prone. Therefore, we provide some macros to allow the developers to define their custom data types.
+Additionally, we also cover some boilerplates in the macro such as defining panic handlers and checking the call definition in the query program matches the definition of the extensions exposed.
 
 **Example**:
 The following XCQ program sums up the balances of several accounts and calculates the percent of the total supply that the sum accounts for.
