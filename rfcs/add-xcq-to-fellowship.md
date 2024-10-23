@@ -10,63 +10,56 @@
 
 ## Motivation
 
-> Longer motivation behind the content of the RFC, presented as a combination of both problems and requirements for the solution.
+In Substrate, runtime APIs facilitate off-chain clients in reading the state of the consensus system.
+However, different chains may expose different APIs or have varying data types, such as differing `AccountId` types.
+This diversity extends to client-side, which may require custom computations over runtime APIs in various use cases.
+Substrate UIs often access storage directly and reimplement additional logic to convert data into user-friendly representations, leading to duplicated code between Rust runtime logic and UI JS/TS logic.
+This duplication increases workload and potential for bugs.
 
-XCM enables mutable interactions across different consensus systems.
-But we still need another subsystem to query information across different consensus systems, which abstracts away the concrete implementations in these systems.
+Therefore, A system is needed to serve as an intermediary layer between concrete chain runtime implementations and tools/UIs.
+This proposal introduces such a system called `XCQ` (Cross Consensus Query)", analogous to the well-known `XCM`.
+`XCQ` abstracts away concrete implementations across chains and supports custom query computations.
 
-Such a subsystem will benefit the tools and UI developers.
-For example, for a substrate-based chain, an account can have different value-bearing assets in different pallets (i.e. balances pallet, DEX pallet, liquid staking pallet). Conventionally, wallet developers have no easy way but examine all the pallets to scrape all the information they need. Some operations require reading storage directly, which is also subject to breaking changes.
-
-The proposal of XCQ will serve as a layer between specific chain implementations and tools/UI developers.
-
-There are some use cases collected:
-
-- Improve XCM bridge UI
-  - Use XCQ to query asset balances
-  - Query XCM weight and fee from hop and dest chain
-- Wallet
-  - Use XCQ to query asset balances
-  - Use XCQ to query weights and fees for related operations from different chains
-- Universal dApp that supports all the parachains
-  - Use XCQ to perform feature discovery
-  - Use XCQ to query pallet specific feature
-  - Use XCQ to help construct extrinsic by querying pallet index, call index, etc
+Use cases benefiting from `XCQ` include:
+- XCM bridge UI:
+  - Query asset balances
+  - Query XCM weight and fee from hop and dest chains
+- Wallets:
+  - Query asset balances
+  - Query weights and fees for operations across chains
+- Universal dApp that supports all the parachains:
+  - Perform Feature discovery
+  - Query pallet-specific features
+  - Construct extrinsics by querying pallet index, call index, etc
 
 ## Stakeholders
 
-> A brief catalogue of the primary stakeholder sets of this RFC, with some description of previous socialization of the proposal
-
 - Runtime Developers
-- Wallet/dApps Developers
+- Tools/UI Developers
 
 ## Explanation
 
-> Detail-heavy explanation of the RFC, suitable for explanation to an implementer of the changeset. This should address corner cases in detail and provide justification behind decisions, and provide rationale for how the design meets the solution requirements.
-is overall query pattern of the XCQ is three folds:
+The overall query pattern of the XCQ consists of three components:
 
-- Runtime: view-functions across different pallets are amalgamated through an extension-based system
-- XCQ query: custom computations over the view-function results can be encapsulated via compiling them as a PolkaVM program.
-- XCQ query arguments: input variables like accounts to be queried can be specified as the query arguments
+- Runtime: View-functions across different pallets are amalgamated through an extension-based system.
+- XCQ query: Custom computations over view-function results are encapsulated via PolkaVM programs.
+- XCQ query arguments: Query arguments like accounts to be queried are also passed.
 
-We design the following components to support the aforementioned pattern.
+### XCQ Runtime API
 
-### XCQ runtime API
+The runtime API for off-chain query usage includes two methods:
 
-We define the runtime api for off-chain query usage, like:
+- `execute_query`: Executes the query and returns the result. It takes the query, input, and weight limit as arguments.
+The query is the query program in PolkaVM program binary format.
+The input is the query arguments that is SCALE-encoded.
+The weight limit is the maximum weight allowed for the query execution.
+- `metadata`: Return metadata of supported extensions, serving as a feature discovery functionality
 
-The runtime api `XcqApi` includes two methods:
-
-- `execute_query`: execute the query and return result
-- `metadata`: return the metadata of the supported extensions of the chain, which serves as the feature discovery functionality
-
+**Example XCQ Runtime API**:
 ```rust
 decl_runtime_apis! {
     pub trait XcqApi {
-        // query: The query program as PolkaVM binary
-        // input: The arguments to be fed into the query program
-        fn execute_query(query: Vec<u8>, input: Vec<u8>) -> XcqResult;
-        // SCALE-encoded metadata of all supported xcq extensions.
+        fn execute_query(query: Vec<u8>, input: Vec<u8>, weight_limit: u64) -> XcqResult;
         fn metadata() -> Vec<u8>;
     }
 }
@@ -78,7 +71,6 @@ enum XcqError {
 ```
 
 **Example metadata**:
-
 ```rust
 Metadata {
     extensions: vec![
@@ -128,31 +120,43 @@ Note: `ty` is represented by a meta-type system called `xcq-types`
 
 #### xcq-types
 
-`xcq-types` is a meta-type system similar to `scale-info` but much simpler. A meta-type system is required to make different chains with different type definitions work via a common operation. The front-end codes will know how to construct call data to XCQ programs according to the metadata provided by different chains.
+`xcq-types` is a meta-type system similar to `scale-info` but simpler.
+It enables different chains with different type definitions to work via a common operation.
+Front-end codes constructs call data to XCQ programs according to metadata provided by different chains.
 
-**Limitations**
+### XCQ Executor
 
-- No generics support yet
-- No type registry to compress type info and represent self-referential types
+An XCQ executor is a runtime module that executes XCQ queries.
+It has a core method `execute` that takes a PolkaVM program binary,
+method name of the exported functions in the PolkaVM program, input arguments, and weight limit that the PolkaVM program can consume.
+
+```rust
+pub fn execute(
+    &mut self,
+    raw_blob: &[u8],
+    method: &str,
+    input: &[u8],
+    weight_limit: u64,
+) -> Result<Vec<u8>, XcqExecutorError> {...}
+```
 
 ### XCQ Extension
 
-*Since the XCQ usage may vary between the different use cases, we adopt an extension-based design, which has the following features*:
-
-- More extensible and flexible
-- New functionalities can be added in a permission-less manner without upgrading the core part of the XCQ.
+An extension-based design is essential for several reasons:
+- Diffent chains may have different data types for semantically similar queries, making it challenging to standardize function calls across them.
+An extension-based design with optional associated types allows these diverse data types to be specified and utilized effectively.
+- Function calls distributed across various pallets can be amalgamated into a single extension, simplifying the development process and ensuring a more cohesive and maintainable codebase.
+- Extensions are identified via an extension ID, a hash based on the extension name and method sets. An update to an extension is treated as a new extension.
+- New functionalities can be added without upgrading the core part of the XCQ.
 - Ensure the core part is in a minimal scope.
 
-We don't adopt a versioned design. Instead, every extension is identified via an extension id, which is a hash based on the extension name and method sets. An update of an extension is viewed as a brand-new extension.
+Essential components of an XCQ extension system include:
 
-We provide the following components to facilitate the development, including some macros to declare and implement extensions as well as useful structs connecting the executor.
+- `decl_extension` macro: Defines an extension as a Rust trait with optional associated types.
 
-- `decl_extensions` macro: defines an extension as a Rust trait with optional associated types.
-
-Example:
-
+**Example usage**:
 ```rust
-use xcq_extension::decl_extensions;
+use xcq_extension::decl_extension;
 
 pub trait Config {
     type AssetId: Codec;
@@ -168,12 +172,13 @@ decl_extensions! {
 }
 ```
 
-- `impl_extensions` macro: generates extension implementations and extension-level metadata.
+- `impl_extensions` macro: Generates extension implementations and extension-level metadata.
 
-**Example**:
+**Example Usage**:
 
 ```rust
 // ExtensionImpl is an aggregate struct to impl different extensions
+struct ExtensionImpl;
 impl extension_fungibles::Config for ExtensionImpl {
     type AssetId = u32;
     type AccountId = [u8; 32];
@@ -201,64 +206,117 @@ impl_extensions! {
 }
 ```
 
-- `ExtensionExecutor`: connects extension implementations and xcq-executor. Host functions are aggregated under a unified `host_call` entry. Guest call requests are dispatched to corresponding extensions.
-- `PermController`: filters guest XCQ program calling requests. That is useful for host chains to disable some queries by filtering invoking sources.
-
-### XCQ Program API
-
-Since the PolkaVM program API only supports several numeric types when crossing the guest/host boundaries, we need to pass pointers to support custom data types. However, pointer operations like moving and reading the correct size of bytes are error-prone. Therefore, we provide some macros to allow the developers to define their custom data types.
-Additionally, we also cover some boilerplates in the macro such as defining panic handlers and checking the call definition in the query program matches the definition of the extensions exposed.
-
-**Example**:
-The following XCQ program sums up the balances of several accounts and calculates the percent of the total supply that the sum accounts for.
-
+- `ExtensionExecutor`: Connects extension implementations and `xcq-executor`.
+All methods of all extensions that a chain supports are amalgamated into a single `host_call` entry.
+Then this entry is registered as a typed function entry in PolkaVM Linker within the `xcq-executor`.
+Given the extension ID and call data encoded in SCALE format, call requests from the guest XCQ program are dispatched to corresponding extensions:
 ```rust
-#[xcq_api::program]
-mod sum_balance {
-    #[xcq::call_def(extension_id = 0x92F353DB95824F9Du64, call_index = 1)]
-    fn balance(asset: u32, who: [u8; 32]) -> u64 {}
-    #[xcq::call_def(extension_id = 0x92F353DB95824F9Du64, call_index = 0)]
-    fn total_supply(asset: u32) -> u64 {}
-
-    #[xcq::entrypoint]
-    fn sum_balance(balances: Vec<BalanceCall>, total_supply: TotalSupplyCall) -> u64 {
-        let mut sum_balance = 0;
-        for call in balances {
-            sum_balance += call.call();
-        }
-        sum_balance * 100 / total_supply.call()
-    }
+linker
+    .define_typed(
+        "host_call",
+        move |caller: Caller<'_, Self::UserData>,
+              extension_id: u64,
+              call_ptr: u32,
+              call_len: u32|
+              -> Result<u64, ExtensionError> {
+                  ...
+              });
+```
+- `PermController`: Filters guest XCQ program calling requests, useful for host chains to disable some queries by filtering invoking sources.
+```rust
+pub trait PermController {
+    fn is_allowed(extension_id: ExtensionIdTy, call: &[u8], source: InvokeSource) -> bool;
 }
-
+#[derive(Copy, Clone)]
+pub enum InvokeSource {
+    RuntimeAPI,
+    XCM,
+    Extrinsic,
+    Runtime,
+}
 ```
 
-Every program is declared in a separate Rust mod.
+### XCQ Program Structure
 
-- `[xcq::call_def]` declares a single call to be used in the query. `extension_id` and `call_index` should be specified.
-- `[xcq::entrypoint]` declares an entrypoint function that executes the main logic. Every call type is named like `{CallDefMethodName}Call`. Multiple calls of the same type can be specified as `Vec<SomeCall>`
+An XCQ program is structured as a PolkaVM program with the following key components:
+
+- Imported Functions:
+   - `host_call`: Dispatches call requests to the XCQ Extension Executor.
+     ```rust
+     #[polkavm_derive::polkavm_import]
+     extern "C" {
+         fn host_call(extension_id: u64, call_ptr: u32, call_len: u32) -> u64;
+     }
+     ```
+     Results are SCALE-encoded bytes, with the pointer address (lower 32 bits) and length (higher 32 bits) packed into a u64.
+
+   - `return_ty`: Returns the type of the function call result.
+     ```rust
+     #[polkavm_derive::polkavm_import]
+     extern "C" {
+         fn return_ty(extension_id: u64, call_index: u32) -> u64;
+     }
+     ```
+     Results are SCALE-encoded bytes, with the pointer address and length packed similarly to `host_call`.
+
+- Exported Functions:
+   - `main`: The entry point of the XCQ program. It performs type checking and executes the query.
+
+### XCQ Program Execution Flow
+
+The interaction between an XCQ program and the XCQ Extension Executor follows these steps:
+
+1. Program Loading: The Executor loads the PolkaVM program binary.
+
+2. Environment Setup: The Executor configures the PolkaVM environment, registering host functions like `host_call` and `return_ty`.
+
+3. Main Function Execution: The Executor calls the program's `main` function, passing serialized query arguments.
+
+4. Program Execution:
+   a. Type Checking: The program uses the `return_ty` function to ensure compatibility with supported chain extensions.
+   b. Query Execution: The program executes the query using `host_call` and performs custom computations.
+   c. Result Serialization: The program serializes the result, writes it to shared memory, and returns the pointer and length to the executor.
+
+5. Result Retrieval: The Executor reads the result from shared memory and returns it to the caller.
+
+This structure allows for flexible, type-safe querying across different blockchain implementations while maintaining a consistent interface for developers.
 
 ## Drawbacks
 
-> Description of recognized drawbacks to the approach given in the RFC. Non-exhaustively, drawbacks relating to performance, ergonomics, user experience, security, or privacy.
-
 ### Performance issues
 
-- XCQ Query Program Size: For on-chain usage, we need to store the pre-built query program on-chain or send it via XCMP/HRMP. However, the program size of a simple PoC to query and sum the balances is about 7KB, which is far from an ideal size. It's mainly because we include a global allocator in the program to support the usage of dynamic-size array like `Vec`. In future, the program size can be shrinked by splitting the raw PolkaVM program and we can just store/send the parts that are the main logic of the query, leaving other parts being hard-coded or prepared in advance.
+- XCQ Query Program Size: The size of XCQ query programs should be optimized to ensure efficient storage and transmission via XCMP/HRMP.
+The specification should define a target size limit for query programs and outline strategies for reducing program size without compromising functionality. This may include techniques such as:
+  - Exploring modular program structures that allow for separate storage and transmission of core logic and supporting elements. PolkaVM supports spliting the program into multiple modules.
+  - Establishing guidelines for optimizing dynamic memory usage within query programs
 
 ### User experience issues
 
-- Debugging: Currently, there is no fully fledged debuggers for PolkaVM programs. The only debugging approach is to set the PolkaVM backend in interpreter mode and then log the operations at the assembly level, which is too low-level to debug efficiently.
+- Debugging: Currently, there is no full-fledged debuggers for PolkaVM programs. The only debugging approach is to set the PolkaVM backend in interpreter mode and then log the operations at the assembly level, which is too low-level to debug efficiently.
 - Gas computation: According to [this issue](https://github.com/koute/polkavm/issues/17), the gas cost model of PolkaVM is not accurate for now.
 
 ## Testing, Security, and Privacy
 
-> Describe the the impact of the proposal on these three high-importance areas - how implementations can be tested for adherence, effects that the proposal has on security and privacy per-se, as well as any possible implementation pitfalls which should be clearly avoided.
+- Testing:
+  - Comprehensive test suite should be developed to cover various scenarios:
+    - Positive test cases:
+      - Basic queries with various extensions, data types, return values, custom computations, etc.
+      - Accurate conversion between given weight limit and the gas limit of PolkaVM
+    - Negative test cases:
+      - Queries exceeding weight limits
+      - Invoking queries from unauthorized sources
+    - Edge cases:
+      - Queries with minimal or maximum allowed input sizes
+      - Queries requesting data at the boundaries of available ranges
+  - Integration tests to ensure proper interaction with off-chain wallets/UI and on-chain XCM, including the aforementioned use cases in Motivation section.
 
-- Testing: Some representative use cases collected from the community will be validated to ensure the basic functionalities of the proposal.
 - Security:
-  - The query operation should be read-only. However we don't have a mechanism to ensure it, which depends on the correct implementation by parachain developers.
+  - The XCQ system must enforce a strict read-only policy for all query operations. A mechanism should be implemented to prevent any state-changing operations within XCQ queries.
+  - The security model should include measures to prevent potential attack vectors such as resource exhaustion or malicious query injection.
+  - Clear guidelines and best practices should be provided for parachain developers to ensure secure implementation.
+
 - Privacy:
-  *Not sure yet*
+  *Not Sure Yet*
 
 ## Performance, Ergonomics, and Compatibility
 
@@ -267,21 +325,23 @@ Every program is declared in a separate Rust mod.
 ### Performance
 
 > Is this an optimization or a necessary pessimization? What steps have been taken to minimize additional overhead?
+
 It's a new functionality, which doesn't modify the existing implementations.
 
 ### Ergonomics
 
 > If the proposal alters exposed interfaces to developers or end-users, which types of usage patterns have been optimized for?
+
 The proposal facilitate the wallets and dApps developers. Not only They don't need to examine every concrete implementations for supporting conceptually the same operations in different chains, but also has a more modular development experience by encapsulating custom computations over the exposed apis in PolkaVM programs.
 
 ### Compatibility
 
 > Does this proposal break compatibility with existing interfaces, older versions of implementations? Summarize necessary migrations or upgrade strategies, if any.
+
 The proposal defines new apis, which doesn't break compatibility with existing interfaces.
 
 ## Prior Art and References
 
-> Provide references to either prior art or other relevant research for the submitted design.
 There are several discussions related to the proposal, including:
 
 - <https://forum.polkadot.network/t/wasm-view-functions/1045> is the original discussion about having a mechanism to avoid code duplications between the runtime and front-ends/wallets. In the original design, the custom computations are compiled as a wasm function.
@@ -290,12 +350,7 @@ There are several discussions related to the proposal, including:
 
 ## Unresolved Questions
 
-> Provide specific questions to discuss and address before the RFC is voted on by the Fellowship. This should include, for example, alternatives to aspects of the proposed design where the appropriate trade-off to make is unclear.
-
-- *Subscribility*
 
 ## Future Directions and Related Material
 
-> Describe future work which could be enabled by this RFC, if it were accepted, as well as related RFCs. This is a place to brain-dump and explore possibilities, which themselves may become their own RFCs.
-
-Since XCQ are supported both in off-chain and on-chain, we have a related XCM-Format.
+Since XCQ are supported both in off-chain and on-chain, a related XCM-Format RFC should be proposed.
