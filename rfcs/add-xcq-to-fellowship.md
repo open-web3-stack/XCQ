@@ -2,9 +2,9 @@
 
 |                 |                                                                                             |
 | --------------- | ------------------------------------------------------------------------------------------- |
-| **Start Date**  | Date of initial proposal                                                                    |
-| **Description** | Introduce XCQ (a cross consensus query system)                                                          |
-| **Authors**     ||
+| **Start Date**  | Oct 24 2024                                                                    |
+| **Description** | Introduce the XCQ (Cross Consensus Query) System                                                          |
+| **Authors**     | Bryan Chen, Jiyuan Zheng  |
 
 ## Summary
 
@@ -324,19 +324,13 @@ The specification should define a target size limit for query programs and outli
 
 ### Performance
 
-> Is this an optimization or a necessary pessimization? What steps have been taken to minimize additional overhead?
-
 It's a new functionality, which doesn't modify the existing implementations.
 
 ### Ergonomics
 
-> If the proposal alters exposed interfaces to developers or end-users, which types of usage patterns have been optimized for?
-
 The proposal facilitate the wallets and dApps developers. Not only They don't need to examine every concrete implementations for supporting conceptually the same operations in different chains, but also has a more modular development experience by encapsulating custom computations over the exposed apis in PolkaVM programs.
 
 ### Compatibility
-
-> Does this proposal break compatibility with existing interfaces, older versions of implementations? Summarize necessary migrations or upgrade strategies, if any.
 
 The proposal defines new apis, which doesn't break compatibility with existing interfaces.
 
