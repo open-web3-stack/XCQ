@@ -49,7 +49,6 @@ fn generate_call(item: &ItemFn) -> Result<TokenStream2> {
         }
         impl #call_name {
             pub fn call(&self) ->  #return_ty   {
-                // TODO: use xcq-types to represent the return type
                 let res = unsafe {
                     host_call(self.extension_id, self.call_ptr, self.call_size)
                 };
