@@ -18,7 +18,6 @@ members = [
     "xcq-primitives",
     "xcq-runtime-api",
     "xcq-test-runner",
-    "xcq-types",
 
     "examples/example-fungibles",
     "examples/example-helloworld",
@@ -40,7 +39,6 @@ xcq-extension = { path = "xcq-extension", default-features = false }
 xcq-primitives = { path = "xcq-primitives", default-features = false }
 xcq-runtime-api = { path = "xcq-runtime-api", default-features = false }
 xcq-test-runner = { path = "xcq-test-runner", default-features = false }
-xcq-types = { path = "xcq-types", default-features = false }
 
 # polkavm
 polkavm = { path = "vendor/polkavm/crates/polkavm", default-features = false }

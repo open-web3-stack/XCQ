@@ -8,20 +8,21 @@ repository.workspace = true
 version.workspace = true
 
 [dependencies]
-parity-scale-codec = { workspace = true }
 polkavm = { workspace = true }
-scale-info = { workspace = true }
 xcq-executor = { workspace = true }
 fortuples = { workspace = true }
 tracing = { workspace = true }
 xcq-extension-procedural = { path = "procedural" }
+parity-scale-codec = { workspace = true }
+scale-info = { workspace = true }
 xcq-primitives = { workspace = true }
 
 [features]
 default = ["std"]
 std = [
+    "xcq-executor/std",
+    "xcq-primitives/std",
     "parity-scale-codec/std",
     "scale-info/std",
-    "xcq-executor/std",
     "tracing/std",
 ]

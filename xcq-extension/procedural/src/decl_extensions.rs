@@ -36,7 +36,7 @@ pub fn decl_extension_inner(item_trait: &ItemTrait) -> Result<TokenStream2> {
     let call_enum_def = call_enum_def(&item_trait.ident, &methods)?;
     let call_data_dispatchable_impl = impl_dispatchable(&item_trait.ident, &methods)?;
     let call_data_extension_id_impl = impl_extension_id(&item_trait.ident, &item_trait.items)?;
-    let call_data_metadata_impl = impl_metadata(&item_trait.ident)?;
+    let call_data_metadata_impl = impl_call_metadata(&item_trait.ident)?;
     let extension_runtime_metadata = crate::runtime_metadata::generate_decl_metadata(&item_trait, has_config)?;
 
     let expanded = quote! {
@@ -61,7 +61,7 @@ fn add_super_trait(item_trait: &mut ItemTrait) -> Result<()> {
     // item_trait.supertraits.push(parse_quote!(#xcq_extension::ExtensionId));
     item_trait
         .supertraits
-        .push(parse_quote!(#xcq_extension::ExtensionMetadata));
+        .push(parse_quote!(#xcq_extension::ExtensionImplMetadata));
     Ok(())
 }
 
@@ -74,7 +74,6 @@ struct Method {
 }
 
 fn call_enum_def(trait_ident: &Ident, methods: &[Method]) -> Result<ItemEnum> {
-    let xcq_primitives = generate_crate_access("xcq-primitives")?;
     let mut variants = Punctuated::<Variant, Comma>::new();
     for method in methods {
         let name = &method.name;
@@ -98,7 +97,7 @@ fn call_enum_def(trait_ident: &Ident, methods: &[Method]) -> Result<ItemEnum> {
         __Phantom(core::marker::PhantomData<Impl>)
     ));
     Ok(parse_quote!(
-        #[derive(#xcq_primitives::deps::parity_scale_codec::Decode)]
+        #[derive(parity_scale_codec::Decode)]
         pub enum Call<Impl: #trait_ident> {
             #variants
         }
@@ -107,7 +106,6 @@ fn call_enum_def(trait_ident: &Ident, methods: &[Method]) -> Result<ItemEnum> {
 
 fn impl_dispatchable(trait_ident: &Ident, methods: &[Method]) -> Result<ItemImpl> {
     let xcq_extension = generate_crate_access("xcq-extension")?;
-    let xcq_primitives = generate_crate_access("xcq-primitives")?;
     let mut pats = Vec::<Pat>::new();
     for method in methods {
         let name = &method.name;
@@ -142,7 +140,7 @@ fn impl_dispatchable(trait_ident: &Ident, methods: &[Method]) -> Result<ItemImpl
 
     Ok(parse_quote! {
         impl<Impl: #trait_ident> #xcq_extension::Dispatchable for Call<Impl> {
-            fn dispatch(self) -> Result<#xcq_primitives::deps::xcq_types::vec::Vec<u8>, #xcq_extension::DispatchError> {
+            fn dispatch(self) -> Result<scale_info::prelude::vec::Vec<u8>, #xcq_extension::DispatchError> {
                 match self {
                     #( #pats => Ok(#method_calls.encode()),)*
                     Self::__Phantom(_) => unreachable!(),
@@ -167,12 +165,11 @@ fn impl_extension_id(trait_ident: &Ident, trait_items: &[TraitItem]) -> Result<T
 }
 
 // Delegate the metadata generation to the trait implementation
-fn impl_metadata(trait_ident: &Ident) -> Result<ItemImpl> {
+fn impl_call_metadata(trait_ident: &Ident) -> Result<ItemImpl> {
     let xcq_extension = generate_crate_access("xcq-extension")?;
-    let xcq_primitives = generate_crate_access("xcq-primitives")?;
     Ok(parse_quote! {
         impl<Impl: #trait_ident> #xcq_extension::CallMetadata for Call<Impl> {
-            fn metadata() -> #xcq_primitives::metadata_ir::ExtensionMetadataIR {
+            fn call_metadata() -> #xcq_extension::metadata::ExtensionMetadata {
                 Impl::extension_metadata(<Self as #xcq_extension::ExtensionId>::EXTENSION_ID)
             }
         }

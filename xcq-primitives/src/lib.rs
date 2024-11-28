@@ -14,12 +14,3 @@ pub enum XcqError {
 }
 
 pub type XcqResult = Result<XcqResponse, XcqError>;
-
-pub mod metadata;
-pub mod metadata_ir;
-
-#[doc(hidden)]
-pub mod deps {
-    pub use parity_scale_codec;
-    pub use xcq_types;
-}

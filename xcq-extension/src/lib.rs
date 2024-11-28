@@ -1,22 +1,15 @@
-#![cfg_attr(not(feature = "std"), no_std)]
-use core::marker::PhantomData;
-extern crate alloc;
-pub use alloc::vec::Vec;
-
 use parity_scale_codec::Decode;
-#[cfg(not(feature = "std"))]
-use scale_info::prelude::{format, string::String};
+use scale_info::prelude::{format, marker::PhantomData, vec::Vec};
 use xcq_executor::{Caller, Linker, XcqExecutor, XcqExecutorContext};
 pub type XcqResponse = Vec<u8>;
-pub type XcqError = String;
-pub type XcqResult = Result<XcqResponse, XcqError>;
+use xcq_primitives::{XcqError, XcqResult};
 
 mod dispatchable;
 pub use dispatchable::{DispatchError, Dispatchable};
-mod metadata;
-pub use metadata::{CallMetadata, ExtensionMetadata};
 mod extension_id;
+pub mod metadata;
 pub use extension_id::{ExtensionId, ExtensionIdTy};
+pub use metadata::{CallMetadata, ExtensionImplMetadata};
 mod error;
 pub use error::ExtensionError;
 mod macros;
@@ -139,6 +132,6 @@ impl<C: CallDataTuple, P: PermController> ExtensionsExecutor<C, P> {
     pub fn execute_method<G: Guest, I: Input>(&mut self, guest: G, input: I) -> XcqResult {
         self.executor
             .execute(guest.program(), &input.method(), input.args())
-            .map_err(|e| format!("{:?}", e))
+            .map_err(|e| XcqError::Custom(format!("{:?}", e)))
     }
 }

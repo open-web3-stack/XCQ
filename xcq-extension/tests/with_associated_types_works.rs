@@ -1,7 +1,6 @@
 use parity_scale_codec::{Codec, Decode, Encode};
+use xcq_extension::metadata::Metadata;
 use xcq_extension::{decl_extensions, impl_extensions, ExtensionsExecutor, Guest, Input, InvokeSource, Method};
-use xcq_primitives::deps::xcq_types::{PrimitiveType, XcqType};
-use xcq_primitives::metadata::{ExtensionMetadata, Metadata, MethodMetadata, MethodParamMetadata};
 
 mod extension_core {
     use super::*;
@@ -199,51 +198,12 @@ fn single_call_works() {
 
 #[test]
 fn metadata_works() {
-    let metadata: Metadata = ExtensionImpl::runtime_metadata().into();
-    println!("{:?}", metadata);
-    assert_eq!(
-        metadata,
-        Metadata {
-            extensions: vec![
-                ExtensionMetadata {
-                    name: "ExtensionCore",
-                    methods: vec![MethodMetadata {
-                        name: "has_extension",
-                        inputs: vec![MethodParamMetadata {
-                            name: "id",
-                            ty: XcqType::Primitive(PrimitiveType::U64)
-                        }],
-                        output: XcqType::Primitive(PrimitiveType::Bool)
-                    }]
-                },
-                ExtensionMetadata {
-                    name: "ExtensionFungibles",
-                    methods: vec![
-                        MethodMetadata {
-                            name: "total_supply",
-                            inputs: vec![MethodParamMetadata {
-                                name: "asset",
-                                ty: XcqType::Primitive(PrimitiveType::U32)
-                            }],
-                            output: XcqType::Primitive(PrimitiveType::U64)
-                        },
-                        MethodMetadata {
-                            name: "balance",
-                            inputs: vec![
-                                MethodParamMetadata {
-                                    name: "asset",
-                                    ty: XcqType::Primitive(PrimitiveType::U32)
-                                },
-                                MethodParamMetadata {
-                                    name: "who",
-                                    ty: XcqType::Primitive(PrimitiveType::H256)
-                                }
-                            ],
-                            output: XcqType::Primitive(PrimitiveType::U64)
-                        }
-                    ]
-                }
-            ]
-        }
-    )
+    let metadata: Metadata = ExtensionImpl::metadata().into();
+    let registry = metadata.types;
+    let extension_metadata_list = metadata.extensions;
+    // bool, u8, u32, u64, [u8;32]
+    assert_eq!(registry.types.len(), 5);
+    assert_eq!(extension_metadata_list.len(), 2);
+    assert_eq!(extension_metadata_list[0].name, "ExtensionCore");
+    assert_eq!(extension_metadata_list[1].name, "ExtensionFungibles");
 }
