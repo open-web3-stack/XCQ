@@ -198,7 +198,7 @@ fn single_call_works() {
 
 #[test]
 fn metadata_works() {
-    let metadata: Metadata = ExtensionImpl::metadata().into();
+    let metadata: Metadata = ExtensionImpl::metadata();
     let registry = metadata.types;
     let extension_metadata_list = metadata.extensions;
     // bool, u8, u32, u64, [u8;32]
