@@ -4463,8 +4463,8 @@ dependencies = [
  "proc-macro-crate",
  "proc-macro2",
  "quote",
+ "scale-info",
  "syn 2.0.66",
- "xcq-types",
 ]
 
 [[package]]
@@ -4498,7 +4498,6 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "xcq-extension",
- "xcq-primitives",
 ]
 
 [[package]]
@@ -4508,7 +4507,6 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "xcq-extension",
- "xcq-primitives",
 ]
 
 [[package]]
@@ -4529,7 +4527,6 @@ version = "0.1.0"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
- "xcq-types",
 ]
 
 [[package]]
@@ -4547,6 +4544,7 @@ dependencies = [
  "clap",
  "parity-scale-codec",
  "polkavm",
+ "scale-info",
  "tracing",
  "tracing-subscriber 0.3.18",
  "xcq-executor",
@@ -4554,27 +4552,6 @@ dependencies = [
  "xcq-extension-core",
  "xcq-extension-fungibles",
  "xcq-primitives",
-]
-
-[[package]]
-name = "xcq-types"
-version = "0.1.0"
-dependencies = [
- "cfg-if",
- "fortuples",
- "parity-scale-codec",
- "serde",
- "xcq-types-derive",
-]
-
-[[package]]
-name = "xcq-types-derive"
-version = "0.1.0"
-dependencies = [
- "proc-macro-crate",
- "proc-macro2",
- "quote",
- "syn 2.0.66",
 ]
 
 [[package]]

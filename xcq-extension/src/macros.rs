@@ -5,7 +5,7 @@ use crate::ExtensionIdTy;
 use crate::Vec;
 use fortuples::fortuples;
 use parity_scale_codec::Encode;
-
+use scale_info::{PortableRegistry, Registry};
 // Use the macro to implement ExtensionTuple for tuples of different lengths
 fortuples! {
     impl CallDataTuple for #Tuple where #(#Member: CallData),*{
@@ -23,7 +23,13 @@ fortuples! {
         fn return_ty(extension_id: ExtensionIdTy, call_index: u32) -> Result<Vec<u8>, ExtensionError> {
             #(
                 if extension_id == #Member::EXTENSION_ID {
-                    return Ok(#Member::metadata().methods[call_index as usize].output.type_info().encode());
+                    let extension_metadata = #Member::call_metadata();
+                    //  comparing the registry is equivalent to comparing the type
+                    let return_ty = extension_metadata.methods[call_index as usize].output;
+                    let mut registry = Registry::new();
+                    registry.register_type(&return_ty);
+                    let portable_registry: PortableRegistry = registry.into();
+                    return Ok(portable_registry.encode());
                 }
             )*
             Err(ExtensionError::UnsupportedExtension)

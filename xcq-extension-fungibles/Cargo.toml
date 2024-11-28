@@ -11,8 +11,7 @@ version.workspace = true
 parity-scale-codec = { workspace = true }
 xcq-extension = { workspace = true }
 scale-info = { workspace = true }
-xcq-primitives = { workspace = true }
 
 [features]
 default = ["std"]
-std = ["parity-scale-codec/std", "xcq-extension/std"]
+std = ["parity-scale-codec/std", "scale-info/std", "xcq-extension/std"]

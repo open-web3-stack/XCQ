@@ -12,5 +12,5 @@ syn = { workspace = true }
 proc-macro2 = { workspace = true }
 proc-macro-crate = { workspace = true }
 Inflector = { workspace = true }
-xcq-types = { workspace = true }
 parity-scale-codec = { workspace = true }
+scale-info = { workspace = true }

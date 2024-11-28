@@ -3,6 +3,7 @@ use inflector::Inflector;
 use parity_scale_codec::Encode;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::{format_ident, quote, ToTokens};
+use scale_info::{meta_type, PortableRegistry, Registry};
 use syn::{ItemFn, PathArguments, Result};
 pub fn expand(def: Def) -> Result<TokenStream2> {
     let preludes = generate_preludes();
@@ -48,7 +49,6 @@ fn generate_call(item: &ItemFn) -> Result<TokenStream2> {
         }
         impl #call_name {
             pub fn call(&self) ->  #return_ty   {
-                // TODO: use xcq-types to represent the return type
                 let res = unsafe {
                     host_call(self.extension_id, self.call_ptr, self.call_size)
                 };
@@ -100,33 +100,53 @@ fn generate_return_ty_assertion(call_def: &CallDef) -> Result<TokenStream2> {
                     .ok_or_else(|| syn::Error::new_spanned(path, "expected function return type to be a path"))?;
                 match last_segment.ident.to_string().as_str() {
                     "u8" => {
-                        let encoded_ty_bytes = xcq_types::XcqType::Primitive(xcq_types::PrimitiveType::U8).encode();
+                        let ty = meta_type::<u8>();
+                        let mut registry = Registry::new();
+                        registry.register_type(&ty);
+                        let portable_registry = PortableRegistry::from(registry);
+                        let ty_bytes = portable_registry.encode();
                         quote! {
-                            &[#(#encoded_ty_bytes),*]
+                            &[#(#ty_bytes),*]
                         }
                     }
                     "u16" => {
-                        let encoded_ty_bytes = xcq_types::XcqType::Primitive(xcq_types::PrimitiveType::U16).encode();
+                        let ty = meta_type::<u16>();
+                        let mut registry = Registry::new();
+                        registry.register_type(&ty);
+                        let portable_registry = PortableRegistry::from(registry);
+                        let ty_bytes = portable_registry.encode();
                         quote! {
-                            &[#(#encoded_ty_bytes),*]
+                            &[#(#ty_bytes),*]
                         }
                     }
                     "u32" => {
-                        let encoded_ty_bytes = xcq_types::XcqType::Primitive(xcq_types::PrimitiveType::U32).encode();
+                        let ty = meta_type::<u32>();
+                        let mut registry = Registry::new();
+                        registry.register_type(&ty);
+                        let portable_registry = PortableRegistry::from(registry);
+                        let ty_bytes = portable_registry.encode();
                         quote! {
-                            &[#(#encoded_ty_bytes),*]
+                            &[#(#ty_bytes),*]
                         }
                     }
                     "u64" => {
-                        let encoded_ty_bytes = xcq_types::XcqType::Primitive(xcq_types::PrimitiveType::U64).encode();
+                        let ty = meta_type::<u64>();
+                        let mut registry = Registry::new();
+                        registry.register_type(&ty);
+                        let portable_registry = PortableRegistry::from(registry);
+                        let ty_bytes = portable_registry.encode();
                         quote! {
-                            &[#(#encoded_ty_bytes),*]
+                            &[#(#ty_bytes),*]
                         }
                     }
                     "u128" => {
-                        let encoded_ty_bytes = xcq_types::XcqType::Primitive(xcq_types::PrimitiveType::U128).encode();
+                        let ty = meta_type::<u128>();
+                        let mut registry = Registry::new();
+                        registry.register_type(&ty);
+                        let portable_registry = PortableRegistry::from(registry);
+                        let ty_bytes = portable_registry.encode();
                         quote! {
-                            &[#(#encoded_ty_bytes),*]
+                            &[#(#ty_bytes),*]
                         }
                     }
                     "Vec" => {
@@ -136,12 +156,13 @@ fn generate_return_ty_assertion(call_def: &CallDef) -> Result<TokenStream2> {
                                     Some(syn::GenericArgument::Type(syn::Type::Path(path)))
                                         if path.path.is_ident("u8") =>
                                     {
-                                        let encoded_ty_bytes = xcq_types::XcqType::Sequence(Box::new(
-                                            xcq_types::XcqType::Primitive(xcq_types::PrimitiveType::U8),
-                                        ))
-                                        .encode();
+                                        let ty = meta_type::<Vec<u8>>();
+                                        let mut registry = Registry::new();
+                                        registry.register_type(&ty);
+                                        let portable_registry = PortableRegistry::from(registry);
+                                        let ty_bytes = portable_registry.encode();
                                         quote! {
-                                            &[#(#encoded_ty_bytes),*]
+                                            &[#(#ty_bytes),*]
                                         }
                                     }
                                     _ => quote! { &[0u8] },

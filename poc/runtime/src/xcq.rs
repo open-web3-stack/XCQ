@@ -3,12 +3,10 @@ use frame::deps::scale_info::prelude::{format, string::String};
 use frame::deps::sp_api::decl_runtime_apis;
 use frame::prelude::*;
 
-pub type XcqResponse = Vec<u8>;
-pub type XcqError = String;
-pub type XcqResult = Result<XcqResponse, XcqError>;
+use xcq_extension::metadata::Metadata;
+pub use xcq_primitives::XcqResult;
 
 use xcq_extension::{impl_extensions, ExtensionsExecutor, Guest, Input, InvokeSource, Method};
-use xcq_primitives::metadata::Metadata;
 decl_runtime_apis! {
     pub trait XcqApi {
         fn execute_query(query: Vec<u8>, input: Vec<u8>) -> XcqResult;
@@ -86,7 +84,7 @@ pub fn execute_query(query: Vec<u8>, input: Vec<u8>) -> XcqResult {
 }
 
 pub fn metadata() -> Metadata {
-    ExtensionImpl::runtime_metadata().into()
+    ExtensionImpl::metadata()
 }
 
 #[cfg(test)]

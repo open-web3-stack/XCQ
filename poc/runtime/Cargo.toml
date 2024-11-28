@@ -54,6 +54,7 @@ std = [
 
     "xcq-executor/std",
     "xcq-extension/std",
+    "xcq-primitives/std",
     "xcq-extension-core/std",
     "xcq-extension-fungibles/std",
 ]
