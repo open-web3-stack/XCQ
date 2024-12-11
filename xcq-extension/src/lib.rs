@@ -1,3 +1,4 @@
+#![cfg_attr(not(feature = "std"), no_std)]
 use parity_scale_codec::Decode;
 use scale_info::prelude::{format, marker::PhantomData, vec::Vec};
 use xcq_executor::{Caller, Linker, XcqExecutor, XcqExecutorContext};
