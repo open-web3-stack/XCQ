@@ -1,7 +1,7 @@
 use clap::Parser;
 use parity_scale_codec::{Decode, Encode};
 use tracing_subscriber::prelude::*;
-use xcq_extension::{impl_extensions, ExtensionsExecutor, Guest, Input, InvokeSource, Method};
+use xcq_extension::{impl_extensions, ExtensionsExecutor, InvokeSource};
 
 #[derive(Parser, Debug)]
 #[command(version, about)]
@@ -27,7 +27,6 @@ fn main() {
 
     let blob = std::fs::read(cli.program).expect("Failed to read program");
     let mut executor = ExtensionsExecutor::<Extensions, ()>::new(InvokeSource::RuntimeAPI);
-    let guest = GuestImpl { program: blob.to_vec() };
     let mut input_data = xcq_extension_fungibles::EXTENSION_ID.encode();
     input_data.extend_from_slice(&[2u8]);
     let method1 = FungiblesMethod::Balance {
@@ -42,17 +41,8 @@ fn main() {
     };
     input_data.extend_from_slice(&method1_encoded);
     input_data.extend_from_slice(&method2.encode());
-    // input_data.extend_from_slice(&xcq_extension_fungibles::EXTENSION_ID.encode());
-    // let method3 = FungiblesMethod::TotalSupply { asset: 1 };
-    // let method3_encoded = method3.encode();
-    // input_data.extend_from_slice(&[method3_encoded.len() as u8]);
-    // input_data.extend_from_slice(&method3_encoded);
     tracing::info!("Input data: {:?}", input_data);
-    let input = InputImpl {
-        method: "main".to_string(),
-        args: input_data,
-    };
-    let res = executor.execute_method(guest, input).unwrap();
+    let res = executor.execute_method(&blob, &input_data).unwrap();
 
     tracing::info!("Result: {:?}", res);
 }
@@ -92,31 +82,6 @@ impl_extensions! {
         }
     }
 }
-// guest impls
-pub struct GuestImpl {
-    pub program: Vec<u8>,
-}
-
-impl Guest for GuestImpl {
-    fn program(&self) -> &[u8] {
-        &self.program
-    }
-}
-
-pub struct InputImpl {
-    pub method: Method,
-    pub args: Vec<u8>,
-}
-
-impl Input for InputImpl {
-    fn method(&self) -> Method {
-        self.method.clone()
-    }
-    fn args(&self) -> &[u8] {
-        &self.args
-    }
-}
-
 #[derive(Encode, Decode)]
 enum CoreMethod {
     HasExtension { id: u64 },

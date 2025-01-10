@@ -1,6 +1,6 @@
 use parity_scale_codec::{Codec, Decode, Encode};
 use xcq_extension::metadata::Metadata;
-use xcq_extension::{decl_extensions, impl_extensions, ExtensionsExecutor, Guest, Input, InvokeSource, Method};
+use xcq_extension::{decl_extensions, impl_extensions, ExtensionsExecutor, InvokeSource};
 
 mod extension_core {
     use super::*;
@@ -69,31 +69,6 @@ impl extension_fungibles::Config for ExtensionImpl {
     type Balance = u64;
 }
 
-// guest impls
-pub struct GuestImpl {
-    pub program: Vec<u8>,
-}
-
-impl Guest for GuestImpl {
-    fn program(&self) -> &[u8] {
-        &self.program
-    }
-}
-
-pub struct InputImpl {
-    pub method: Method,
-    pub args: Vec<u8>,
-}
-
-impl Input for InputImpl {
-    fn method(&self) -> Method {
-        self.method.clone()
-    }
-    fn args(&self) -> &[u8] {
-        &self.args
-    }
-}
-
 #[derive(Encode, Decode)]
 enum CoreMethod {
     HasExtension { id: u64 },
@@ -108,22 +83,16 @@ enum FungiblesMethod {
 fn call_core_works() {
     let blob = include_bytes!("../../output/poc-guest-transparent-call.polkavm");
     let mut executor = ExtensionsExecutor::<Extensions, ()>::new(InvokeSource::RuntimeAPI);
-    let guest = GuestImpl { program: blob.to_vec() };
     let method = CoreMethod::HasExtension { id: 0 };
     let mut input_data = extension_core::EXTENSION_ID.encode();
     input_data.extend_from_slice(&method.encode());
-    let input = InputImpl {
-        method: "main".to_string(),
-        args: input_data,
-    };
-    let res = executor.execute_method(guest, input).unwrap();
+    let res = executor.execute_method(blob, &input_data).unwrap();
     assert_eq!(res, vec![1]);
 }
 #[test]
 fn multi_calls_works() {
     let blob = include_bytes!("../../output/poc-guest-sum-balance-percent.polkavm");
     let mut executor = ExtensionsExecutor::<Extensions, ()>::new(InvokeSource::RuntimeAPI);
-    let guest = GuestImpl { program: blob.to_vec() };
     let mut input_data = extension_fungibles::EXTENSION_ID.encode();
     input_data.extend_from_slice(&[2u8]);
     let method1 = FungiblesMethod::Balance {
@@ -143,11 +112,7 @@ fn multi_calls_works() {
     let method3_encoded = method3.encode();
     input_data.extend_from_slice(&[method3_encoded.len() as u8]);
     input_data.extend_from_slice(&method3_encoded);
-    let input = InputImpl {
-        method: "main".to_string(),
-        args: input_data,
-    };
-    let res = executor.execute_method(guest, input).unwrap();
+    let res = executor.execute_method(blob, &input_data).unwrap();
     assert_eq!(res, vec![100u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8]);
 }
 
@@ -155,7 +120,6 @@ fn multi_calls_works() {
 fn calls_vec_works() {
     let blob = include_bytes!("../../output/poc-guest-sum-balance.polkavm");
     let mut executor = ExtensionsExecutor::<Extensions, ()>::new(InvokeSource::RuntimeAPI);
-    let guest = GuestImpl { program: blob.to_vec() };
     let mut input_data = extension_fungibles::EXTENSION_ID.encode();
     input_data.extend_from_slice(&vec![2u8]);
     let method1 = FungiblesMethod::Balance {
@@ -170,11 +134,7 @@ fn calls_vec_works() {
     };
     input_data.extend_from_slice(&method1_encoded);
     input_data.extend_from_slice(&method2.encode());
-    let input = InputImpl {
-        method: "main".to_string(),
-        args: input_data,
-    };
-    let res = executor.execute_method(guest, input).unwrap();
+    let res = executor.execute_method(blob, &input_data).unwrap();
     assert_eq!(res, vec![200u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8]);
 }
 
@@ -182,17 +142,12 @@ fn calls_vec_works() {
 fn single_call_works() {
     let blob = include_bytes!("../../output/poc-guest-total-supply.polkavm");
     let mut executor = ExtensionsExecutor::<Extensions, ()>::new(InvokeSource::RuntimeAPI);
-    let guest = GuestImpl { program: blob.to_vec() };
     let mut input_data = extension_fungibles::EXTENSION_ID.encode();
     let method1 = FungiblesMethod::TotalSupply { asset: 1 };
     let method1_encoded = method1.encode();
     input_data.extend_from_slice(&vec![method1_encoded.len() as u8]);
     input_data.extend_from_slice(&method1_encoded);
-    let input = InputImpl {
-        method: "main".to_string(),
-        args: input_data,
-    };
-    let res = executor.execute_method(guest, input).unwrap();
+    let res = executor.execute_method(blob, &input_data).unwrap();
     assert_eq!(res, vec![200u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8]);
 }
 

@@ -57,12 +57,7 @@ impl<Ctx: XcqExecutorContext> XcqExecutor<Ctx> {
         }
     }
 
-    pub fn execute(
-        &mut self,
-        raw_blob: &[u8],
-        method: &str,
-        input: &[u8],
-    ) -> Result<Vec<u8>, XcqExecutorError<Ctx::UserError>> {
+    pub fn execute(&mut self, raw_blob: &[u8], input: &[u8]) -> Result<Vec<u8>, XcqExecutorError<Ctx::UserError>> {
         let blob = ProgramBlob::parse(raw_blob.into()).map_err(polkavm::Error::from)?;
         let module = Module::from_blob(&self.engine, &Default::default(), blob)?;
         let instance_pre = self.linker.instantiate_pre(&module)?;
@@ -89,7 +84,7 @@ impl<Ctx: XcqExecutorContext> XcqExecutor<Ctx> {
 
         let res = instance.call_typed_and_get_result::<u64, (u32, u32)>(
             self.context.data(),
-            method,
+            "main",
             (input_ptr, input.len() as u32),
         )?;
         let res_size = (res >> 32) as u32;

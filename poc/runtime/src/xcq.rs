@@ -6,7 +6,7 @@ use frame::prelude::*;
 use xcq_extension::metadata::Metadata;
 pub use xcq_primitives::XcqResult;
 
-use xcq_extension::{impl_extensions, ExtensionsExecutor, Guest, Input, InvokeSource, Method};
+use xcq_extension::{impl_extensions, ExtensionsExecutor, InvokeSource};
 decl_runtime_apis! {
     pub trait XcqApi {
         fn execute_query(query: Vec<u8>, input: Vec<u8>) -> XcqResult;
@@ -49,38 +49,9 @@ impl_extensions! {
     }
 }
 
-// guest impls
-pub struct GuestImpl {
-    pub program: Vec<u8>,
-}
-
-impl Guest for GuestImpl {
-    fn program(&self) -> &[u8] {
-        &self.program
-    }
-}
-
-pub struct InputImpl {
-    pub method: Method,
-    pub args: Vec<u8>,
-}
-
-impl Input for InputImpl {
-    fn method(&self) -> Method {
-        self.method.clone()
-    }
-    fn args(&self) -> &[u8] {
-        &self.args
-    }
-}
-pub fn execute_query(query: Vec<u8>, input: Vec<u8>) -> XcqResult {
+pub fn execute_query(query: &[u8], input: &[u8]) -> XcqResult {
     let mut executor = ExtensionsExecutor::<Extensions, ()>::new(InvokeSource::RuntimeAPI);
-    let guest = GuestImpl { program: query };
-    let input = InputImpl {
-        method: "main".to_owned(),
-        args: input,
-    };
-    executor.execute_method(guest, input)
+    executor.execute_method(query, input)
 }
 
 pub fn metadata() -> Metadata {
