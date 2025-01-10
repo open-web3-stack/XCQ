@@ -1,9 +1,9 @@
 use crate::ExtensionIdTy;
-pub trait PermController {
+pub trait PermissionController {
     fn is_allowed(extension_id: ExtensionIdTy, call: &[u8], source: InvokeSource) -> bool;
 }
 
-impl PermController for () {
+impl PermissionController for () {
     fn is_allowed(_extension_id: ExtensionIdTy, _call: &[u8], _context: InvokeSource) -> bool {
         true
     }

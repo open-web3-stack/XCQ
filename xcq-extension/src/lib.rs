@@ -17,7 +17,7 @@ mod macros;
 pub use xcq_extension_procedural::{decl_extensions, impl_extensions};
 
 mod perm_controller;
-pub use perm_controller::{InvokeSource, PermController};
+pub use perm_controller::{InvokeSource, PermissionController};
 
 mod guest;
 pub use guest::{Guest, Input, Method};
@@ -32,13 +32,13 @@ pub trait CallDataTuple {
     fn return_ty(extension_id: ExtensionIdTy, call_index: u32) -> Result<Vec<u8>, ExtensionError>;
 }
 
-struct Context<C: CallDataTuple, P: PermController> {
+struct Context<C: CallDataTuple, P: PermissionController> {
     invoke_source: InvokeSource,
     user_data: (),
     _marker: PhantomData<(C, P)>,
 }
 
-impl<C: CallDataTuple, P: PermController> Context<C, P> {
+impl<C: CallDataTuple, P: PermissionController> Context<C, P> {
     pub fn new(invoke_source: InvokeSource) -> Self {
         Self {
             invoke_source,
@@ -48,7 +48,7 @@ impl<C: CallDataTuple, P: PermController> Context<C, P> {
     }
 }
 
-impl<C: CallDataTuple, P: PermController> XcqExecutorContext for Context<C, P> {
+impl<C: CallDataTuple, P: PermissionController> XcqExecutorContext for Context<C, P> {
     type UserData = ();
     type UserError = ExtensionError;
     fn data(&mut self) -> &mut Self::UserData {
@@ -118,10 +118,10 @@ impl<C: CallDataTuple, P: PermController> XcqExecutorContext for Context<C, P> {
     }
 }
 
-pub struct ExtensionsExecutor<C: CallDataTuple, P: PermController> {
+pub struct ExtensionsExecutor<C: CallDataTuple, P: PermissionController> {
     executor: XcqExecutor<Context<C, P>>,
 }
-impl<C: CallDataTuple, P: PermController> ExtensionsExecutor<C, P> {
+impl<C: CallDataTuple, P: PermissionController> ExtensionsExecutor<C, P> {
     #[allow(dead_code)]
     pub fn new(source: InvokeSource) -> Self {
         let context = Context::<C, P>::new(source);
@@ -130,9 +130,9 @@ impl<C: CallDataTuple, P: PermController> ExtensionsExecutor<C, P> {
     }
 
     #[allow(dead_code)]
-    pub fn execute_method<G: Guest, I: Input>(&mut self, guest: G, input: I) -> XcqResult {
+    pub fn execute_method(&mut self, query: &[u8], input: &[u8]) -> XcqResult {
         self.executor
-            .execute(guest.program(), &input.method(), input.args())
+            .execute(query, input)
             .map_err(|e| XcqError::Custom(format!("{:?}", e)))
     }
 }
