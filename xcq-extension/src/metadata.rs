@@ -9,11 +9,6 @@ pub trait ExtensionImplMetadata {
     fn extension_metadata(extension_id: extension_id::ExtensionIdTy) -> ExtensionMetadata;
 }
 
-#[cfg(feature = "decode")]
-use parity_scale_codec::Decode;
-#[cfg(feature = "serde_full")]
-use serde::Serialize;
-
 use parity_scale_codec::Encode;
 use scale_info::{
     form::{Form, MetaForm, PortableForm},
@@ -22,8 +17,6 @@ use scale_info::{
 };
 /// Metadata of extensions
 #[derive(Clone, PartialEq, Eq, Encode, Debug)]
-#[cfg_attr(feature = "decode", derive(Decode))]
-#[cfg_attr(feature = "serde_full", derive(Serialize))]
 pub struct Metadata {
     pub types: PortableRegistry,
     pub extensions: Vec<ExtensionMetadata<PortableForm>>,
@@ -42,12 +35,6 @@ impl Metadata {
 
 /// Metadata of an extension.
 #[derive(Clone, PartialEq, Eq, Encode, Debug)]
-#[cfg_attr(feature = "decode", derive(Decode))]
-#[cfg_attr(feature = "serde_full", derive(Serialize))]
-#[cfg_attr(
-    feature = "serde_full",
-    serde(bound(serialize = "T::Type: Serialize, T::String: Serialize"))
-)]
 pub struct ExtensionMetadata<T: Form = MetaForm> {
     pub name: T::String,
     pub methods: Vec<MethodMetadata<T>>,
@@ -66,12 +53,6 @@ impl IntoPortable for ExtensionMetadata {
 
 /// Metadata of a runtime method.
 #[derive(Clone, PartialEq, Eq, Encode, Debug)]
-#[cfg_attr(feature = "decode", derive(Decode))]
-#[cfg_attr(feature = "serde_full", derive(Serialize))]
-#[cfg_attr(
-    feature = "serde_full",
-    serde(bound(serialize = "T::Type: Serialize, T::String: Serialize"))
-)]
 pub struct MethodMetadata<T: Form = MetaForm> {
     /// Method name.
     pub name: T::String,
@@ -95,12 +76,6 @@ impl IntoPortable for MethodMetadata {
 
 /// Metadata of a runtime method parameter.
 #[derive(Clone, PartialEq, Eq, Encode, Debug)]
-#[cfg_attr(feature = "decode", derive(Decode))]
-#[cfg_attr(feature = "serde_full", derive(Serialize))]
-#[cfg_attr(
-    feature = "serde_full",
-    serde(bound(serialize = "T::Type: Serialize, T::String: Serialize"))
-)]
 pub struct MethodParamMetadata<T: Form = MetaForm> {
     /// Parameter name.
     pub name: T::String,
