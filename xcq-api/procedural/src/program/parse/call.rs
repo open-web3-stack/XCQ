@@ -5,17 +5,16 @@ use syn::{Item, ItemFn};
 
 #[derive(Debug, Clone)]
 pub struct CallDef {
-    pub index: usize,
     pub item_fn: ItemFn,
     pub extension_id: u64,
     pub call_index: u32,
+    #[allow(unused)]
     pub extern_types: Option<ExternTypesAttr>,
 }
 
 impl CallDef {
     pub fn try_from(
         span: Span,
-        index: usize,
         item: &mut Item,
         extension_id: Option<u64>,
         call_index: Option<u32>,
@@ -39,7 +38,6 @@ impl CallDef {
             )
         })?;
         Ok(Self {
-            index,
             item_fn: item_fn.clone(),
             extension_id,
             call_index,

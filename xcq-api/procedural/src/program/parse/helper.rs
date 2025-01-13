@@ -11,7 +11,7 @@ pub(crate) fn take_first_xcq_attr(item: &mut impl MutItemAttrs) -> syn::Result<O
         attr.path()
             .segments
             .first()
-            .map_or(false, |segment| segment.ident == "xcq")
+            .is_some_and(|segment| segment.ident == "xcq")
     }) else {
         return Ok(None);
     };
