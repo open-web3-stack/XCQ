@@ -26,7 +26,7 @@ impl Def {
         let mut calls = Vec::new();
         let mut entrypoint = None;
 
-        for (index, item) in items.iter_mut().enumerate() {
+        for item in items.iter_mut() {
             let xcq_attr = helper::take_first_xcq_attr(item)?;
 
             if let Some(attr) = xcq_attr {
@@ -50,14 +50,13 @@ impl Def {
                             }
                             Ok(())
                         })?;
-                        let call =
-                            call::CallDef::try_from(attr.span(), index, item, extension_id, call_index, extern_types)?;
+                        let call = call::CallDef::try_from(attr.span(), item, extension_id, call_index, extern_types)?;
                         calls.push(call);
                     } else if last_segment.ident == "entrypoint" {
                         if entrypoint.is_some() {
                             return Err(Error::new(attr.span(), "Only one entrypoint function is allowed"));
                         }
-                        entrypoint = Some(entrypoint::EntrypointDef::try_from(attr.span(), index, item)?);
+                        entrypoint = Some(entrypoint::EntrypointDef::try_from(attr.span(), item)?);
                     } else {
                         return Err(Error::new(
                             item.span(),
@@ -85,7 +84,9 @@ mod keyword {
 }
 #[derive(Debug, Clone)]
 pub struct ExternTypesAttr {
+    #[allow(unused)]
     pub types: Vec<syn::Type>,
+    #[allow(unused)]
     pub span: proc_macro2::Span,
 }
 

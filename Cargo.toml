@@ -44,7 +44,7 @@ xcq-test-runner = { path = "xcq-test-runner", default-features = false }
 polkavm = { path = "vendor/polkavm/crates/polkavm", default-features = false }
 
 # polkadot-sdk
-sp-api = { version = "31.0.0", default-features = false }
+sp-api = { path = "vendor/polkadot-sdk/substrate/primitives/api", default-features = false }
 
 # nostd
 parity-scale-codec = { version = "3.6.12", default-features = false, features = [

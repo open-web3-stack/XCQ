@@ -13,7 +13,7 @@ pub struct ArgType {
 }
 
 impl EntrypointDef {
-    pub fn try_from(_span: proc_macro2::Span, _index: usize, item: &mut Item) -> syn::Result<Self> {
+    pub fn try_from(_span: proc_macro2::Span, item: &mut Item) -> syn::Result<Self> {
         if let syn::Item::Fn(item_fn) = item {
             let mut arg_types = Vec::new();
             for input in &item_fn.sig.inputs {
