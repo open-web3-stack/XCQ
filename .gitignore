@@ -16,4 +16,6 @@ target/
 # MacOS related
 .DS_Store
 
+# VSCode related
+.vscode/
 output/
