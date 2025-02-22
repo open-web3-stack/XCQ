@@ -2,12 +2,12 @@
 #![no_main]
 #[global_allocator]
 static GLOBAL: polkavm_derive::LeakingAllocator = polkavm_derive::LeakingAllocator;
-#[xcq_api::program]
+#[pvq_api::program]
 mod query_total_supply {
-    #[xcq::call_def(extension_id = 10588899351449456541u64, call_index = 0)]
+    #[pvq::call_def(extension_id = 4071833530116166512u64, call_index = 0)]
     fn total_supply(asset: u32) -> u64 {}
 
-    #[xcq::entrypoint]
+    #[pvq::entrypoint]
     fn get_total_supply(call: TotalSupplyCall) -> u64 {
         call.call()
     }

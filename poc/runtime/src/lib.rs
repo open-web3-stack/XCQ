@@ -4,7 +4,7 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
-mod xcq;
+mod pvq;
 
 use frame::{
     deps::frame_support::{
@@ -23,8 +23,8 @@ use frame::{
 
 #[runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
-    spec_name: create_runtime_str!("xcq-poc"),
-    impl_name: create_runtime_str!("xcq-poc"),
+    spec_name: create_runtime_str!("pvq-poc"),
+    impl_name: create_runtime_str!("pvq-poc"),
     authoring_version: 1,
     spec_version: 0,
     impl_version: 1,
@@ -225,12 +225,12 @@ impl_runtime_apis! {
         }
     }
 
-    impl xcq::XcqApi<Block> for Runtime {
-        fn execute_query(query: Vec<u8>, input: Vec<u8>) -> xcq::XcqResult {
-            xcq::execute_query(&query, &input)
+    impl pvq::PvqApi<Block> for Runtime {
+        fn execute_query(query: Vec<u8>, input: Vec<u8>) -> pvq::PvqResult {
+            pvq::execute_query(&query, &input)
         }
         fn metadata() -> Vec<u8> {
-            xcq::metadata().encode()
+            pvq::metadata().encode()
         }
     }
 }

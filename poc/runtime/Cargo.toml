@@ -23,11 +23,11 @@ pallet-transaction-payment-rpc-runtime-api = { version = "33.0.0", default-featu
 # genesis builder that allows us to interacto with runtime genesis config
 sp-genesis-builder = { version = "0.12.0", default-features = false }
 
-xcq-executor = { workspace = true }
-xcq-extension = { workspace = true }
-xcq-extension-core = { workspace = true }
-xcq-extension-fungibles = { workspace = true }
-xcq-primitives = { workspace = true }
+pvq-executor = { workspace = true }
+pvq-extension = { workspace = true }
+pvq-extension-core = { workspace = true }
+pvq-extension-fungibles = { workspace = true }
+pvq-primitives = { workspace = true }
 
 [dev-dependencies]
 hex = "0.4"
@@ -52,9 +52,9 @@ std = [
     "sp-genesis-builder/std",
     "substrate-wasm-builder",
 
-    "xcq-executor/std",
-    "xcq-extension/std",
-    "xcq-primitives/std",
-    "xcq-extension-core/std",
-    "xcq-extension-fungibles/std",
+    "pvq-executor/std",
+    "pvq-extension/std",
+    "pvq-primitives/std",
+    "pvq-extension-core/std",
+    "pvq-extension-fungibles/std",
 ]

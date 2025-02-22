@@ -28,7 +28,7 @@ fmt:
 	cargo fmt --all
 
 check-wasm:
-	cargo check --no-default-features --target=wasm32-unknown-unknown -p xcq-api -p xcq-executor -p xcq-extension-core -p xcq-extension-fungibles -p xcq-extension -p xcq-primitives -p xcq-runtime-api
+	cargo check --no-default-features --target=wasm32-unknown-unknown -p pvq-api -p pvq-executor -p pvq-extension-core -p pvq-extension-fungibles -p pvq-extension -p pvq-primitives -p pvq-runtime-api
 	SKIP_WASM_BUILD= cargo check --no-default-features --target=wasm32-unknown-unknown -p poc-runtime
 
 check: check-wasm

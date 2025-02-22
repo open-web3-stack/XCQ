@@ -1,0 +1,29 @@
+[package]
+name = "pvq-extension"
+description = "Extension system for PVQ"
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+version.workspace = true
+
+[dependencies]
+polkavm = { workspace = true }
+pvq-executor = { workspace = true }
+fortuples = { workspace = true }
+tracing = { workspace = true }
+pvq-extension-procedural = { path = "procedural" }
+parity-scale-codec = { workspace = true }
+scale-info = { workspace = true }
+pvq-primitives = { workspace = true }
+
+[features]
+default = ["std"]
+std = [
+    "polkavm/std",
+    "pvq-executor/std",
+    "pvq-primitives/std",
+    "parity-scale-codec/std",
+    "scale-info/std",
+    "tracing/std",
+]
