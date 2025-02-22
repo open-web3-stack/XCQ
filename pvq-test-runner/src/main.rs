@@ -1,7 +1,7 @@
 use clap::Parser;
 use parity_scale_codec::{Decode, Encode};
-use tracing_subscriber::prelude::*;
 use pvq_extension::{impl_extensions, ExtensionsExecutor, InvokeSource};
+use tracing_subscriber::prelude::*;
 
 #[derive(Parser, Debug)]
 #[command(version, about)]
