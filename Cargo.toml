@@ -1,7 +1,7 @@
 [workspace.package]
 authors = ["Acala Developers <hello@acala.network>"]
 edition = "2021"
-repository = "https://github.com/open-web3-stack/XCQ"
+repository = "https://github.com/open-web3-stack/PVQ"
 license = "Apache-2.0"
 version = "0.1.0"
 
@@ -10,14 +10,14 @@ resolver = "2"
 members = [
     "poc/runtime",
 
-    "xcq-api",
-    "xcq-executor",
-    "xcq-extension-core",
-    "xcq-extension-fungibles",
-    "xcq-extension",
-    "xcq-primitives",
-    "xcq-runtime-api",
-    "xcq-test-runner",
+    "pvq-api",
+    "pvq-executor",
+    "pvq-extension-core",
+    "pvq-extension-fungibles",
+    "pvq-extension",
+    "pvq-primitives",
+    "pvq-runtime-api",
+    "pvq-test-runner",
 
     "examples/example-fungibles",
     "examples/example-helloworld",
@@ -31,14 +31,14 @@ opt-level = 3
 
 [workspace.dependencies]
 # local
-xcq-api = { path = "xcq-api", default-features = false }
-xcq-executor = { path = "xcq-executor", default-features = false }
-xcq-extension-core = { path = "xcq-extension-core", default-features = false }
-xcq-extension-fungibles = { path = "xcq-extension-fungibles", default-features = false }
-xcq-extension = { path = "xcq-extension", default-features = false }
-xcq-primitives = { path = "xcq-primitives", default-features = false }
-xcq-runtime-api = { path = "xcq-runtime-api", default-features = false }
-xcq-test-runner = { path = "xcq-test-runner", default-features = false }
+pvq-api = { path = "pvq-api", default-features = false }
+pvq-executor = { path = "pvq-executor", default-features = false }
+pvq-extension-core = { path = "pvq-extension-core", default-features = false }
+pvq-extension-fungibles = { path = "pvq-extension-fungibles", default-features = false }
+pvq-extension = { path = "pvq-extension", default-features = false }
+pvq-primitives = { path = "pvq-primitives", default-features = false }
+pvq-runtime-api = { path = "pvq-runtime-api", default-features = false }
+pvq-test-runner = { path = "pvq-test-runner", default-features = false }
 
 # polkavm
 polkavm = { path = "vendor/polkavm/crates/polkavm", default-features = false }

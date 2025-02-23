@@ -10,4 +10,4 @@ resolver = "2"
 
 [workspace.dependencies]
 polkavm-derive = { path = "../../vendor/polkavm/crates/polkavm-derive" }
-xcq-api = { path = "../../xcq-api", default-features = false }
+pvq-api = { path = "../../pvq-api", default-features = false }

@@ -1,8 +1,8 @@
 [submodule "vendor/polkavm"]
 	path = vendor/polkavm
-	url = https://github.com/acalanetwork/polkavm
+	url = https://github.com/paritytech/polkavm
 [submodule "vendor/polkadot-sdk"]
 	path = vendor/polkadot-sdk
 	url = https://github.com/indirection42/polkadot-sdk
-    branch = xcq-with-xcm-poc
+    branch = pvq-with-xcm-poc
 

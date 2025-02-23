@@ -7,4 +7,4 @@ publish = false
 
 [dependencies]
 polkavm-derive = { workspace = true }
-xcq-api = { workspace = true }
+pvq-api = { workspace = true }

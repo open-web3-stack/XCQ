@@ -133,7 +133,7 @@ name = "poc-guest-sum-balance"
 version = "0.1.0"
 dependencies = [
  "polkavm-derive",
- "xcq-api",
+ "pvq-api",
 ]
 
 [[package]]
@@ -141,7 +141,7 @@ name = "poc-guest-sum-balance-percent"
 version = "0.1.0"
 dependencies = [
  "polkavm-derive",
- "xcq-api",
+ "pvq-api",
 ]
 
 [[package]]
@@ -149,7 +149,7 @@ name = "poc-guest-total-supply"
 version = "0.1.0"
 dependencies = [
  "polkavm-derive",
- "xcq-api",
+ "pvq-api",
 ]
 
 [[package]]
@@ -157,23 +157,23 @@ name = "poc-guest-transparent-call"
 version = "0.1.0"
 dependencies = [
  "polkavm-derive",
- "xcq-api",
+ "pvq-api",
 ]
 
 [[package]]
 name = "polkavm-common"
-version = "0.12.0"
+version = "0.21.0"
 
 [[package]]
 name = "polkavm-derive"
-version = "0.12.0"
+version = "0.21.0"
 dependencies = [
  "polkavm-derive-impl-macro",
 ]
 
 [[package]]
 name = "polkavm-derive-impl"
-version = "0.12.0"
+version = "0.21.0"
 dependencies = [
  "polkavm-common",
  "proc-macro2",
@@ -183,7 +183,7 @@ dependencies = [
 
 [[package]]
 name = "polkavm-derive-impl-macro"
-version = "0.12.0"
+version = "0.21.0"
 dependencies = [
  "polkavm-derive-impl",
  "syn 2.0.63",
@@ -205,6 +205,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8ad3d49ab951a01fbaafe34f2ec74122942fe18a3f9814c3268f1bb72042131b"
 dependencies = [
  "unicode-ident",
+]
+
+[[package]]
+name = "pvq-api"
+version = "0.1.0"
+dependencies = [
+ "pvq-api-procedural",
+]
+
+[[package]]
+name = "pvq-api-procedural"
+version = "0.1.0"
+dependencies = [
+ "Inflector",
+ "parity-scale-codec",
+ "proc-macro-crate",
+ "proc-macro2",
+ "quote",
+ "scale-info",
+ "syn 2.0.63",
 ]
 
 [[package]]
@@ -321,24 +341,4 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f593a95398737aeed53e489c785df13f3618e41dbcd6718c6addbf1395aa6876"
 dependencies = [
  "memchr",
-]
-
-[[package]]
-name = "xcq-api"
-version = "0.1.0"
-dependencies = [
- "xcq-api-procedural",
-]
-
-[[package]]
-name = "xcq-api-procedural"
-version = "0.1.0"
-dependencies = [
- "Inflector",
- "parity-scale-codec",
- "proc-macro-crate",
- "proc-macro2",
- "quote",
- "scale-info",
- "syn 2.0.63",
 ]

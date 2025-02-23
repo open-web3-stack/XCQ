@@ -2918,14 +2918,14 @@ dependencies = [
  "pallet-transaction-payment-rpc-runtime-api",
  "parity-scale-codec",
  "polkadot-sdk-frame",
+ "pvq-executor",
+ "pvq-extension",
+ "pvq-extension-core",
+ "pvq-extension-fungibles",
+ "pvq-primitives",
  "scale-info",
  "sp-genesis-builder",
  "substrate-wasm-builder",
- "xcq-executor",
- "xcq-extension",
- "xcq-extension-core",
- "xcq-extension-fungibles",
- "xcq-primitives",
 ]
 
 [[package]]
@@ -2960,18 +2960,18 @@ dependencies = [
 
 [[package]]
 name = "polkavm"
-version = "0.12.0"
+version = "0.21.0"
 dependencies = [
  "libc",
  "log",
  "polkavm-assembler",
- "polkavm-common 0.12.0",
+ "polkavm-common 0.21.0",
  "polkavm-linux-raw",
 ]
 
 [[package]]
 name = "polkavm-assembler"
-version = "0.12.0"
+version = "0.21.0"
 dependencies = [
  "log",
 ]
@@ -2984,17 +2984,17 @@ checksum = "1d9428a5cfcc85c5d7b9fc4b6a18c4b802d0173d768182a51cc7751640f08b92"
 
 [[package]]
 name = "polkavm-common"
-version = "0.12.0"
+version = "0.18.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "31ff33982a807d8567645d4784b9b5d7ab87bcb494f534a57cadd9012688e102"
+
+[[package]]
+name = "polkavm-common"
+version = "0.21.0"
 dependencies = [
  "log",
  "polkavm-assembler",
 ]
-
-[[package]]
-name = "polkavm-common"
-version = "0.18.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "31ff33982a807d8567645d4784b9b5d7ab87bcb494f534a57cadd9012688e102"
 
 [[package]]
 name = "polkavm-derive"
@@ -3075,7 +3075,7 @@ dependencies = [
 
 [[package]]
 name = "polkavm-linux-raw"
-version = "0.12.0"
+version = "0.21.0"
 
 [[package]]
 name = "powerfmt"
@@ -3177,6 +3177,113 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "60946a68e5f9d28b0dc1c21bb8a97ee7d018a8b322fa57838ba31cc878e22d99"
 dependencies = [
  "unicode-ident",
+]
+
+[[package]]
+name = "pvq-api"
+version = "0.1.0"
+dependencies = [
+ "pvq-api-procedural",
+]
+
+[[package]]
+name = "pvq-api-procedural"
+version = "0.1.0"
+dependencies = [
+ "Inflector",
+ "parity-scale-codec",
+ "proc-macro-crate",
+ "proc-macro2",
+ "quote",
+ "scale-info",
+ "syn 2.0.96",
+]
+
+[[package]]
+name = "pvq-executor"
+version = "0.1.0"
+dependencies = [
+ "polkavm",
+ "pvq-api",
+ "pvq-primitives",
+ "tracing",
+]
+
+[[package]]
+name = "pvq-extension"
+version = "0.1.0"
+dependencies = [
+ "fortuples",
+ "parity-scale-codec",
+ "polkavm",
+ "pvq-executor",
+ "pvq-extension-procedural",
+ "pvq-primitives",
+ "scale-info",
+ "tracing",
+]
+
+[[package]]
+name = "pvq-extension-core"
+version = "0.1.0"
+dependencies = [
+ "parity-scale-codec",
+ "pvq-extension",
+ "scale-info",
+]
+
+[[package]]
+name = "pvq-extension-fungibles"
+version = "0.1.0"
+dependencies = [
+ "parity-scale-codec",
+ "pvq-extension",
+ "scale-info",
+]
+
+[[package]]
+name = "pvq-extension-procedural"
+version = "0.1.0"
+dependencies = [
+ "Inflector",
+ "proc-macro-crate",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.96",
+ "twox-hash",
+]
+
+[[package]]
+name = "pvq-primitives"
+version = "0.1.0"
+dependencies = [
+ "parity-scale-codec",
+ "scale-info",
+]
+
+[[package]]
+name = "pvq-runtime-api"
+version = "0.1.0"
+dependencies = [
+ "pvq-primitives",
+ "sp-api 26.0.0",
+]
+
+[[package]]
+name = "pvq-test-runner"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "parity-scale-codec",
+ "polkavm",
+ "pvq-executor",
+ "pvq-extension",
+ "pvq-extension-core",
+ "pvq-extension-fungibles",
+ "pvq-primitives",
+ "scale-info",
+ "tracing",
+ "tracing-subscriber 0.3.18",
 ]
 
 [[package]]
@@ -5624,113 +5731,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "05f360fc0b24296329c78fda852a1e9ae82de9cf7b27dae4b7f62f118f77b9ed"
 dependencies = [
  "tap",
-]
-
-[[package]]
-name = "xcq-api"
-version = "0.1.0"
-dependencies = [
- "xcq-api-procedural",
-]
-
-[[package]]
-name = "xcq-api-procedural"
-version = "0.1.0"
-dependencies = [
- "Inflector",
- "parity-scale-codec",
- "proc-macro-crate",
- "proc-macro2",
- "quote",
- "scale-info",
- "syn 2.0.96",
-]
-
-[[package]]
-name = "xcq-executor"
-version = "0.1.0"
-dependencies = [
- "polkavm",
- "tracing",
- "xcq-api",
- "xcq-primitives",
-]
-
-[[package]]
-name = "xcq-extension"
-version = "0.1.0"
-dependencies = [
- "fortuples",
- "parity-scale-codec",
- "polkavm",
- "scale-info",
- "tracing",
- "xcq-executor",
- "xcq-extension-procedural",
- "xcq-primitives",
-]
-
-[[package]]
-name = "xcq-extension-core"
-version = "0.1.0"
-dependencies = [
- "parity-scale-codec",
- "scale-info",
- "xcq-extension",
-]
-
-[[package]]
-name = "xcq-extension-fungibles"
-version = "0.1.0"
-dependencies = [
- "parity-scale-codec",
- "scale-info",
- "xcq-extension",
-]
-
-[[package]]
-name = "xcq-extension-procedural"
-version = "0.1.0"
-dependencies = [
- "Inflector",
- "proc-macro-crate",
- "proc-macro2",
- "quote",
- "syn 2.0.96",
- "twox-hash",
-]
-
-[[package]]
-name = "xcq-primitives"
-version = "0.1.0"
-dependencies = [
- "parity-scale-codec",
- "scale-info",
-]
-
-[[package]]
-name = "xcq-runtime-api"
-version = "0.1.0"
-dependencies = [
- "sp-api 26.0.0",
- "xcq-primitives",
-]
-
-[[package]]
-name = "xcq-test-runner"
-version = "0.1.0"
-dependencies = [
- "clap",
- "parity-scale-codec",
- "polkavm",
- "scale-info",
- "tracing",
- "tracing-subscriber 0.3.18",
- "xcq-executor",
- "xcq-extension",
- "xcq-extension-core",
- "xcq-extension-fungibles",
- "xcq-primitives",
 ]
 
 [[package]]
