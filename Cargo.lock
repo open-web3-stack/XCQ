@@ -2960,18 +2960,18 @@ dependencies = [
 
 [[package]]
 name = "polkavm"
-version = "0.12.0"
+version = "0.21.0"
 dependencies = [
  "libc",
  "log",
  "polkavm-assembler",
- "polkavm-common 0.12.0",
+ "polkavm-common 0.21.0",
  "polkavm-linux-raw",
 ]
 
 [[package]]
 name = "polkavm-assembler"
-version = "0.12.0"
+version = "0.21.0"
 dependencies = [
  "log",
 ]
@@ -2984,17 +2984,17 @@ checksum = "1d9428a5cfcc85c5d7b9fc4b6a18c4b802d0173d768182a51cc7751640f08b92"
 
 [[package]]
 name = "polkavm-common"
-version = "0.12.0"
+version = "0.18.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "31ff33982a807d8567645d4784b9b5d7ab87bcb494f534a57cadd9012688e102"
+
+[[package]]
+name = "polkavm-common"
+version = "0.21.0"
 dependencies = [
  "log",
  "polkavm-assembler",
 ]
-
-[[package]]
-name = "polkavm-common"
-version = "0.18.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "31ff33982a807d8567645d4784b9b5d7ab87bcb494f534a57cadd9012688e102"
 
 [[package]]
 name = "polkavm-derive"
@@ -3075,7 +3075,7 @@ dependencies = [
 
 [[package]]
 name = "polkavm-linux-raw"
-version = "0.12.0"
+version = "0.21.0"
 
 [[package]]
 name = "powerfmt"

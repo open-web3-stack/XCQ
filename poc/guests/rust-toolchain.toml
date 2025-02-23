@@ -1,2 +1,3 @@
 [toolchain]
-channel = "rve-nightly"
+channel = "nightly-2024-11-01"
+components = ["rust-src"]

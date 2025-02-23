@@ -1,5 +1,3 @@
-GUEST_RUST_FLAGS="-C relocation-model=pie -C link-arg=--emit-relocs -C link-arg=--unique --remap-path-prefix=$(pwd)= --remap-path-prefix=$HOME=~"
-
 run: chainspec
 	bunx @acala-network/chopsticks@latest --config poc/runtime/chopsticks.yml --genesis output/chainspec.json
 
@@ -8,9 +6,9 @@ poc-guests: poc-guest-sum-balance poc-guest-sum-balance-percent poc-guest-total-
 dummy-poc-guests: dummy-poc-guest-sum-balance dummy-poc-guest-sum-balance-percent dummy-poc-guest-total-supply dummy-poc-guest-transparent-call
 
 poc-guest-%:
-	cd poc/guests; RUSTFLAGS=$(GUEST_RUST_FLAGS) cargo build -q --release --bin poc-guest-$* -p poc-guest-$*
+	cd poc/guests; RUSTFLAGS="-D warnings" cargo build -q --release -Z build-std=core,alloc --target "../../vendor/polkavm/crates/polkavm-linker/riscv32emac-unknown-none-polkavm.json" --bin poc-guest-$* -p poc-guest-$*
 	mkdir -p output
-	polkatool link --run-only-if-newer -s poc/guests/target/riscv32ema-unknown-none-elf/release/poc-guest-$* -o output/poc-guest-$*.polkavm
+	polkatool link --run-only-if-newer -s poc/guests/target/riscv32emac-unknown-none-polkavm/release/poc-guest-$* -o output/poc-guest-$*.polkavm
 
 dummy-poc-guest-%:
 	mkdir -p output
@@ -37,7 +35,7 @@ check: check-wasm
 
 clippy:
 	SKIP_WASM_BUILD= cargo clippy -- -D warnings
-	cd poc/guests; cargo clippy
+	cd poc/guests; RUSTFLAGS="-D warnings" cargo clippy -Z build-std=core,alloc --target "../../vendor/polkavm/crates/polkavm-linker/riscv32emac-unknown-none-polkavm.json" --all
 
 test:
 	SKIP_WASM_BUILD= cargo test

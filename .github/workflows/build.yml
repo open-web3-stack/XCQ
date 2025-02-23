@@ -62,12 +62,6 @@ jobs:
           workspaces: poc/guests -> poc/guests/target
           cache-all-crates: true
 
-      - name: Install toolchain targeting RV32E
-        run: |
-          curl -sL https://github.com/paritytech/rustc-rv32e-toolchain/releases/download/v1.1.0/rust-rve-nightly-2024-01-05-x86_64-unknown-linux-gnu.tar.zst -o rv32e.tar.zst
-          tar --zstd -xf rv32e.tar.zst
-          mv rve-nightly ~/.rustup/toolchains/
-
       - name: Cargo clippy
         run: cd poc/guests; cargo clippy -- -D warnings
 
