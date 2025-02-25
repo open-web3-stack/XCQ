@@ -4,5 +4,4 @@
 [submodule "vendor/polkadot-sdk"]
 	path = vendor/polkadot-sdk
 	url = https://github.com/indirection42/polkadot-sdk
-    branch = pvq-with-xcm-poc
 
