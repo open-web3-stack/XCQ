@@ -1,12 +1,8 @@
-use crate::extension_id;
-// This trait is for CallData
-pub trait CallMetadata {
-    fn call_metadata() -> ExtensionMetadata;
-}
+use crate::ExtensionIdTy;
 
 // This trait is for ExtensionImpl
 pub trait ExtensionImplMetadata {
-    fn extension_metadata(extension_id: extension_id::ExtensionIdTy) -> ExtensionMetadata;
+    fn extension_metadata(extension_id: ExtensionIdTy) -> ExtensionMetadata;
 }
 
 use parity_scale_codec::Encode;

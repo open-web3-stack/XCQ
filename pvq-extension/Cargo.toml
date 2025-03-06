@@ -17,6 +17,9 @@ parity-scale-codec = { workspace = true }
 scale-info = { workspace = true }
 pvq-primitives = { workspace = true }
 
+[dev-dependencies]
+tracing-subscriber = { workspace = true }
+
 [features]
 default = ["std"]
 std = [

@@ -16,3 +16,4 @@ proc-macro2 = { workspace = true }
 proc-macro-crate = { workspace = true }
 Inflector = { workspace = true }
 twox-hash = "1.6.3"
+frame-support-procedural-tools = { workspace = true }
