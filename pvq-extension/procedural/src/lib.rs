@@ -1,8 +1,7 @@
 use proc_macro::TokenStream;
 mod extension_decl;
 mod extensions_impl;
-mod runtime_metadata;
-mod utils;
+pub(crate) mod utils;
 
 #[proc_macro_attribute]
 pub fn extension_decl(attr: TokenStream, item: TokenStream) -> TokenStream {

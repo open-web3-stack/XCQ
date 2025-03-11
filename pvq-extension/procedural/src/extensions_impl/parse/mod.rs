@@ -1,6 +1,7 @@
 mod extension;
 mod helper;
 mod impl_struct;
+use crate::utils::generate_crate_access;
 use syn::spanned::Spanned;
 
 mod keyword {
@@ -13,10 +14,12 @@ pub struct Def {
     pub item: syn::ItemMod,
     pub impl_struct: impl_struct::ImplStruct,
     pub extension_impls: Vec<extension::ExtensionImpl>,
+    pub pvq_extension: syn::Path,
 }
 
 impl Def {
     pub fn try_from(mut item: syn::ItemMod) -> syn::Result<Self> {
+        let pvq_extension = generate_crate_access("pvq-extension")?;
         let item_span = item.span();
         let items = &mut item
             .content
@@ -54,6 +57,7 @@ impl Def {
             impl_struct: impl_struct
                 .ok_or_else(|| syn::Error::new(item_span, "Missing `#[extensions_impl::impl_struct]`"))?,
             extension_impls,
+            pvq_extension,
         })
     }
 }

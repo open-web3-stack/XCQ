@@ -12,19 +12,29 @@ pub struct Def {
     pub item: syn::ItemMod,
     pub extension: extension::Extension,
     pub pvq_extension: syn::Path,
+    pub scale_info: syn::Path,
+    pub parity_scale_codec: syn::Path,
 }
 
 impl Def {
     pub fn try_from(mut item: syn::ItemMod) -> syn::Result<Self> {
         let pvq_extension = generate_crate_access("pvq-extension")?;
-        let item_span = item.span();
-        let mod_name = &item.ident;
+        let scale_info = generate_crate_access("scale-info")?;
+        let parity_scale_codec = generate_crate_access("parity-scale-codec")?;
+        let mod_span = item.span();
+        // Check if the module is public
+        if !matches!(item.vis, syn::Visibility::Public(_)) {
+            return Err(syn::Error::new(
+                mod_span,
+                "Invalid #[extension_decl] definition, expected public module.",
+            ));
+        }
         let items = &mut item
             .content
             .as_mut()
             .ok_or_else(|| {
-                let msg = "Invalid extension_decl definition, expected mod to be inline.";
-                syn::Error::new(item_span, msg)
+                let msg = "Invalid #[extension_decl] definition, expected mod to be inline.";
+                syn::Error::new(mod_span, msg)
             })?
             .1;
         let mut extension = None;
@@ -33,7 +43,7 @@ impl Def {
 
             match extension_attr {
                 Some(ExtensionDeclAttr::Extension(_)) if extension.is_none() => {
-                    extension = Some(extension::Extension::try_from(&mod_name.to_string(), item)?);
+                    extension = Some(extension::Extension::try_from(item)?);
                 }
                 Some(attr) => {
                     let msg = "Invalid duplicated attribute";
@@ -45,14 +55,16 @@ impl Def {
 
         Ok(Self {
             item,
-            extension: extension.ok_or_else(|| syn::Error::new(item_span, "Missing `#[extension_decl::extension]`"))?,
+            extension: extension.ok_or_else(|| syn::Error::new(mod_span, "Missing `#[extension_decl::extension]`"))?,
             pvq_extension,
+            scale_info,
+            parity_scale_codec,
         })
     }
 }
 
 /// Parse attributes for item in extension module
-/// syntax must be `extension_decl::` (e.g. `#[extension_decl::config]`)
+/// syntax must be `extension_decl::` (e.g. `#[extension_decl::extension]`)
 enum ExtensionDeclAttr {
     Extension(proc_macro2::Span),
 }

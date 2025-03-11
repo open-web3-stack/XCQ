@@ -1,6 +1,7 @@
 use crate::extensions_impl::Def;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::ToTokens;
+mod metadata;
 
 fn expand_extensions_tuple(def: &Def) -> TokenStream2 {
     let mut extensions = Vec::new();
@@ -25,9 +26,10 @@ fn expand_extensions_tuple(def: &Def) -> TokenStream2 {
 
 pub fn expand(mut def: Def) -> TokenStream2 {
     let extensions_tuple_expanded = expand_extensions_tuple(&def);
-
+    let metadata_expanded = metadata::expand_metadata(&def);
     let new_items = quote::quote! {
         #extensions_tuple_expanded
+        #metadata_expanded
     };
 
     def.item

@@ -11,7 +11,7 @@ mod keyword {
 
 pub fn extension_decl(attr: TokenStream, item: TokenStream) -> TokenStream {
     if !attr.is_empty() {
-        let msg = "Invalid extension_decl macro call: unexpected attribute. Macro call must be bare, such as `#[extension_decl]`.";
+        let msg = "Invalid #[extension_decl] macro call: unexpected attribute. Macro call must be bare, such as `#[extension_decl]`.";
         let span = TokenStream2::from(attr).span();
         return syn::Error::new(span, msg).to_compile_error().into();
     }

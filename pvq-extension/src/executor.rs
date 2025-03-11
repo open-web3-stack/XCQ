@@ -40,6 +40,6 @@ impl<C: CallDataTuple, P: PermissionController> ExtensionsExecutor<C, P> {
     pub fn execute_method(&mut self, program: &[u8], args: &[u8], gas_limit: u64) -> PvqResult {
         self.executor
             .execute(program, args, gas_limit)
-            .map_err(|e| PvqError::Custom(format!("{:?}", e)))
+            .map_err(|e| PvqError::Custom(scale_info::prelude::format!("{:?}", e)))
     }
 }

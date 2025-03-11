@@ -1,5 +1,6 @@
 use crate::{CallData, ExtensionError, ExtensionIdTy};
 use fortuples::fortuples;
+use scale_info::prelude::vec::Vec;
 
 /// Trait for a tuple of extension call data types
 pub trait CallDataTuple {

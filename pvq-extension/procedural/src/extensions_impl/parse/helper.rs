@@ -26,6 +26,7 @@ where
 }
 
 /// Take all the extensions_impl attributes (e.g. attribute like `#[extensions_impl..]`) and decode them to `Attr`
+#[allow(dead_code)]
 pub(crate) fn take_item_extensions_impl_attrs<Attr>(item: &mut impl MutItemAttrs) -> syn::Result<Vec<Attr>>
 where
     Attr: syn::parse::Parse,

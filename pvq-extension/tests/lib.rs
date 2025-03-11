@@ -5,28 +5,45 @@ mod extension_core {
     use pvq_extension::{DispatchError, Dispatchable, ExtensionId, ExtensionIdTy};
 
     pub trait ExtensionCore {
-        type ExtensionId: Codec;
+        type ExtensionId: Codec + scale_info::TypeInfo + 'static;
         fn has_extension(id: Self::ExtensionId) -> bool;
     }
 
     #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Encode, Decode)]
     #[allow(non_camel_case_types)]
-    pub enum ExtensionCoreFunctions<Impl: ExtensionCore> {
-        has_extension(Impl::ExtensionId),
+    pub enum Functions<Impl: ExtensionCore> {
+        has_extension {
+            id: Impl::ExtensionId,
+        },
+        #[doc(hidden)]
         __marker(core::marker::PhantomData<Impl>),
     }
 
-    impl<Impl: ExtensionCore> Dispatchable for ExtensionCoreFunctions<Impl> {
+    impl<Impl: ExtensionCore> Dispatchable for Functions<Impl> {
         fn dispatch(self) -> Result<Vec<u8>, DispatchError> {
             match self {
-                ExtensionCoreFunctions::has_extension(id) => Ok(Impl::has_extension(id).encode()),
-                ExtensionCoreFunctions::__marker(_) => Err(DispatchError::PhantomData),
+                Functions::has_extension { id } => Ok(Impl::has_extension(id).encode()),
+                Functions::__marker(_) => Err(DispatchError::PhantomData),
             }
         }
     }
 
-    impl<Impl: ExtensionCore> ExtensionId for ExtensionCoreFunctions<Impl> {
+    impl<Impl: ExtensionCore> ExtensionId for Functions<Impl> {
         const EXTENSION_ID: ExtensionIdTy = 0u64;
+    }
+
+    pub fn metadata<Impl: ExtensionCore>() -> pvq_extension::metadata::ExtensionMetadata {
+        pvq_extension::metadata::ExtensionMetadata {
+            name: "ExtensionCore",
+            functions: vec![pvq_extension::metadata::FunctionMetadata {
+                name: "has_extension",
+                inputs: vec![pvq_extension::metadata::FunctionParamMetadata {
+                    name: "id",
+                    ty: scale_info::meta_type::<Impl::ExtensionId>(),
+                }],
+                output: scale_info::meta_type::<bool>(),
+            }],
+        }
     }
 }
 
@@ -35,48 +52,84 @@ mod extension_fungibles {
     use pvq_extension::{DispatchError, Dispatchable, ExtensionId, ExtensionIdTy};
 
     pub trait ExtensionFungibles {
-        type AssetId: Codec;
-        type AccountId: Codec;
-        type Balance: Codec;
+        type AssetId: Codec + scale_info::TypeInfo + 'static;
+        type AccountId: Codec + scale_info::TypeInfo + 'static;
+        type Balance: Codec + scale_info::TypeInfo + 'static;
         fn total_supply(asset: Self::AssetId) -> Self::Balance;
         fn balance(asset: Self::AssetId, who: Self::AccountId) -> Self::Balance;
     }
 
     #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Encode, Decode)]
     #[allow(non_camel_case_types)]
-    pub enum ExtensionFungiblesFunctions<Impl: ExtensionFungibles> {
-        total_supply(Impl::AssetId),
-        balance(Impl::AssetId, Impl::AccountId),
+    pub enum Functions<Impl: ExtensionFungibles> {
+        total_supply {
+            asset: Impl::AssetId,
+        },
+        balance {
+            asset: Impl::AssetId,
+            who: Impl::AccountId,
+        },
+        #[doc(hidden)]
         __marker(core::marker::PhantomData<Impl>),
     }
 
-    impl<Impl: ExtensionFungibles> Dispatchable for ExtensionFungiblesFunctions<Impl> {
+    impl<Impl: ExtensionFungibles> Dispatchable for Functions<Impl> {
         fn dispatch(self) -> Result<Vec<u8>, DispatchError> {
             match self {
-                ExtensionFungiblesFunctions::total_supply(asset) => Ok(Impl::total_supply(asset).encode()),
-                ExtensionFungiblesFunctions::balance(asset, who) => Ok(Impl::balance(asset, who).encode()),
-                ExtensionFungiblesFunctions::__marker(_) => Err(DispatchError::PhantomData),
+                Functions::total_supply { asset } => Ok(Impl::total_supply(asset).encode()),
+                Functions::balance { asset, who } => Ok(Impl::balance(asset, who).encode()),
+                Functions::__marker(_) => Err(DispatchError::PhantomData),
             }
         }
     }
 
-    impl<Impl: ExtensionFungibles> ExtensionId for ExtensionFungiblesFunctions<Impl> {
+    impl<Impl: ExtensionFungibles> ExtensionId for Functions<Impl> {
         const EXTENSION_ID: ExtensionIdTy = 1u64;
+    }
+
+    pub fn metadata<Impl: ExtensionFungibles>() -> pvq_extension::metadata::ExtensionMetadata {
+        pvq_extension::metadata::ExtensionMetadata {
+            name: "ExtensionFungibles",
+            functions: vec![
+                pvq_extension::metadata::FunctionMetadata {
+                    name: "total_supply",
+                    inputs: vec![pvq_extension::metadata::FunctionParamMetadata {
+                        name: "asset",
+                        ty: scale_info::meta_type::<Impl::AssetId>(),
+                    }],
+                    output: scale_info::meta_type::<Impl::Balance>(),
+                },
+                pvq_extension::metadata::FunctionMetadata {
+                    name: "balance",
+                    inputs: vec![
+                        pvq_extension::metadata::FunctionParamMetadata {
+                            name: "asset",
+                            ty: scale_info::meta_type::<Impl::AssetId>(),
+                        },
+                        pvq_extension::metadata::FunctionParamMetadata {
+                            name: "who",
+                            ty: scale_info::meta_type::<Impl::AccountId>(),
+                        },
+                    ],
+                    output: scale_info::meta_type::<Impl::Balance>(),
+                },
+            ],
+        }
     }
 }
 
 mod extensions_impl {
-    pub struct Extensions;
+    pub struct ExtensionsImpl;
     use super::*;
 
-    impl extension_core::ExtensionCore for Extensions {
+    impl extension_core::ExtensionCore for ExtensionsImpl {
         type ExtensionId = u64;
         fn has_extension(id: u64) -> bool {
             matches!(id, 0 | 1)
         }
     }
 
-    impl extension_fungibles::ExtensionFungibles for Extensions {
+    impl extension_fungibles::ExtensionFungibles for ExtensionsImpl {
         type AssetId = u32;
         type AccountId = [u8; 32];
         type Balance = u64;
@@ -87,6 +140,18 @@ mod extensions_impl {
             100
         }
     }
+
+    pub type Extensions = (
+        extension_core::Functions<ExtensionsImpl>,
+        extension_fungibles::Functions<ExtensionsImpl>,
+    );
+
+    pub fn metadata() -> pvq_extension::metadata::Metadata {
+        pvq_extension::metadata::Metadata::new(vec![
+            extension_core::metadata::<ExtensionsImpl>(),
+            extension_fungibles::metadata::<ExtensionsImpl>(),
+        ])
+    }
 }
 
 mod tests {
@@ -94,11 +159,6 @@ mod tests {
     use parity_scale_codec::Encode;
     use pvq_extension::{ExtensionsExecutor, InvokeSource};
     use tracing_subscriber::prelude::*;
-
-    type Extensions = (
-        extension_core::ExtensionCoreFunctions<extensions_impl::Extensions>,
-        extension_fungibles::ExtensionFungiblesFunctions<extensions_impl::Extensions>,
-    );
 
     #[test]
     fn test_runtime_executor() {
@@ -113,11 +173,11 @@ mod tests {
             .try_init()
             .expect("Failed to initialize tracing");
 
-        let mut executor = ExtensionsExecutor::<Extensions, ()>::new(InvokeSource::Runtime);
+        let mut executor = ExtensionsExecutor::<extensions_impl::Extensions, ()>::new(InvokeSource::Runtime);
         let program_blob = include_bytes!("../../output/poc-guest-transparent-call.polkavm").to_vec();
         let mut args = vec![];
         args.extend(1u64.to_le_bytes());
-        extension_fungibles::ExtensionFungiblesFunctions::<extensions_impl::Extensions>::total_supply(1u32)
+        extension_fungibles::Functions::<extensions_impl::ExtensionsImpl>::total_supply { asset: 1u32 }
             .encode_to(&mut args);
         let res = executor.execute_method(&program_blob, &args, 0);
         println!("res: {:?}", res);

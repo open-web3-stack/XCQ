@@ -17,6 +17,7 @@ impl ExtensionImpl {
             .map(|v| &v.1)
             .ok_or_else(|| Error::new(item.span(), "Only implementation of traits are supported!"))
             .and_then(|p| {
+                // The implemented trait has to be referenced with a fully qualified path,
                 if p.segments.len() > 1 {
                     Ok(p)
                 } else {
