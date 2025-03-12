@@ -3,6 +3,7 @@
 extern crate alloc;
 
 pub use alloc::vec::Vec;
+use polkavm::ModuleConfig;
 pub use polkavm::{Caller, Config, Engine, Linker, Module, ProgramBlob};
 
 pub trait PvqExecutorContext {
@@ -57,35 +58,28 @@ impl<Ctx: PvqExecutorContext> PvqExecutor<Ctx> {
         }
     }
 
-    pub fn execute(&mut self, raw_blob: &[u8], input: &[u8]) -> Result<Vec<u8>, PvqExecutorError<Ctx::UserError>> {
-        let blob = ProgramBlob::parse(raw_blob.into()).map_err(polkavm::Error::from)?;
-        let module = Module::from_blob(&self.engine, &Default::default(), blob)?;
+    pub fn execute(
+        &mut self,
+        program: &[u8],
+        args: &[u8],
+        _gas_limit: u64,
+    ) -> Result<Vec<u8>, PvqExecutorError<Ctx::UserError>> {
+        let blob = ProgramBlob::parse(program.into()).map_err(polkavm::Error::from)?;
+
+        // TODO: make this configurable
+        let mut module_config = ModuleConfig::new();
+        module_config.set_aux_data_size(args.len() as u32);
+
+        let module = Module::from_blob(&self.engine, &module_config, blob)?;
         let instance_pre = self.linker.instantiate_pre(&module)?;
         let mut instance = instance_pre.instantiate()?;
 
-        let input_ptr = if !input.is_empty() {
-            // First sbrk call to get the start of the heap
-            let start_ptr = instance
-                .sbrk(0)
-                .expect("should not fail because we don't allocate")
-                .expect("should not fail because we don't allocate");
-            // Second sbrk call to check the allocation doesn't exceed the heap limit
-            instance
-                .sbrk(input.len() as u32)
-                .map_err(|_| PvqExecutorError::MemoryAllocationError)?
-                .ok_or(PvqExecutorError::MemoryAllocationError)?;
-            // Args are passed via guest's heap
-            instance.write_memory(start_ptr, input)?;
-            start_ptr
-        } else {
-            0
-        };
-        tracing::info!("(passing args): input_ptr: {}, input_len: {:?}", input_ptr, input.len());
+        instance.write_memory(module.memory_map().aux_data_address(), args)?;
 
         let res = instance.call_typed_and_get_result::<u64, (u32, u32)>(
             self.context.data(),
             "main",
-            (input_ptr, input.len() as u32),
+            (module.memory_map().aux_data_address(), args.len() as u32),
         )?;
         let res_size = (res >> 32) as u32;
         let res_ptr = (res & 0xffffffff) as u32;

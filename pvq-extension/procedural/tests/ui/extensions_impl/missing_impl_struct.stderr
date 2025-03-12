@@ -1,0 +1,10 @@
+error: Missing `#[extensions_impl::impl_struct]`
+  --> tests/ui/extensions_impl/missing_impl_struct.rs:13:1
+   |
+13 | / mod test_impl {
+14 | |     // Missing #[extensions_impl::impl_struct] attribute
+15 | |     pub struct TestImpl;
+...  |
+23 | |     }
+24 | | }
+   | |_^

@@ -6,7 +6,7 @@ use frame::prelude::*;
 use pvq_extension::metadata::Metadata;
 pub use pvq_primitives::PvqResult;
 
-use pvq_extension::{impl_extensions, ExtensionsExecutor, InvokeSource};
+use pvq_extension::{extensions_impl, ExtensionsExecutor, InvokeSource};
 decl_runtime_apis! {
     pub trait PvqApi {
         fn execute_query(query: Vec<u8>, input: Vec<u8>) -> PvqResult;
@@ -14,48 +14,41 @@ decl_runtime_apis! {
     }
 }
 
-// extension_core impls
-pub struct ExtensionImpl;
+#[extensions_impl]
+pub mod extensions {
+    #[extensions_impl::impl_struct]
+    pub struct ExtensionImpl;
 
-impl pvq_extension_core::Config for ExtensionImpl {
-    type ExtensionId = u64;
-}
-
-// extension_fungibles impls
-impl pvq_extension_fungibles::Config for ExtensionImpl {
-    type AccountId = [u8; 32];
-    type Balance = crate::interface::Balance;
-    type AssetId = crate::interface::AssetId;
-}
-impl_extensions! {
-    impl pvq_extension_core::ExtensionCore for ExtensionImpl {
-        type Config = ExtensionImpl;
-        fn has_extension(id: <Self::Config as pvq_extension_core::Config>::ExtensionId) -> bool {
-            matches!(id, pvq_extension_core::EXTENSION_ID | pvq_extension_fungibles::EXTENSION_ID)
+    #[extensions_impl::extension]
+    impl pvq_extension_core::extension::ExtensionCore for ExtensionImpl {
+        type ExtensionId = u64;
+        fn has_extension(id: Self::ExtensionId) -> bool {
+            id == pvq_extension_core::extension::extension_id()
+                || id == pvq_extension_fungibles::extension::extension_id()
         }
     }
 
-    impl pvq_extension_fungibles::ExtensionFungibles for ExtensionImpl {
-        type Config = ExtensionImpl;
-        fn balance(
-            asset: <Self::Config as pvq_extension_fungibles::Config>::AssetId,
-            who: <Self::Config as pvq_extension_fungibles::Config>::AccountId,
-        ) -> <Self::Config as pvq_extension_fungibles::Config>::Balance {
+    #[extensions_impl::extension]
+    impl pvq_extension_fungibles::extension::ExtensionFungibles for ExtensionImpl {
+        type AccountId = [u8; 32];
+        type Balance = crate::interface::Balance;
+        type AssetId = crate::interface::AssetId;
+        fn balance(asset: Self::AssetId, who: Self::AccountId) -> Self::Balance {
             crate::Assets::balance(asset, crate::interface::AccountId::from(who))
         }
-        fn total_supply(asset: <Self::Config as pvq_extension_fungibles::Config>::AssetId) -> <Self::Config as pvq_extension_fungibles::Config>::Balance {
+        fn total_supply(asset: Self::AssetId) -> Self::Balance {
             crate::Assets::total_supply(asset)
         }
     }
 }
 
 pub fn execute_query(query: &[u8], input: &[u8]) -> PvqResult {
-    let mut executor = ExtensionsExecutor::<Extensions, ()>::new(InvokeSource::RuntimeAPI);
-    executor.execute_method(query, input)
+    let mut executor = ExtensionsExecutor::<extensions::Extensions, ()>::new(InvokeSource::RuntimeAPI);
+    executor.execute_method(query, input, 0)
 }
 
 pub fn metadata() -> Metadata {
-    ExtensionImpl::metadata()
+    extensions::metadata()
 }
 
 #[cfg(test)]

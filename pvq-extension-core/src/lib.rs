@@ -1,15 +1,13 @@
 #![cfg_attr(not(feature = "std"), no_std)]
-use parity_scale_codec::Encode;
-use pvq_extension::decl_extensions;
 
-pub trait Config {
-    type ExtensionId: Encode;
-}
+use pvq_extension::extension_decl;
 
-decl_extensions! {
+#[extension_decl]
+pub mod extension {
+    #[extension_decl::extension]
     pub trait ExtensionCore {
-        type Config: Config;
-        fn has_extension(id: <Self::Config as Config>::ExtensionId) -> bool;
+        type ExtensionId;
+        fn has_extension(id: Self::ExtensionId) -> bool;
         // crypto functions
         // fn blake2_64(data: Vec<u8>) -> [u8; 8];
         // fn blake2_128(data: Vec<u8>) -> [u8; 16];

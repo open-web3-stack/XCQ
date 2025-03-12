@@ -14,5 +14,10 @@ quote = { workspace = true }
 syn = { workspace = true }
 proc-macro2 = { workspace = true }
 proc-macro-crate = { workspace = true }
-Inflector = { workspace = true }
 twox-hash = "1.6.3"
+
+[dev-dependencies]
+pvq-extension = { workspace = true }
+scale-info = { workspace = true }
+parity-scale-codec = { workspace = true }
+trybuild = "1.0"
