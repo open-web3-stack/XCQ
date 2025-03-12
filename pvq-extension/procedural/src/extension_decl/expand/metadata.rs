@@ -51,7 +51,7 @@ pub fn expand_metadata(def: &Def) -> TokenStream2 {
 
     let trait_ident = &def.extension.name;
     let trait_name = trait_ident.to_string();
-    let metadata = if def.extension.types.is_empty() {
+    if def.extension.types.is_empty() {
         quote!(
             pub fn metadata () -> #pvq_extension::metadata::ExtensionMetadata {
                 #pvq_extension::metadata::ExtensionMetadata {
@@ -70,8 +70,7 @@ pub fn expand_metadata(def: &Def) -> TokenStream2 {
                 }
             }
         )
-    };
-    metadata
+    }
 }
 
 // Convert `Self::AssociatedType` to `Impl::AssociatedType`

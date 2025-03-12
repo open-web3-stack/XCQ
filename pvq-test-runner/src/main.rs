@@ -1,5 +1,5 @@
 use clap::Parser;
-use parity_scale_codec::{Decode, Encode};
+use parity_scale_codec::Encode;
 use pvq_extension::{extensions_impl, ExtensionsExecutor, InvokeSource};
 use tracing_subscriber::prelude::*;
 
@@ -67,10 +67,10 @@ pub mod extensions {
         type AssetId = u32;
         type AccountId = [u8; 32];
         type Balance = u64;
-        fn total_supply(asset: Self::AssetId) -> Self::Balance {
+        fn total_supply(_asset: Self::AssetId) -> Self::Balance {
             100
         }
-        fn balance(asset: Self::AssetId, who: Self::AccountId) -> Self::Balance {
+        fn balance(_asset: Self::AssetId, _who: Self::AccountId) -> Self::Balance {
             100
         }
     }

@@ -23,13 +23,8 @@ pub mod extensions {
     impl pvq_extension_core::extension::ExtensionCore for ExtensionImpl {
         type ExtensionId = u64;
         fn has_extension(id: Self::ExtensionId) -> bool {
-            if id == pvq_extension_core::extension::extension_id() {
-                true
-            } else if id == pvq_extension_fungibles::extension::extension_id() {
-                true
-            } else {
-                false
-            }
+            id == pvq_extension_core::extension::extension_id()
+                || id == pvq_extension_fungibles::extension::extension_id()
         }
     }
 

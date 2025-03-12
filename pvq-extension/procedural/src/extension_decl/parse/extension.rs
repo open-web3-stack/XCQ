@@ -27,6 +27,7 @@ pub struct Extension {
 
 #[derive(Debug)]
 pub struct ExtensionType {
+    #[allow(dead_code)]
     pub name: syn::Ident,
 }
 
@@ -139,7 +140,6 @@ impl Extension {
 
                     let function_index = function_index_attrs.pop().map(|attr| match attr {
                         FunctionAttr::FnIndex(index) => index,
-                        _ => unreachable!("checked during let binding"),
                     });
 
                     let final_index = match function_index {

@@ -29,15 +29,11 @@ pub fn expand_extension(def: &mut Def) -> TokenStream2 {
     let functions_enum = expand_functions_enum(parity_scale_codec, trait_ident, &def.extension.functions);
 
     // Generate the dispatchable implementation
-    let functions_impl_dispatchable = impl_dispatchable_for_functions(
-        pvq_extension,
-        parity_scale_codec,
-        &trait_ident,
-        &def.extension.functions,
-    );
+    let functions_impl_dispatchable =
+        impl_dispatchable_for_functions(pvq_extension, parity_scale_codec, trait_ident, &def.extension.functions);
 
     // Generate the extension ID implementation
-    let extension_id_expanded = expand_extension_id(pvq_extension, &trait_ident, &def.extension.functions);
+    let extension_id_expanded = expand_extension_id(pvq_extension, trait_ident, &def.extension.functions);
 
     // let extension_runtime_metadata = crate::runtime_metadata::generate_decl_metadata(&item_trait, view_fns.has_config)?;
 

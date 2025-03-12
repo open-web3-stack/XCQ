@@ -16,7 +16,7 @@ where
         attr.path()
             .segments
             .first()
-            .map_or(false, |segment| segment.ident == "extensions_impl")
+            .is_some_and(|segment| segment.ident == "extensions_impl")
     }) else {
         return Ok(None);
     };
