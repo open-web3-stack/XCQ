@@ -1,0 +1,9 @@
+[package]
+name = "guest-sum-balance-hand-written"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+polkavm-derive = { workspace = true }
+parity-scale-codec = { workspace = true, features = ["derive"] }

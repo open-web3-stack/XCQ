@@ -75,15 +75,16 @@ impl<Ctx: PvqExecutorContext> PvqExecutor<Ctx> {
         let mut instance = instance_pre.instantiate()?;
 
         instance.write_memory(module.memory_map().aux_data_address(), args)?;
-
+        tracing::info!("Calling entrypoint with args: {:?}", args);
         let res = instance.call_typed_and_get_result::<u64, (u32, u32)>(
             self.context.data(),
-            "main",
+            "pvq",
             (module.memory_map().aux_data_address(), args.len() as u32),
         )?;
         let res_size = (res >> 32) as u32;
         let res_ptr = (res & 0xffffffff) as u32;
         let result = instance.read_memory(res_ptr, res_size)?;
+        tracing::info!("Result: {:?}", result);
         Ok(result)
     }
 }

@@ -1,0 +1,10 @@
+[package]
+name = "guest-sum-balance-percent"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+polkavm-derive = { workspace = true }
+pvq-program = { workspace = true }
+parity-scale-codec = { workspace = true }

@@ -10,7 +10,7 @@ resolver = "2"
 members = [
     "poc/runtime",
 
-    "pvq-api",
+    "pvq-program",
     "pvq-executor",
     "pvq-extension-core",
     "pvq-extension-fungibles",
@@ -31,7 +31,7 @@ opt-level = 3
 
 [workspace.dependencies]
 # local
-pvq-api = { path = "pvq-api", default-features = false }
+pvq-program = { path = "pvq-program", default-features = false }
 pvq-executor = { path = "pvq-executor", default-features = false }
 pvq-extension-core = { path = "pvq-extension-core", default-features = false }
 pvq-extension-fungibles = { path = "pvq-extension-fungibles", default-features = false }
@@ -42,6 +42,7 @@ pvq-test-runner = { path = "pvq-test-runner", default-features = false }
 
 # polkavm
 polkavm = { path = "vendor/polkavm/crates/polkavm", default-features = false }
+polkavm-derive = { path = "vendor/polkavm/crates/polkavm-derive", default-features = false }
 
 # polkadot-sdk
 sp-api = { path = "vendor/polkadot-sdk/substrate/primitives/api", default-features = false }
@@ -69,3 +70,4 @@ quote = "1"
 proc-macro2 = "1"
 proc-macro-crate = "3"
 Inflector = { version = "0.11.4" }
+trybuild = "1"

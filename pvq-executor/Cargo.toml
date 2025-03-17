@@ -12,9 +12,8 @@ tracing = { workspace = true }
 
 polkavm = { workspace = true }
 
-pvq-api = { workspace = true }
 pvq-primitives = { workspace = true }
 
 [features]
 default = ["std"]
-std = ["tracing/std", "polkavm/std", "pvq-api/std", "pvq-primitives/std"]
+std = ["tracing/std", "polkavm/std", "pvq-primitives/std"]
