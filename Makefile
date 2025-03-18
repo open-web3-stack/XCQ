@@ -1,18 +1,18 @@
 run: chainspec
 	bunx @acala-network/chopsticks@latest --config poc/runtime/chopsticks.yml --genesis output/chainspec.json
 
-EXAMPLE_TARGETS = $(shell cd pvq-program/examples && cargo metadata --no-deps --format-version 1 | jq -r '.workspace_members[] | split(" ")[0] | split("\#")[0]' | grep -v "^pvq-program-examples$$")
-GUEST_TARGETS = $(patsubst %,guest-%,$(notdir $(EXAMPLE_TARGETS)))
-DUMMY_GUEST_TARGETS = $(patsubst %,dummy-guest-%,$(notdir $(EXAMPLE_TARGETS)))
+GUEST_EXAMPLES = $(shell find guest-examples -name "Cargo.toml" -not -path "guest-examples/Cargo.toml" | xargs -n1 dirname | xargs -n1 basename)
+GUEST_TARGETS = $(patsubst %,guest-%,$(GUEST_EXAMPLES))
+DUMMY_GUEST_TARGETS = $(patsubst %,dummy-guest-%,$(GUEST_EXAMPLES))
 
 guests: $(GUEST_TARGETS)
 
 dummy-guests: $(DUMMY_GUEST_TARGETS)
 
 guest-%:
-	cd pvq-program/examples; RUSTFLAGS="-D warnings" cargo build -q --release -Z build-std=core,alloc --target "../../vendor/polkavm/crates/polkavm-linker/riscv32emac-unknown-none-polkavm.json" --bin guest-$* -p guest-$*
+	cd guest-examples; cargo build -q --release --bin guest-$* -p guest-$*
 	mkdir -p output
-	polkatool link --run-only-if-newer -s pvq-program/examples/target/riscv32emac-unknown-none-polkavm/release/guest-$* -o output/guest-$*.polkavm
+	polkatool link --run-only-if-newer -s guest-examples/target/riscv32emac-unknown-none-polkavm/release/guest-$* -o output/guest-$*.polkavm
 
 dummy-guest-%:
 	mkdir -p output
@@ -39,7 +39,7 @@ check: check-wasm
 
 clippy:
 	SKIP_WASM_BUILD= cargo clippy -- -D warnings
-	cd pvq-program/examples; RUSTFLAGS="-D warnings" cargo clippy -Z build-std=core,alloc --target "../../vendor/polkavm/crates/polkavm-linker/riscv32emac-unknown-none-polkavm.json" --all
+	cd guest-examples; cargo clippy --all
 
 test:
 	SKIP_WASM_BUILD= cargo test

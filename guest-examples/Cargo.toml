@@ -13,5 +13,5 @@ resolver = "2"
 parity-scale-codec = { version = "3", default-features = false, features = [
     "derive",
 ] }
-pvq-program = { path = "..", default-features = false }
-polkavm-derive = { path = "../../vendor/polkavm/crates/polkavm-derive" }
+pvq-program = { path = "../pvq-program", default-features = false }
+polkavm-derive = { path = "../vendor/polkavm/crates/polkavm-derive" }

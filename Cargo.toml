@@ -22,7 +22,7 @@ members = [
     "examples/example-fungibles",
     "examples/example-helloworld",
 ]
-exclude = ["poc/guests", "vendor"]
+exclude = ["guest-examples", "vendor"]
 
 [profile.release]
 # runtime requires unwinding.
@@ -69,5 +69,4 @@ syn = { version = "2", features = ["full", "visit-mut", "extra-traits"] }
 quote = "1"
 proc-macro2 = "1"
 proc-macro-crate = "3"
-Inflector = { version = "0.11.4" }
 trybuild = "1"
