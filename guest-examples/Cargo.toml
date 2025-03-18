@@ -1,0 +1,17 @@
+[workspace]
+members = [
+    "sum-balance",
+    "sum-balance-percent",
+    "sum-balance-hand-written",
+    "total-supply",
+    "total-supply-hand-written",
+    "transparent-call-hand-written",
+]
+resolver = "2"
+
+[workspace.dependencies]
+parity-scale-codec = { version = "3", default-features = false, features = [
+    "derive",
+] }
+pvq-program = { path = "../pvq-program", default-features = false }
+polkavm-derive = { path = "../vendor/polkavm/crates/polkavm-derive" }

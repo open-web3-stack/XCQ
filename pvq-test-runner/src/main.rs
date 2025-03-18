@@ -25,28 +25,39 @@ fn main() {
 
     let cli = Cli::parse();
 
-    let blob = std::fs::read(cli.program).expect("Failed to read program");
+    let blob = std::fs::read(&cli.program).expect("Failed to read program");
     let mut executor = ExtensionsExecutor::<extensions::Extensions, ()>::new(InvokeSource::RuntimeAPI);
-    let mut input_data = pvq_extension_core::extension::extension_id().encode();
-    input_data.extend_from_slice(&[2u8]);
-    let method1 = pvq_extension_fungibles::extension::Functions::<extensions::ExtensionsImpl>::balance {
-        asset: 1,
-        who: [0u8; 32],
+    let mut input_data = Vec::new();
+    let program_str = cli.program.to_string_lossy();
+    if program_str.contains("sum-balance") {
+        input_data.extend_from_slice(&0u32.encode());
+        input_data.extend_from_slice(&vec![[0u8; 32], [1u8; 32]].encode());
+    } else if program_str.contains("total-supply") {
+        input_data.extend_from_slice(&0u32.encode());
+    } else if program_str.contains("transparent-call") {
+        input_data.extend_from_slice(&4071833530116166512u64.encode());
+        input_data.extend_from_slice(
+            &ExtensionFungiblesFunctions::balance {
+                asset: 0,
+                who: [1u8; 32],
+            }
+            .encode(),
+        );
     }
-    .encode();
-    let method1_encoded = method1.encode();
-    input_data.extend_from_slice(&[method1_encoded.len() as u8]);
-    let method2 = pvq_extension_fungibles::extension::Functions::<extensions::ExtensionsImpl>::balance {
-        asset: 1,
-        who: [1u8; 32],
-    }
-    .encode();
-    input_data.extend_from_slice(&method1_encoded);
-    input_data.extend_from_slice(&method2.encode());
     tracing::info!("Input data: {:?}", input_data);
     let res = executor.execute_method(&blob, &input_data, 0).unwrap();
 
     tracing::info!("Result: {:?}", res);
+}
+
+#[derive(Encode)]
+#[allow(non_camel_case_types)]
+#[allow(dead_code)]
+enum ExtensionFungiblesFunctions {
+    #[codec(index = 0)]
+    total_supply { asset: u32 },
+    #[codec(index = 1)]
+    balance { asset: u32, who: [u8; 32] },
 }
 
 #[extensions_impl]

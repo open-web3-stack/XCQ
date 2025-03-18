@@ -1,18 +1,22 @@
 run: chainspec
 	bunx @acala-network/chopsticks@latest --config poc/runtime/chopsticks.yml --genesis output/chainspec.json
 
-poc-guests: poc-guest-sum-balance poc-guest-sum-balance-percent poc-guest-total-supply poc-guest-transparent-call
+GUEST_EXAMPLES = $(shell find guest-examples -name "Cargo.toml" -not -path "guest-examples/Cargo.toml" | xargs -n1 dirname | xargs -n1 basename)
+GUEST_TARGETS = $(patsubst %,guest-%,$(GUEST_EXAMPLES))
+DUMMY_GUEST_TARGETS = $(patsubst %,dummy-guest-%,$(GUEST_EXAMPLES))
 
-dummy-poc-guests: dummy-poc-guest-sum-balance dummy-poc-guest-sum-balance-percent dummy-poc-guest-total-supply dummy-poc-guest-transparent-call
+guests: $(GUEST_TARGETS)
 
-poc-guest-%:
-	cd poc/guests; RUSTFLAGS="-D warnings" cargo build -q --release -Z build-std=core,alloc --target "../../vendor/polkavm/crates/polkavm-linker/riscv32emac-unknown-none-polkavm.json" --bin poc-guest-$* -p poc-guest-$*
+dummy-guests: $(DUMMY_GUEST_TARGETS)
+
+guest-%:
+	cd guest-examples; cargo build -q --release --bin guest-$* -p guest-$*
 	mkdir -p output
-	polkatool link --run-only-if-newer -s poc/guests/target/riscv32emac-unknown-none-polkavm/release/poc-guest-$* -o output/poc-guest-$*.polkavm
+	polkatool link --run-only-if-newer -s guest-examples/target/riscv32emac-unknown-none-polkavm/release/guest-$* -o output/guest-$*.polkavm
 
-dummy-poc-guest-%:
+dummy-guest-%:
 	mkdir -p output
-	touch output/poc-guest-$*.polkavm
+	touch output/guest-$*.polkavm
 
 tools: polkatool chain-spec-builder
 
@@ -26,16 +30,16 @@ fmt:
 	cargo fmt --all
 
 check-wasm:
-	cargo check --no-default-features --target=wasm32-unknown-unknown -p pvq-api -p pvq-executor -p pvq-extension-core -p pvq-extension-fungibles -p pvq-extension -p pvq-primitives -p pvq-runtime-api
+	cargo check --no-default-features --target=wasm32-unknown-unknown -p pvq-program -p pvq-executor -p pvq-extension-core -p pvq-extension-fungibles -p pvq-extension -p pvq-primitives -p pvq-runtime-api
 	SKIP_WASM_BUILD= cargo check --no-default-features --target=wasm32-unknown-unknown -p poc-runtime
 
 check: check-wasm
 	SKIP_WASM_BUILD= cargo check
-	cd poc/guests; cargo check
+	cd pvq-program/examples; cargo check
 
 clippy:
 	SKIP_WASM_BUILD= cargo clippy -- -D warnings
-	cd poc/guests; RUSTFLAGS="-D warnings" cargo clippy -Z build-std=core,alloc --target "../../vendor/polkavm/crates/polkavm-linker/riscv32emac-unknown-none-polkavm.json" --all
+	cd guest-examples; cargo clippy --all
 
 test:
 	SKIP_WASM_BUILD= cargo test

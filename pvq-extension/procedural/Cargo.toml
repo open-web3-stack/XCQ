@@ -20,4 +20,4 @@ twox-hash = "1.6.3"
 pvq-extension = { workspace = true }
 scale-info = { workspace = true }
 parity-scale-codec = { workspace = true }
-trybuild = "1.0"
+trybuild = { workspace = true }

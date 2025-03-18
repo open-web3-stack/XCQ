@@ -32,17 +32,17 @@ jobs:
       - name: Check format
         run: cargo fmt --all -- --check
 
-      - name: Make dummy poc-guest-%.polkavm files
-        run: make dummy-poc-guests
-
-      - name: Cargo clippy
-        run: SKIP_WASM_BUILD= cargo clippy -- -D warnings
+      - name: Make dummy poc-guest files
+        run: make dummy-guests
 
       - name: Check no-std
         run: make check-wasm
 
-      - name: Check std
-        run: SKIP_WASM_BUILD= cargo check
+      - name: Clippy
+        run: make clippy
+
+      - name: Run tests
+        run: make test
 
   build-guest:
     runs-on: ubuntu-latest
@@ -54,16 +54,17 @@ jobs:
       - name: Install toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: wasm32-unknown-unknown
-          components: rustfmt, clippy
+          components: rust-src, rustfmt, clippy
 
       - uses: Swatinem/rust-cache@v2
         with:
-          workspaces: poc/guests -> poc/guests/target
+          workspaces: |
+            guest-examples -> guest-examples/target
           cache-all-crates: true
-
-      - name: Cargo clippy
-        run: cd poc/guests; cargo clippy -- -D warnings
 
       - name: Install polkatool
         run: make polkatool
+
+      - name: Build guests
+        run: make guests
+

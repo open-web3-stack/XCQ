@@ -1,0 +1,10 @@
+[package]
+name = "guest-sum-balance"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+parity-scale-codec = { workspace = true }
+polkavm-derive = { workspace = true }
+pvq-program = { workspace = true }

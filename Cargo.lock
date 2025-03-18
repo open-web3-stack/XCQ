@@ -2964,6 +2964,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "polkavm-derive"
+version = "0.21.0"
+dependencies = [
+ "polkavm-derive-impl-macro 0.21.0",
+]
+
+[[package]]
 name = "polkavm-derive-impl"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2988,6 +2995,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "polkavm-derive-impl"
+version = "0.21.0"
+dependencies = [
+ "polkavm-common 0.21.0",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.96",
+]
+
+[[package]]
 name = "polkavm-derive-impl-macro"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3004,6 +3021,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "48c16669ddc7433e34c1007d31080b80901e3e8e523cb9d4b441c3910cf9294b"
 dependencies = [
  "polkavm-derive-impl 0.18.1",
+ "syn 2.0.96",
+]
+
+[[package]]
+name = "polkavm-derive-impl-macro"
+version = "0.21.0"
+dependencies = [
+ "polkavm-derive-impl 0.21.0",
  "syn 2.0.96",
 ]
 
@@ -3129,31 +3154,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "pvq-api"
-version = "0.1.0"
-dependencies = [
- "pvq-api-procedural",
-]
-
-[[package]]
-name = "pvq-api-procedural"
-version = "0.1.0"
-dependencies = [
- "Inflector",
- "parity-scale-codec",
- "proc-macro-crate",
- "proc-macro2",
- "quote",
- "scale-info",
- "syn 2.0.96",
-]
-
-[[package]]
 name = "pvq-executor"
 version = "0.1.0"
 dependencies = [
  "polkavm",
- "pvq-api",
  "pvq-primitives",
  "tracing",
 ]
@@ -3212,6 +3216,27 @@ version = "0.1.0"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
+]
+
+[[package]]
+name = "pvq-program"
+version = "0.1.0"
+dependencies = [
+ "parity-scale-codec",
+ "polkavm-derive 0.21.0",
+ "pvq-program-procedural",
+ "scale-info",
+ "trybuild",
+]
+
+[[package]]
+name = "pvq-program-procedural"
+version = "0.1.0"
+dependencies = [
+ "proc-macro-crate",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.96",
 ]
 
 [[package]]

@@ -55,14 +55,14 @@ impl<C: CallDataTuple, P: PermissionController> PvqExecutorContext for Context<C
                       call_ptr: u32,
                       call_len: u32|
                       -> Result<u64, ExtensionError> {
+                    tracing::info!(
+                        "(host call): extension_id: {}, call_ptr: {}, call_len: {}",
+                        extension_id,
+                        call_ptr,
+                        call_len
+                    );
                     // Read the call data from memory
                     let call_bytes = caller.instance.read_memory(call_ptr, call_len)?;
-                    tracing::info!("(host call): call_ptr: {}, call_len: {:?}", call_ptr, call_len);
-                    tracing::info!(
-                        "(host call): extension_id: {}, call_bytes: {:?}",
-                        extension_id,
-                        call_bytes
-                    );
 
                     // Check permissions
                     if !P::is_allowed(extension_id, &call_bytes, invoke_source) {
@@ -71,7 +71,7 @@ impl<C: CallDataTuple, P: PermissionController> PvqExecutorContext for Context<C
 
                     // Dispatch the call
                     let res_bytes = C::dispatch(extension_id, &call_bytes)?;
-                    tracing::debug!("(host call): res_bytes: {:?}", res_bytes);
+                    tracing::debug!("(host call): dispatch result: {:?}", res_bytes);
 
                     // Allocate memory for the response
                     let res_bytes_len = res_bytes.len();
