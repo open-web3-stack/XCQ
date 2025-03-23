@@ -10,6 +10,9 @@ pub type PvqResponse = Vec<u8>;
 
 #[derive(Debug, Clone, PartialEq, Eq, Encode, Decode, TypeInfo)]
 pub enum PvqError {
+    FailedToDecode,
+    InvalidPvqProgramFormat,
+    QueryExceedsWeightLimit,
     Custom(String),
 }
 
