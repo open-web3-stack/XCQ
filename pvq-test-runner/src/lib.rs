@@ -1,6 +1,5 @@
 use parity_scale_codec::Encode;
 use pvq_extension::{extensions_impl, ExtensionsExecutor, InvokeSource};
-use pvq_primitives;
 
 #[derive(Encode)]
 #[allow(non_camel_case_types)]
@@ -78,5 +77,11 @@ impl TestRunner {
         input_data: &[u8],
     ) -> Result<Vec<u8>, pvq_primitives::PvqError> {
         self.executor.execute_method(program_blob, input_data, 0)
+    }
+}
+
+impl Default for TestRunner {
+    fn default() -> Self {
+        Self::new()
     }
 }
