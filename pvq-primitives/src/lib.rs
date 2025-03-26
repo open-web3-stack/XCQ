@@ -13,7 +13,10 @@ pub enum PvqError {
     FailedToDecode,
     InvalidPvqProgramFormat,
     QueryExceedsWeightLimit,
-    Custom(String),
+    Trap,
+    MemoryAccessError,
+    HostCallError,
+    Other,
 }
 
 pub type PvqResult = Result<PvqResponse, PvqError>;

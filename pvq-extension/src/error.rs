@@ -5,6 +5,7 @@ use scale_info::prelude::fmt;
 use scale_info::prelude::fmt::{Display, Formatter};
 
 /// Errors that can occur when working with extensions
+// Typically will be used as a UserError
 #[derive(Debug)]
 pub enum ExtensionError {
     /// Permission denied for the requested operation

@@ -44,7 +44,8 @@ pub mod extensions {
 
 pub fn execute_query(query: &[u8], input: &[u8]) -> PvqResult {
     let mut executor = ExtensionsExecutor::<extensions::Extensions, ()>::new(InvokeSource::RuntimeAPI);
-    executor.execute_method(query, input, 0)
+    let (result, _) = executor.execute_method(query, input, None);
+    result
 }
 
 pub fn metadata() -> Metadata {
