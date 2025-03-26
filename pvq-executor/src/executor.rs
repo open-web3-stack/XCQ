@@ -4,6 +4,9 @@ use polkavm::{Config, Engine, Linker, Module, ModuleConfig, ProgramBlob};
 use crate::context::PvqExecutorContext;
 use crate::error::PvqExecutorError;
 
+type PvqExecutorResult<UserError> = Result<Vec<u8>, PvqExecutorError<UserError>>;
+type GasLimit = Option<i64>;
+
 pub struct PvqExecutor<Ctx: PvqExecutorContext> {
     engine: Engine,
     linker: Linker<Ctx::UserData, Ctx::UserError>,
@@ -27,8 +30,8 @@ impl<Ctx: PvqExecutorContext> PvqExecutor<Ctx> {
         &mut self,
         program: &[u8],
         args: &[u8],
-        gas_limit: Option<i64>,
-    ) -> (Result<Vec<u8>, PvqExecutorError<Ctx::UserError>>, Option<i64>) {
+        gas_limit: GasLimit,
+    ) -> (PvqExecutorResult<Ctx::UserError>, GasLimit) {
         let blob = match ProgramBlob::parse(program.into()) {
             Ok(blob) => blob,
             Err(_) => return (Err(PvqExecutorError::InvalidProgramFormat), gas_limit),
