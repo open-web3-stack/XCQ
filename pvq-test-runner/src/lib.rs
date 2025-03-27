@@ -71,12 +71,9 @@ impl TestRunner {
         input_data
     }
 
-    pub fn execute_program(
-        &mut self,
-        program_blob: &[u8],
-        input_data: &[u8],
-    ) -> Result<Vec<u8>, pvq_primitives::PvqError> {
-        self.executor.execute_method(program_blob, input_data, 0)
+    pub fn execute_program(&mut self, program_blob: &[u8], input_data: &[u8]) -> pvq_primitives::PvqResult {
+        let (result, _) = self.executor.execute(program_blob, input_data, None);
+        result
     }
 }
 

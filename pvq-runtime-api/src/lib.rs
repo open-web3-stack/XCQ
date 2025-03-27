@@ -7,11 +7,12 @@ use pvq_primitives::PvqResult;
 use sp_api::decl_runtime_apis;
 
 // The runtime API for the PVQ module.
-// query: the query to be executed, written in polkavm. i.e. query balance of given accounts and sum them up
-// input: the input data for the query. i.e. accounts to be queried
+//   - `program`: PVQ binary.
+//   - `args`: Query arguments that is SCALE-encoded.
+//   - `gas_limit`: Optional gas limit for query execution. When set to `None`, execution is constrained by the default time boundary.
 decl_runtime_apis! {
     pub trait PvqApi {
-        fn execute_query(query: Vec<u8>, input: Vec<u8>) -> PvqResult;
+        fn execute_query(program: Vec<u8>, args: Vec<u8>, gas_limit: Option<i64>) -> PvqResult;
         fn metadata() -> Vec<u8>;
     }
 }

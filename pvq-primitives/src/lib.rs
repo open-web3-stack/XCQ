@@ -2,9 +2,11 @@
 
 extern crate alloc;
 
-use alloc::{string::String, vec::Vec};
+use alloc::vec::Vec;
 use parity_scale_codec::{Decode, Encode};
 use scale_info::TypeInfo;
+
+pub type PvqResult = Result<PvqResponse, PvqError>;
 
 pub type PvqResponse = Vec<u8>;
 
@@ -13,7 +15,8 @@ pub enum PvqError {
     FailedToDecode,
     InvalidPvqProgramFormat,
     QueryExceedsWeightLimit,
-    Custom(String),
+    Trap,
+    MemoryAccessError,
+    HostCallError,
+    Other,
 }
-
-pub type PvqResult = Result<PvqResponse, PvqError>;

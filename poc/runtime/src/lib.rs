@@ -4,6 +4,9 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
+extern crate alloc;
+use alloc::{vec, vec::Vec};
+
 mod pvq;
 
 use frame::{
@@ -13,24 +16,21 @@ use frame::{
     },
     prelude::*,
     runtime::{
-        apis::{
-            self, impl_runtime_apis, ApplyExtrinsicResult, CheckInherentsResult, ExtrinsicInclusionMode, OpaqueMetadata,
-        },
+        apis::{self, impl_runtime_apis},
         prelude::*,
     },
-    traits::AsEnsureOriginWithArg,
 };
 
 #[runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
-    spec_name: create_runtime_str!("pvq-poc"),
-    impl_name: create_runtime_str!("pvq-poc"),
+    spec_name: alloc::borrow::Cow::Borrowed("pvq-poc"),
+    impl_name: alloc::borrow::Cow::Borrowed("pvq-poc"),
     authoring_version: 1,
     spec_version: 0,
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 1,
-    state_version: 1,
+    system_version: 1,
 };
 
 /// The version information used to identify this runtime when compiled natively.
@@ -109,6 +109,8 @@ type Header = HeaderFor<Runtime>;
 type RuntimeExecutive = Executive<Runtime, Block, frame_system::ChainContext<Runtime>, Runtime, AllPalletsWithSystem>;
 
 use pallet_transaction_payment::{FeeDetails, RuntimeDispatchInfo};
+
+const ONE_SECOND_IN_GAS: i64 = 100000;
 
 impl_runtime_apis! {
     impl apis::Core<Block> for Runtime {
@@ -225,9 +227,10 @@ impl_runtime_apis! {
         }
     }
 
-    impl pvq::PvqApi<Block> for Runtime {
-        fn execute_query(query: Vec<u8>, input: Vec<u8>) -> pvq::PvqResult {
-            pvq::execute_query(&query, &input)
+    impl pvq_runtime_api::PvqApi<Block> for Runtime {
+        fn execute_query(program: Vec<u8>, args: Vec<u8>, gas_limit: Option<i64>) -> pvq_primitives::PvqResult {
+            // Set a default gas limit of 2 seconds
+            pvq::execute_query(&program, &args, gas_limit.unwrap_or(ONE_SECOND_IN_GAS * 2))
         }
         fn metadata() -> Vec<u8> {
             pvq::metadata().encode()
