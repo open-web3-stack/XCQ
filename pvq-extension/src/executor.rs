@@ -27,7 +27,6 @@ impl<C: CallDataTuple, P: PermissionController> ExtensionsExecutor<C, P> {
         Self { executor }
     }
 
-    /// Execute a method on an extension
     ///
     /// # Arguments
     ///
@@ -37,7 +36,7 @@ impl<C: CallDataTuple, P: PermissionController> ExtensionsExecutor<C, P> {
     /// # Returns
     ///
     /// The result of the execution or an error
-    pub fn execute_method(&mut self, program: &[u8], args: &[u8], gas_limit: Option<i64>) -> (PvqResult, Option<i64>) {
+    pub fn execute(&mut self, program: &[u8], args: &[u8], gas_limit: Option<i64>) -> (PvqResult, Option<i64>) {
         let (result, gas_remaining) = self.executor.execute(program, args, gas_limit);
         (result.map_err(PvqError::from), gas_remaining)
     }

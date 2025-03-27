@@ -1,18 +1,8 @@
 #[allow(unused_imports)]
 use frame::deps::scale_info::prelude::{format, string::String};
-use frame::deps::sp_api::decl_runtime_apis;
-use frame::prelude::*;
 
 use pvq_extension::metadata::Metadata;
-pub use pvq_primitives::PvqResult;
-
 use pvq_extension::{extensions_impl, ExtensionsExecutor, InvokeSource};
-decl_runtime_apis! {
-    pub trait PvqApi {
-        fn execute_query(query: Vec<u8>, input: Vec<u8>) -> PvqResult;
-        fn metadata() -> Vec<u8>;
-    }
-}
 
 #[extensions_impl]
 pub mod extensions {
@@ -42,9 +32,9 @@ pub mod extensions {
     }
 }
 
-pub fn execute_query(query: &[u8], input: &[u8]) -> PvqResult {
+pub fn execute_query(program: &[u8], args: &[u8], gas_limit: i64) -> pvq_primitives::PvqResult {
     let mut executor = ExtensionsExecutor::<extensions::Extensions, ()>::new(InvokeSource::RuntimeAPI);
-    let (result, _) = executor.execute_method(query, input, None);
+    let (result, _) = executor.execute(program, args, Some(gas_limit));
     result
 }
 

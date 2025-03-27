@@ -6,34 +6,31 @@ edition = "2021"
 [dependencies]
 parity-scale-codec = { workspace = true }
 scale-info = { workspace = true }
-# this is a frame-based runtime, thus importing `frame` with runtime feature enabled.
-frame = { version = "0.2.0", package = "polkadot-sdk-frame", default-features = false, features = [
-    "experimental",
-    "runtime",
-] }
+frame = { workspace = true, features = ["experimental", "runtime"] }
 
 # pallets that we want to use
-pallet-balances = { version = "34.0.0", default-features = false }
-pallet-assets = { version = "34.0.0", default-features = false }
-pallet-sudo = { version = "33.0.0", default-features = false }
-pallet-timestamp = { version = "32.0.0", default-features = false }
-pallet-transaction-payment = { version = "33.0.0", default-features = false }
-pallet-transaction-payment-rpc-runtime-api = { version = "33.0.0", default-features = false }
+pallet-balances = { workspace = true }
+pallet-assets = { workspace = true }
+pallet-sudo = { workspace = true }
+pallet-timestamp = { workspace = true }
+pallet-transaction-payment = { workspace = true }
+pallet-transaction-payment-rpc-runtime-api = { workspace = true }
 
 # genesis builder that allows us to interacto with runtime genesis config
-sp-genesis-builder = { version = "0.12.0", default-features = false }
+sp-genesis-builder = { workspace = true }
 
 pvq-executor = { workspace = true }
 pvq-extension = { workspace = true }
 pvq-extension-core = { workspace = true }
 pvq-extension-fungibles = { workspace = true }
 pvq-primitives = { workspace = true }
+pvq-runtime-api = { workspace = true }
 
 [dev-dependencies]
 hex = "0.4"
 
 [build-dependencies]
-substrate-wasm-builder = { version = "22.0.1", optional = true }
+substrate-wasm-builder = { workspace = true, optional = true }
 
 [features]
 default = ["std"]

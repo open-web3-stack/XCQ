@@ -46,6 +46,19 @@ polkavm-derive = { path = "vendor/polkavm/crates/polkavm-derive", default-featur
 
 # polkadot-sdk
 sp-api = { path = "vendor/polkadot-sdk/substrate/primitives/api", default-features = false }
+frame = { package = "polkadot-sdk-frame", path = "vendor/polkadot-sdk/substrate/frame", default-features = false }
+pallet-balances = { path = "vendor/polkadot-sdk/substrate/frame/balances", default-features = false }
+pallet-assets = { path = "vendor/polkadot-sdk/substrate/frame/assets", default-features = false }
+pallet-sudo = { path = "vendor/polkadot-sdk/substrate/frame/sudo", default-features = false }
+pallet-timestamp = { path = "vendor/polkadot-sdk/substrate/frame/timestamp", default-features = false }
+pallet-transaction-payment = { path = "vendor/polkadot-sdk/substrate/frame/transaction-payment", default-features = false }
+pallet-transaction-payment-rpc-runtime-api = { path = "vendor/polkadot-sdk/substrate/frame/transaction-payment/rpc/runtime-api", default-features = false }
+
+# genesis builder that allows us to interacto with runtime genesis config
+sp-genesis-builder = { path = "vendor/polkadot-sdk/substrate/primitives/genesis-builder", default-features = false }
+
+# wasm builder
+substrate-wasm-builder = { version = "22.0.1" }
 
 # nostd
 parity-scale-codec = { version = "3.6.12", default-features = false, features = [

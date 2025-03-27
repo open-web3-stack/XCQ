@@ -37,7 +37,6 @@ impl<Ctx: PvqExecutorContext> PvqExecutor<Ctx> {
             Err(_) => return (Err(PvqExecutorError::InvalidProgramFormat), gas_limit),
         };
 
-        // TODO: make this configurable
         let mut module_config = ModuleConfig::new();
         module_config.set_aux_data_size(args.len() as u32);
         if gas_limit.is_some() {

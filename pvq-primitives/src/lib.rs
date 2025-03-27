@@ -6,6 +6,8 @@ use alloc::vec::Vec;
 use parity_scale_codec::{Decode, Encode};
 use scale_info::TypeInfo;
 
+pub type PvqResult = Result<PvqResponse, PvqError>;
+
 pub type PvqResponse = Vec<u8>;
 
 #[derive(Debug, Clone, PartialEq, Eq, Encode, Decode, TypeInfo)]
@@ -18,5 +20,3 @@ pub enum PvqError {
     HostCallError,
     Other,
 }
-
-pub type PvqResult = Result<PvqResponse, PvqError>;
