@@ -4,6 +4,9 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
+extern crate alloc;
+use alloc::{vec, vec::Vec};
+
 mod pvq;
 
 use frame::{
@@ -18,12 +21,10 @@ use frame::{
     },
 };
 
-use std::borrow::Cow;
-
 #[runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
-    spec_name: Cow::Borrowed("pvq-poc"),
-    impl_name: Cow::Borrowed("pvq-poc"),
+    spec_name: alloc::borrow::Cow::Borrowed("pvq-poc"),
+    impl_name: alloc::borrow::Cow::Borrowed("pvq-poc"),
     authoring_version: 1,
     spec_version: 0,
     impl_version: 1,
